@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Direzione - Qualità ISO 9001 e HR</title>
+    
+    <style>
+        :root {
+            --bg-color: #f1f5f9;         
+            --box-bg: #ffffff;
+            --primary-color: #0d9488; 
+            --secondary-color: #0f766e;  
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --input-bg: #ffffff;
+            --border-color: #cbd5e1;     
+            --error-color: #e11d48; 
+            --warning-color: #d97706; 
+            --success-color: #059669; 
+            --dir-color: #4f46e5;
+            --iso-color: #d97706;
+            --hr-color: #0284c7;
+            --base-font-size: 14px;      
+            --radius: 6px;               
+            --transition: all 0.2s ease;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        #loginScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100%; position: fixed; top: 0; left: 0; z-index: 9999; background-color: var(--primary-color); }
+        .login-header-title { text-align: center; color: white; margin-bottom: 30px; z-index: 10; animation: slideUpFade 0.8s forwards; }
+        .login-header-title h1 { margin: 0; font-size: 2.6em; font-weight: 800; letter-spacing: 2px; }
+        .login-header-title h2 { margin: 5px 0 0 0; font-size: 1.3em; color: #ccfbf1; }
+        .login-box { background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; max-width: 450px; width: 90%; border-top: 5px solid var(--iso-color); animation: slideUpFade 0.8s forwards;}
+        .profiles-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 10px; max-height: 280px; overflow-y: auto; padding: 5px; }
+        .profile-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 8px; border: 1px solid var(--border-color); border-radius: 6px; background: #f8fafc; cursor: pointer; transition: 0.2s; width: 85px; }
+        .profile-btn:hover { border-color: var(--iso-color); background: #fffbeb; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .profile-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4em; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .login-input { width: 100%; padding: 15px; font-size: 1.2em; border: 1px solid var(--border-color); border-radius: var(--radius); text-align: center; letter-spacing: 5px; box-sizing: border-box;}
+        .login-btn-master { background-color: var(--iso-color); color: white; border: none; width: 100%; padding: 14px; border-radius: var(--radius); font-size: 1em; font-weight: bold; margin-top: 10px; cursor: pointer; transition: 0.2s; }
+        .login-btn-master:hover { background-color: #b45309; }
+        @keyframes slideUpFade { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+        #top-nav-container { position: sticky; top: 0; z-index: 1000; width: 100%; display: flex; flex-direction: column; flex-shrink: 0; }
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--iso-color); }
+        .navbar-brand { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1em; }
+        .navbar-actions { display: flex; gap: 10px; align-items: center; }
+        .nav-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: var(--radius); cursor: pointer; transition: 0.2s; text-decoration: none;}
+        .nav-btn:hover { background: rgba(255,255,255,0.2); }
+        .current-op-badge { background: #ffffff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+        
+        .app-menu { display: flex; background: #cbd5e1; padding: 10px 20px 0 20px; gap: 2px; overflow-x: auto; border-bottom: 1px solid #94a3b8; }
+        .menu-tab { padding: 8px 14px; background: #e2e8f0; border: 1px solid #94a3b8; border-bottom: none; border-radius: 6px 6px 0 0; color: var(--text-light); font-weight: 600; font-size: 0.85em; cursor: pointer; white-space: nowrap; margin-bottom: -1px; text-decoration: none; }
+        .menu-tab:hover { background: #f8fafc; color: var(--text-main); }
+        .menu-tab.active { background: var(--box-bg); color: var(--iso-color); border-top: 3px solid var(--iso-color); font-weight: bold; }
+
+        #appScreen { display: none; flex-direction: row; flex-grow: 1; height: 0; overflow: hidden; }
+        .main-content { padding: 20px; flex-grow: 1; overflow-y: auto; box-sizing: border-box; }
+
+        .card { background: var(--box-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; flex-wrap: wrap; gap:10px;}
+        .card-header h3 { margin: 0; font-size: 1.1em; text-transform: uppercase; }
+
+        .btn-success { background: var(--success-color); color: white; border: none; padding: 8px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-iso { background: var(--iso-color); color: white; border: none; padding: 8px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; transition: 0.2s; } .btn-iso:hover { background: #b45309; }
+        .btn-hr { background: var(--hr-color); color: white; border: none; padding: 8px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; transition: 0.2s; } .btn-hr:hover { background: #0369a1; }
+        .btn-doc { background: #475569; color: white; border: none; padding: 8px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-print { background: #64748b; color: white; border: none; padding: 6px 12px; border-radius: var(--radius); cursor: pointer; font-size: 0.9em; transition: 0.2s; } .btn-print:hover { background: #475569; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85em; color: var(--text-main); }
+        input[type="text"], input[type="password"], input[type="number"], input[type="date"], textarea, select { width: 100%; padding: 8px; border: 1px solid #94a3b8; border-radius: 4px; box-sizing: border-box; background-color: var(--input-bg); color: var(--text-main); font-family: inherit; font-size: 0.95em; }
+        
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.9em; background: #ffffff; }
+        .data-table th, .data-table td { border: 1px solid var(--border-color); padding: 8px; text-align: left; vertical-align: middle; }
+        .data-table th { background-color: var(--primary-color); color: white; font-weight: normal; text-transform: uppercase; font-size: 0.85em; }
+        .data-table tr:nth-child(even) { background-color: #f8fafc; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2000; }
+        .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .toast.show { opacity: 1; }
+
+        /* REGOLE DI STAMPA UFFICIALI */
+        @media print {
+            body, html { background: white !important; overflow: visible !important; height: auto !important; color: black !important; font-size: 12px !important; }
+            #top-nav-container, .app-menu, button, .btn-iso, .btn-hr, .btn-success, .btn-doc, .btn-print, #toast-container, details { display: none !important; }
+            
+            /* SBLOCCO DELL'ALTEZZA PER LA STAMPANTE */
+            #appScreen, .main-content { 
+                display: block !important; 
+                height: auto !important; 
+                overflow: visible !important; 
+                padding: 0 !important;
+            }
+            
+            .card { box-shadow: none !important; border: 1px solid #000 !important; margin-bottom: 30px !important; page-break-inside: avoid !important; border-top-width: 1px !important; }
+            .data-table { border: 1px solid #000 !important; margin-bottom: 20px !important; }
+            .data-table th { background-color: #e2e8f0 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border: 1px solid #000 !important; }
+            .data-table td { border: 1px solid #000 !important; }
+            input, select { border: none !important; background: transparent !important; padding: 0 !important; appearance: none; -moz-appearance: none; -webkit-appearance: none; }
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <!-- SCHERMATA LOGIN -->
+    <div id="loginScreen">
+        <div class="login-header-title">
+            <h1>NUOVA VILLA SILVANA</h1>
+            <h2>Residenza Protetta per Anziani</h2>
+        </div>
+        <div class="login-box">
+            <h2 class="dynamic-greeting" style="color:var(--iso-color);">Direzione Aziendale</h2>
+            <p class="login-subtitle">Sistema Qualità ISO 9001 e Risorse Umane</p>
+            <label style="display:block; text-align:center; font-size:0.95em; margin-bottom:15px; font-weight:bold; color:var(--text-main);">Seleziona il tuo Profilo</label>
+            <div id="loginProfilesContainer" class="profiles-grid">
+                <p style="color:var(--text-light); width:100%;">Caricamento profili in corso...</p>
+            </div>
+            <div id="loginPinArea" style="display:none; animation: fadeIn 0.3s ease;">
+                <label id="selectedProfileLabel" style="display:block; text-align:center; font-size:0.9em; margin-bottom:10px; font-weight:bold; color:var(--iso-color);"></label>
+                <div class="login-input-wrapper"><input type="password" id="loginPinInput" class="login-input" placeholder="****"></div>
+                <button class="login-btn-master" onclick="window.performLogin()">Accedi al Sistema ISO</button>
+                <button class="btn-doc" style="margin: 15px auto 0 auto; display:block;" onclick="window.resetLoginSelection()">← Cambia Profilo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVBAR -->
+    <div id="top-nav-container">
+        <div class="navbar">
+            <div class="navbar-brand">🛡️ NVS Masterpiece | Direzione, Qualità ISO & HR</div>
+            <div class="navbar-actions">
+                <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+                <button class="nav-btn" onclick="window.logout()">🚪 Esci</button>
+            </div>
+        </div>
+        <div class="app-menu">
+            <a href="gestionale_sanitario.html" class="menu-tab">🏠 Gestionale Clinico e Anagrafiche</a>
+            <a href="qualita.html" class="menu-tab active">🏆 Area Direzione (ISO 9001)</a>
+        </div>
+    </div>
+
+    <!-- SCHERMATA PRINCIPALE -->
+    <div id="appScreen">
+        <div class="main-content">
+
+            <!-- 1. SEZIONE CUSTOMER SATISFACTION (A Tutto Schermo) -->
+            <div class="card" style="border-top: 4px solid #059669; margin-bottom:20px; width: 100%;">
+                <div class="card-header">
+                    <h3 style="color:#059669;">⭐ Analisi Globale Customer Satisfaction</h3>
+                    <button class="btn-print" onclick="window.print()">🖨️ Stampa Report</button>
+                </div>
+                
+                <div style="display:flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
+                    <!-- Box QR Code e Inserimento -->
+                    <div style="flex: 1; min-width: 300px; background:#f0fdf4; padding:15px; border:1px solid #bbf7d0; border-radius:6px;">
+                        <h4 style="margin-top:0; color:#047857; margin-bottom: 10px;">Acquisizione Dati</h4>
+                        <button class="btn-success" style="width:100%; margin-bottom:15px; font-size: 1.1em; padding: 12px;" onclick="window.mostraQRSondaggio()">📱 Mostra QR Code (Smartphone)</button>
+                        
+                        <!-- Mini form manuale nascosto -->
+                        <details style="font-size: 0.9em; cursor: pointer; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1;">
+                            <summary style="font-weight: bold; color: var(--text-main);">Inserimento Manuale d'Emergenza</summary>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+                                <div><label style="font-size:0.8em;">Medica</label><input type="number" id="mMed" min="1" max="5" value="5"></div>
+                                <div><label style="font-size:0.8em;">Base/OSS</label><input type="number" id="mOss" min="1" max="5" value="5"></div>
+                                <div><label style="font-size:0.8em;">Pasti</label><input type="number" id="mCibo" min="1" max="5" value="5"></div>
+                                <div><label style="font-size:0.8em;">Pulizia</label><input type="number" id="mPul" min="1" max="5" value="5"></div>
+                                <div><label style="font-size:0.8em;">Cortesia</label><input type="number" id="mCort" min="1" max="5" value="5"></div>
+                                <div><label style="font-size:0.8em;">Animaz.</label><input type="number" id="mAnim" min="1" max="5" value="5"></div>
+                            </div>
+                            <button class="btn-success" style="width:100%; margin-top:10px; padding: 6px;" onclick="window.addCustomerSurveyManual()">Salva Voto Manuale</button>
+                        </details>
+                    </div>
+
+                    <!-- Box Medie Globali -->
+                    <div style="flex: 2; min-width: 350px; display: flex; flex-direction: column; justify-content: center;">
+                        <h4 style="margin-top:0; color:#047857; text-align: center;">Medie di Struttura per Reparto (da 1 a 5)</h4>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; text-align: center;" id="csMedieContainer">
+                            <span style="color: var(--text-light);">Caricamento medie in corso...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabella Risultati Schema -->
+                <table class="data-table" id="csTable">
+                    <thead style="background:#059669;">
+                        <tr><th>Data</th><th>Ospite</th><th>Medica</th><th>Base/OSS</th><th>Ristor.</th><th>Pulizia</th><th>Cortesia</th><th>Animaz.</th><th>Media Tot.</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:20px;">
+                <!-- 2. RECLAMI E NON CONFORMITÀ -->
+                <div style="flex:2; min-width:350px;">
+                    <div class="card" style="border-top: 4px solid var(--iso-color); margin-bottom:0; height: 100%;">
+                        <div class="card-header">
+                            <h3 style="color:var(--iso-color);">📋 Non Conformità (NC) & Reclami Clienti</h3>
+                            <button class="btn-print" onclick="window.print()">🖨️ Stampa</button>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; background:#fffbeb; border:1px solid #fde68a; padding:15px; margin-bottom:15px; border-radius:4px;">
+                            <div class="form-group" style="flex:1;"><label>Tipologia</label><select id="ncTipo"><option value="Reclamo Familiare">Reclamo Familiare</option><option value="NC Interna Assistenziale">NC Interna Assistenziale</option><option value="NC Fornitore Pasti/Farmaci">NC Fornitore Pasti/Farmaci</option><option value="Guasto Strutturale">Guasto Strutturale/Presidi</option></select></div>
+                            <div class="form-group" style="flex:1;"><label>Data Rilevazione</label><input type="date" id="ncData"></div>
+                            <div class="form-group" style="flex:2;"><label>Descrizione Problema</label><input type="text" id="ncDesc" placeholder="Descrizione dettagliata dell'anomalia..."></div>
+                            <div class="form-group" style="flex:2;"><label>Azione Correttiva Prevista (AC)</label><input type="text" id="ncAzione" placeholder="Cosa viene fatto per risolvere..."></div>
+                            <div style="display:flex; align-items:flex-end;"><button class="btn-iso" onclick="window.addNC()">Registra NC</button></div>
+                        </div>
+                        <table class="data-table" id="ncTable">
+                            <thead style="background:var(--iso-color);"><tr><th>Data</th><th>Tipo</th><th>Descrizione</th><th>Azione Correttiva</th><th>Stato</th><th>Azioni</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 3. MANUTENZIONI -->
+                <div style="flex:1; min-width:300px;">
+                    <div class="card" style="border-top: 4px solid #475569; margin-bottom:0; height: 100%;">
+                        <div class="card-header">
+                            <h3 style="color:#475569;">🛠️ Taratura & Manutenzione</h3>
+                            <button class="btn-print" onclick="window.print()">🖨️ Stampa</button>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <div class="form-group"><label>Presidio / Impianto</label><input type="text" id="manNome" placeholder="Es. Sollevatore / Caldaia"></div>
+                            <div class="form-group"><label>Prossima Scadenza</label><input type="date" id="manScadenza"></div>
+                            <button class="btn-doc" onclick="window.addManutenzione()">Salva nel Registro</button>
+                        </div>
+                        <ul id="manutenzioniList" style="list-style:none; padding:0; margin-top:15px; font-size:0.85em;"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                <!-- 4. RISORSE UMANE E CLIMA -->
+                <div style="flex:1; min-width:350px;">
+                    <div class="card" style="border-top: 4px solid var(--hr-color); margin-bottom:20px;">
+                        <div class="card-header">
+                            <h3 style="color:var(--hr-color);">👥 Formazione Personale</h3>
+                            <button class="btn-print" onclick="window.print()">🖨️ Stampa</button>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <div class="form-group" style="flex:1;"><label>Operatore</label><input type="text" id="hrNome"></div>
+                            <div class="form-group" style="flex:1;"><label>Tipo Formazione</label><select id="hrTipo"><option value="Neoassunto">Neoassunto</option><option value="ECM">Corso ECM</option><option value="Sicurezza">Sicurezza 81/08</option></select></div>
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:flex-end;">
+                            <div class="form-group" style="flex:1;"><label>Data</label><input type="date" id="hrData"></div>
+                            <div class="form-group" style="flex:1;"><label>Efficacia (1-5)</label><input type="number" id="hrVoto" min="1" max="5"></div>
+                            <button class="btn-hr" onclick="window.addFormazione()">Registra</button>
+                        </div>
+                        <table class="data-table" id="formazioneTable">
+                            <thead style="background:var(--hr-color);"><tr><th>Data</th><th>Op.</th><th>Tipo</th><th>Voto</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <div class="card" style="border-top: 4px solid var(--hr-color); margin-bottom:0;">
+                        <div class="card-header">
+                            <h3 style="color:var(--hr-color);">🗣️ Clima & Segnalazioni Interne</h3>
+                            <button class="btn-print" onclick="window.print()">🖨️ Stampa</button>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <div class="form-group" style="flex:1;"><label>Data</label><input type="date" id="climaData"></div>
+                            <div class="form-group" style="flex:1;"><label>Area</label><select id="climaArea"><option value="Carichi lavoro">Carichi lavoro</option><option value="Comunicazione">Comunicazione</option><option value="Strumenti">Strumenti</option><option value="Proposta">Proposta</option></select></div>
+                        </div>
+                        <div class="form-group"><label>Dettaglio / Problema</label><input type="text" id="climaDesc"></div>
+                        <button class="btn-hr" style="width:100%;" onclick="window.addClima()">Registra Feedback</button>
+                        <table class="data-table" id="climaTable">
+                            <thead style="background:var(--hr-color);"><tr><th>Data</th><th>Area</th><th>Desc.</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 5. FORNITORI E FMEA -->
+                <div style="flex:1; min-width:350px;">
+                    <div class="card" style="border-top: 4px solid var(--iso-color); margin-bottom:20px;">
+                        <div class="card-header">
+                            <h3 style="color:var(--iso-color);">🚚 Albo Fornitori Qualificati</h3>
+                            <button class="btn-print" onclick="window.print()">🖨️ Stampa</button>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <div class="form-group" style="flex:2;"><label>Ragione Sociale</label><input type="text" id="fornNome"></div>
+                            <div class="form-group" style="flex:1;"><label>Servizio/Prodotto</label><input type="text" id="fornCategoria"></div>
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:flex-end;">
+                            <div class="form-group" style="flex:1;"><label>Valutazione (Esito)</label><select id="fornStato"><option value="Qualificato">🟢 Qualificato</option><option value="Sotto Osservazione">🟡 Sotto Osservazione</option><option value="Non Conforme">🔴 Non Conforme</option></select></div>
+                            <button class="btn-iso" onclick="window.addFornitore()">Aggiorna Albo</button>
+                        </div>
+                        <table class="data-table" id="fornitoriTable">
+                            <thead style="background:var(--iso-color);"><tr><th>Fornitore</th><th>Cat.</th><th>Stato Qualifica</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <div class="card" style="border-top: 4px solid var(--iso-color); margin-bottom:0;">
+                        <div class="card-header">
+                            <h3 style="color:var(--iso-color);">⚠️ Valutazione Rischi (FMEA)</h3>
+                            <button class="btn-print" onclick="window.print()">🖨️ Stampa</button>
+                        </div>
+                        <p style="font-size:0.85em; color:var(--text-light); margin-top:-10px;">Requisito Accreditamento: Almeno 1 FMEA per anno.</p>
+                        <div class="form-group"><label>Processo Clinico/Assistenziale</label><input type="text" id="fmeaProcesso" placeholder="Es. Gestione prelievi ematici"></div>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <div class="form-group" style="flex:1;"><label>P (1-10)</label><input type="number" id="fmeaP" oninput="window.calcolaIPR()"></div>
+                            <div class="form-group" style="flex:1;"><label>G (1-10)</label><input type="number" id="fmeaG" oninput="window.calcolaIPR()"></div>
+                            <div class="form-group" style="flex:1;"><label>R (1-10)</label><input type="number" id="fmeaR" oninput="window.calcolaIPR()"></div>
+                            <div style="flex:1; text-align:center;"><strong>IPR:</strong><br><span id="fmeaIPR" style="font-size:1.2em; color:var(--iso-color); font-weight:bold;">0</span></div>
+                        </div>
+                        <button class="btn-iso" style="width:100%; margin-top:10px;" onclick="window.addFMEA()">Registra Analisi IPR</button>
+                        <table class="data-table" id="fmeaTable">
+                            <thead style="background:var(--iso-color);"><tr><th>Processo</th><th>P</th><th>G</th><th>R</th><th>IPR</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODALE QR CODE -->
+    <div id="qrModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:3000; justify-content:center; align-items:center;">
+        <div style="background:#fff; padding:30px; border-radius:8px; text-align:center; max-width:90%; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+            <h3 style="color:var(--success-color); margin-top:0;">Lascia la tua opinione</h3>
+            <p style="font-size:0.9em; color:var(--text-light);">Fai inquadrare questo codice al familiare con la fotocamera dello smartphone.</p>
+            <img id="qrImage" src="" alt="QR Code Sondaggio" style="margin:20px 0; width:200px; height:200px; border: 1px solid var(--border-color); padding: 10px; border-radius: 8px;">
+            <br>
+            <button class="btn-iso" onclick="document.getElementById('qrModal').style.display='none'">Chiudi Finestra</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT FIREBASE E LOGICHE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // CREDENZIALI FIREBASE
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const appCheck = initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), isTokenAutoRefreshEnabled: true });
+        const db = getFirestore(app);
+
+        // UTILITY
+        window.formatDateSafe = (d) => { if (!d) return '-'; if (d.includes('-')) return d.split('-').reverse().join('/'); return d; };
+        window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
+        window.getTodayString = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
+        
+        window.dbOperatori = [];
+
+        // --- SISTEMA DI LOGIN E SESSIONE ---
+        function avviaSessione(nome, ruolo, qualifica) {
+            window.activeOperator = nome;
+            document.getElementById('currentOpBadge').innerText = `👤 ${nome}`; 
+            document.getElementById('loginScreen').style.display = 'none'; 
+            document.getElementById('appScreen').style.display = 'flex'; 
+        }
+
+        window.performLogin = () => { 
+            const p = document.getElementById('loginPinInput').value; 
+            const op = window.dbOperatori.find(o => o.name === window.selectedLoginOperator); 
+            
+            if((op && op.pin === p) || (window.selectedLoginOperator === 'Admin' && p === '12345')) { 
+                let realOp = op || {name: "Admin", role: "admin", qualifica: "Direttore Sanitario"};
+                sessionStorage.setItem("activeOperator", realOp.name);
+                sessionStorage.setItem("activeRole", realOp.role);
+                sessionStorage.setItem("activeQualifica", realOp.qualifica);
+                avviaSessione(realOp.name, realOp.role, realOp.qualifica);
+            } else { 
+                window.showToast("❌ PIN Errato"); document.getElementById('loginPinInput').value = ''; 
+            } 
+        };
+
+        window.logout = () => {
+            sessionStorage.clear(); 
+            window.location.href = "gestionale nvs definitivo.html"; 
+        };
+
+        window.loadOperators = () => { 
+            const lc = document.getElementById('loginProfilesContainer'); 
+            let vOps = window.dbOperatori.filter(o => o && o.name && o.name.trim() !== ""); 
+            if(vOps.length === 0) vOps = [{id:"admin-fallback", name:"Admin", pin:"12345", role:"admin", qualifica:"Direttore Sanitario"}]; 
+            vOps.sort((a,b) => a.name.localeCompare(b.name)); 
+            if(lc) { 
+                lc.innerHTML = ''; 
+                vOps.forEach(op => { 
+                    let i = op.name[0] ? op.name[0].toUpperCase() : '👤'; 
+                    let b = document.createElement('div'); b.className = 'profile-btn'; 
+                    b.innerHTML = `<div class="profile-avatar">${i}</div><span class="profile-name">${op.name.split(' ')[0]}</span>`; 
+                    b.onclick = () => window.selectLoginProfile(op.name); 
+                    lc.appendChild(b); 
+                }); 
+            } 
+        };
+
+        window.selectLoginProfile = (n) => { 
+            window.selectedLoginOperator = n; 
+            document.getElementById('loginProfilesContainer').style.display = 'none'; 
+            document.getElementById('loginPinArea').style.display = 'block'; 
+            document.getElementById('selectedProfileLabel').innerText = "🔑 Ciao " + n.split(' ')[0] + ", PIN:"; 
+            setTimeout(() => document.getElementById('loginPinInput').focus(), 100); 
+        };
+
+        window.resetLoginSelection = () => { window.selectedLoginOperator = ""; document.getElementById('loginPinArea').style.display = 'none'; document.getElementById('loginProfilesContainer').style.display = 'flex'; document.getElementById('loginPinInput').value = ''; };
+
+        // --- FUNZIONI CUSTOMER SATISFACTION (NUOVO SCHEMA) ---
+        window.mostraQRSondaggio = () => {
+            const urlSondaggio = "https://sondaggio-nvs.netlify.app"; 
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(urlSondaggio)}`;
+            document.getElementById('qrImage').src = qrUrl;
+            document.getElementById('qrModal').style.display = 'flex';
+        };
+
+        window.addCustomerSurveyManual = async () => {
+            const vMed = parseFloat(document.getElementById('mMed').value) || 5;
+            const vOss = parseFloat(document.getElementById('mOss').value) || 5;
+            const vCibo = parseFloat(document.getElementById('mCibo').value) || 5;
+            const vPul = parseFloat(document.getElementById('mPul').value) || 5;
+            const vCort = parseFloat(document.getElementById('mCort').value) || 5;
+            const vAnim = parseFloat(document.getElementById('mAnim').value) || 5;
+            const media = ((vMed + vOss + vCibo + vPul + vCort + vAnim) / 6).toFixed(1);
+            
+            await addDoc(collection(db, "customer_satisfaction"), { 
+                ospite: "Manuale Struttura", assistenza_medica: vMed, assistenza_base: vOss, 
+                ristorazione: vCibo, pulizia: vPul, cortesia: vCort, animazione: vAnim,
+                media: parseFloat(media), date: window.getTodayString() 
+            });
+            window.showToast("⭐ Salvataggio manuale completato!");
+        };
+
+        // --- SALVATAGGIO ALTRI DATI ISO E HR ---
+        window.calcolaIPR = () => {
+            let p = parseInt(document.getElementById('fmeaP').value) || 0;
+            let g = parseInt(document.getElementById('fmeaG').value) || 0;
+            let r = parseInt(document.getElementById('fmeaR').value) || 0;
+            document.getElementById('fmeaIPR').innerText = p * g * r;
+        };
+
+        window.addNC = async () => {
+            const t = document.getElementById('ncTipo').value;
+            const d = document.getElementById('ncData').value;
+            const desc = document.getElementById('ncDesc').value.trim();
+            const ac = document.getElementById('ncAzione').value.trim();
+            if(!d || !desc) return window.showToast("⚠️ Data e descrizione obbligatorie");
+            await addDoc(collection(db, "qualita_nc"), { tipo: t, data: d, desc: desc, ac: ac, stato: "APERTA", op: window.activeOperator });
+            document.getElementById('ncDesc').value = ''; document.getElementById('ncAzione').value = '';
+            window.showToast("📋 Non Conformità registrata");
+        };
+
+        window.chiudiNC = async (id) => {
+            await updateDoc(doc(db, "qualita_nc", id), { stato: "CHIUSA", dataChiusura: window.getTimestamp() });
+            window.showToast("✅ NC Chiusa");
+        };
+
+        window.addManutenzione = async () => {
+            const n = document.getElementById('manNome').value.trim();
+            const s = document.getElementById('manScadenza').value;
+            if(!n || !s) return window.showToast("⚠️ Compila nome e scadenza");
+            await addDoc(collection(db, "manutenzioni"), { nome: n, scadenza: s });
+            document.getElementById('manNome').value = '';
+            window.showToast("🛠️ Presidio Registrato");
+        };
+
+        window.addFormazione = async () => {
+            const n = document.getElementById('hrNome').value.trim();
+            const t = document.getElementById('hrTipo').value;
+            const d = document.getElementById('hrData').value;
+            const v = document.getElementById('hrVoto').value;
+            if(!n || !d) return window.showToast("⚠️ Inserisci nome e data.");
+            await addDoc(collection(db, "iso_formazione"), { nome: n, tipo: t, data: d, voto: v });
+            document.getElementById('hrNome').value = ''; document.getElementById('hrVoto').value = '';
+            window.showToast("✅ Formazione registrata");
+        };
+
+        window.addClima = async () => {
+            const d = document.getElementById('climaData').value;
+            const a = document.getElementById('climaArea').value;
+            const desc = document.getElementById('climaDesc').value.trim();
+            if(!d || !desc) return window.showToast("⚠️ Inserisci descrizione.");
+            await addDoc(collection(db, "iso_clima"), { data: d, area: a, desc: desc });
+            document.getElementById('climaDesc').value = '';
+            window.showToast("✅ Segnalazione clima inviata");
+        };
+
+        window.addFornitore = async () => {
+            const n = document.getElementById('fornNome').value.trim();
+            const c = document.getElementById('fornCategoria').value.trim();
+            const s = document.getElementById('fornStato').value;
+            if(!n) return window.showToast("⚠️ Inserisci il fornitore.");
+            await addDoc(collection(db, "iso_fornitori"), { nome: n, categoria: c, stato: s });
+            document.getElementById('fornNome').value = ''; document.getElementById('fornCategoria').value = '';
+            window.showToast("✅ Albo aggiornato");
+        };
+
+        window.addFMEA = async () => {
+            const proc = document.getElementById('fmeaProcesso').value.trim();
+            const p = parseInt(document.getElementById('fmeaP').value) || 0;
+            const g = parseInt(document.getElementById('fmeaG').value) || 0;
+            const r = parseInt(document.getElementById('fmeaR').value) || 0;
+            const ipr = p * g * r;
+            if(!proc || ipr === 0) return window.showToast("⚠️ Completa FMEA");
+            await addDoc(collection(db, "iso_fmea"), { processo: proc, p: p, g: g, r: r, ipr: ipr });
+            document.getElementById('fmeaProcesso').value = '';
+            window.showToast("⚠️ Valutazione IPR salvata");
+        };
+
+        // --- CARICAMENTO DATI (SNAPSHOTS) ---
+        onSnapshot(collection(db, "operatori"), snap => { 
+            window.dbOperatori = snap.docs.map(d=>({id:d.id, ...d.data()})); 
+            window.loadOperators(); 
+        });
+
+        onSnapshot(collection(db, "qualita_nc"), snap => { 
+            const tb = document.querySelector('#ncTable tbody'); tb.innerHTML = '';
+            snap.forEach(d => {
+                let n = {id:d.id, ...d.data()};
+                let st = n.stato === 'APERTA' ? '<span style="color:var(--warning-color);font-weight:bold;">APERTA</span>' : '<span style="color:var(--success-color);">CHIUSA</span>';
+                let btn = n.stato === 'APERTA' ? `<button class="btn-success" style="padding:4px 8px; font-size:0.8em;" onclick="window.chiudiNC('${n.id}')">Chiudi</button>` : `<small>Risolto</small>`;
+                tb.innerHTML += `<tr><td>${window.formatDateSafe(n.data)}</td><td>${n.tipo}</td><td>${n.desc}</td><td>${n.ac||'-'}</td><td>${st}</td><td>${btn}</td></tr>`;
+            });
+        });
+
+        // CALCOLO DELLO SCHEMA CUSTOMER SATISFACTION
+        onSnapshot(collection(db, "customer_satisfaction"), snap => { 
+            let dbSurveys = snap.docs.map(d=>d.data());
+            const tb = document.querySelector('#csTable tbody'); tb.innerHTML = '';
+            const mCont = document.getElementById('csMedieContainer');
+            
+            if(dbSurveys.length > 0) {
+                let tM=0, tO=0, tC=0, tP=0, tCo=0, tA=0, tG=0;
+                
+                // Creazione tabella dettagliata
+                dbSurveys.forEach(s => {
+                    tM += (s.assistenza_medica || 0); tO += (s.assistenza_base || 0);
+                    tC += (s.ristorazione || 0); tP += (s.pulizia || 0);
+                    tCo += (s.cortesia || 0); tA += (s.animazione || 0);
+                    tG += (s.media || 0);
+                    
+                    tb.innerHTML += `<tr>
+                        <td>${window.formatDateSafe(s.date)}</td>
+                        <td>${s.ospite || 'Anonimo'}</td>
+                        <td style="text-align:center;">${s.assistenza_medica || '-'}</td>
+                        <td style="text-align:center;">${s.assistenza_base || '-'}</td>
+                        <td style="text-align:center;">${s.ristorazione || '-'}</td>
+                        <td style="text-align:center;">${s.pulizia || '-'}</td>
+                        <td style="text-align:center;">${s.cortesia || '-'}</td>
+                        <td style="text-align:center;">${s.animazione || '-'}</td>
+                        <td style="text-align:center; color:var(--primary-color);"><strong>${s.media || '-'}</strong></td>
+                    </tr>`;
+                });
+                
+                // Creazione Badge Medie Globali
+                let len = dbSurveys.length;
+                const bStyle = "padding:10px 15px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; font-size:0.85em; flex:1;";
+                mCont.innerHTML = `
+                    <div style="${bStyle}"><strong>Medica</strong><br><span style="font-size:1.4em;">${(tM/len).toFixed(1)}</span></div>
+                    <div style="${bStyle}"><strong>OSS</strong><br><span style="font-size:1.4em;">${(tO/len).toFixed(1)}</span></div>
+                    <div style="${bStyle}"><strong>Pasti</strong><br><span style="font-size:1.4em;">${(tC/len).toFixed(1)}</span></div>
+                    <div style="${bStyle}"><strong>Pulizia</strong><br><span style="font-size:1.4em;">${(tP/len).toFixed(1)}</span></div>
+                    <div style="${bStyle}"><strong>Cortesia</strong><br><span style="font-size:1.4em;">${(tCo/len).toFixed(1)}</span></div>
+                    <div style="${bStyle}"><strong>Animaz.</strong><br><span style="font-size:1.4em;">${(tA/len).toFixed(1)}</span></div>
+                    <div style="${bStyle} background:#ecfdf5; color:#059669; border-color:#059669;"><strong>GLOBALE</strong><br><span style="font-size:1.6em; font-weight:bold;">${(tG/len).toFixed(1)}</span></div>
+                `;
+            } else {
+                tb.innerHTML = '<tr><td colspan="9" style="text-align:center;">Nessun sondaggio registrato</td></tr>';
+                mCont.innerHTML = '<span style="color:var(--text-light);">Dati non sufficienti per calcolare la media.</span>';
+            }
+        });
+
+        onSnapshot(collection(db, "manutenzioni"), snap => { 
+            const l = document.getElementById('manutenzioniList'); l.innerHTML = '';
+            snap.forEach(d => {
+                let m = d.data();
+                l.innerHTML += `<li style="padding:6px; background:#fff; border:1px solid #cbd5e1; margin-bottom:4px; border-radius:3px;"><strong>${m.nome}</strong> - Entro il: <span style="color:var(--error-color);font-weight:bold;">${window.formatDateSafe(m.scadenza)}</span></li>`;
+            });
+        });
+
+        onSnapshot(collection(db, "iso_formazione"), snap => {
+            const tb = document.querySelector('#formazioneTable tbody'); tb.innerHTML = '';
+            snap.forEach(d => { let r = d.data(); tb.innerHTML += `<tr><td>${window.formatDateSafe(r.data)}</td><td><strong>${r.nome}</strong></td><td>${r.tipo}</td><td>${r.voto}/5</td></tr>`; });
+        });
+
+        onSnapshot(collection(db, "iso_clima"), snap => {
+            const tb = document.querySelector('#climaTable tbody'); tb.innerHTML = '';
+            snap.forEach(d => { let r = d.data(); tb.innerHTML += `<tr><td>${window.formatDateSafe(r.data)}</td><td>${r.area}</td><td>${r.desc}</td></tr>`; });
+        });
+
+        onSnapshot(collection(db, "iso_fornitori"), snap => {
+            const tb = document.querySelector('#fornitoriTable tbody'); tb.innerHTML = '';
+            let sorted = snap.docs.map(d=>d.data()).sort((a,b)=>a.nome.localeCompare(b.nome));
+            sorted.forEach(r => { 
+                let color = r.stato.includes('Qualificato') ? 'var(--success-color)' : (r.stato.includes('Non Conforme') ? 'var(--error-color)' : 'var(--warning-color)');
+                tb.innerHTML += `<tr><td><strong>${r.nome}</strong></td><td>${r.categoria||'-'}</td><td><span style="color:${color}; font-weight:bold;">${r.stato}</span></td></tr>`; 
+            });
+        });
+
+        onSnapshot(collection(db, "iso_fmea"), snap => {
+            const tb = document.querySelector('#fmeaTable tbody'); tb.innerHTML = '';
+            snap.forEach(d => { 
+                let r = d.data(); 
+                let iprColor = r.ipr >= 100 ? 'var(--error-color)' : (r.ipr >= 50 ? 'var(--warning-color)' : 'var(--success-color)');
+                tb.innerHTML += `<tr><td>${r.processo}</td><td>${r.p}</td><td>${r.g}</td><td>${r.r}</td><td><strong style="color:${iprColor}">${r.ipr}</strong></td></tr>`; 
+            });
+        });
+
+        // --- INIZIALIZZAZIONE E CONTROLLO SESSIONE ---
+        window.onload = () => {
+            let pi = document.getElementById('loginPinInput'); 
+            if(pi) pi.addEventListener('keypress', (e) => { if(e.key === 'Enter') window.performLogin(); });
+            
+            let todayStr = window.getTodayString();
+            ['ncData','hrData','climaData'].forEach(id=>{
+                if(document.getElementById(id)) document.getElementById(id).value = todayStr;
+            });
+
+            let savedOp = sessionStorage.getItem("activeOperator");
+            if(savedOp) {
+                avviaSessione(savedOp, sessionStorage.getItem("activeRole"), sessionStorage.getItem("activeQualifica"));
+            } else {
+                window.loadOperators();
+            }
+        };
+    </script>
+</body>
+</html>
