@@ -63,7 +63,7 @@
         .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); }
         .navbar-brand { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1em; }
         .navbar-actions { display: flex; gap: 10px; align-items: center; }
-        .nav-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: var(--radius); cursor: pointer; transition: 0.2s; }
+        .nav-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: var(--radius); cursor: pointer; transition: 0.2s; text-decoration:none; display:flex; align-items:center; }
         .nav-btn:hover { background: rgba(255,255,255,0.2); }
         .current-op-badge { background: #ffffff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
         
@@ -234,6 +234,8 @@
         <div class="navbar">
             <div class="navbar-brand"><img src="1000300139_2.jpg" class="navbar-logo" style="max-height:30px;" onerror="this.style.display='none'"><span>NVS Masterpiece [Clinica]</span></div>
             <div class="navbar-actions">
+                <a href="iso_9001_accreditamento.html" target="_blank" class="nav-btn" style="text-decoration:none; color:#fde047; font-weight:bold;">🏆 Area Direzione (ISO)</a>
+                <a href="haccp_sicurezza_dash.html" target="_blank" class="nav-btn" style="text-decoration:none; color:#a7f3d0; font-weight:bold;">🛡️ HACCP e Sicurezza</a>
                 <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
                 <button class="nav-btn" onclick="window.printMasterFascicolo()">🖨️ Stampa Fascicolo PDF</button>
                 <button class="nav-btn" onclick="window.logout()">🚪 Esci</button>
@@ -246,11 +248,6 @@
             <button class="menu-tab" onclick="window.switchTab('contenzioni', this)" style="color:var(--error-color);">🔒 Registro Contenzioni</button>
             <button class="menu-tab" style="color:var(--terapia-color);" onclick="window.switchTab('terapia', this)">💊 Terapia & Stupefacenti</button>
             <button class="menu-tab" onclick="window.switchTab('rischio', this)">⚠️ Rischio Clinico</button>
-            
-            <!-- COLLEGAMENTI AI MODULI ESTERNI -->
-            <a href="iso_9001_accreditamento.html" target="_blank" class="menu-tab" style="color:var(--iso-color); font-weight:bold; text-decoration:none;">🏆 Area Direzione (ISO)</a>
-            <a href="haccp_sicurezza_dash.html" target="_blank" class="menu-tab" style="color:var(--success-color); font-weight:bold; text-decoration:none;">🛡️ HACCP e Sicurezza</a>
-            
             <button class="menu-tab" onclick="window.switchTab('appuntamenti', this)">📅 CUP</button>
             <button class="menu-tab" onclick="window.switchTab('consegne', this)">📖 Consegne</button>
             <button class="menu-tab restrict-oss" onclick="window.switchTab('lettere', this)">📄 Lettere & Dimissioni</button>
@@ -285,19 +282,19 @@
                 </div>
                 
                 <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom: 20px;">
-                    <div class="card" style="flex: 1; max-width: 350px; margin-bottom:0;">
-                        <div class="card-header"><h3>Statistiche Ospiti</h3></div>
-                        <div class="chart-container" style="height: 180px;"><canvas id="guestChart"></canvas></div>
-                    </div>
-                    <div class="card" style="flex: 2; min-width: 300px; margin-bottom:0; border-top: 4px solid var(--error-color);">
-                        <div class="card-header"><h3 style="color:var(--error-color);">📦 Alert Scorte Magazzini</h3></div>
-                        <div id="dashInvAlertsList" style="max-height: 180px; overflow-y: auto; padding-right: 5px;"></div>
-                    </div>
+                    <div class="card" style="flex:2; min-width:300px; margin-bottom:0; border-top:4px solid var(--warning-color);"><div class="card-header"><h3 style="color:var(--warning-color);">Scadenziario Legale e Alert Clinici</h3></div><div id="dashboardAlertsList"></div></div>
+                    <div class="card" style="flex:1; min-width:300px; margin-bottom:0;"><div class="card-header"><h3>Agenda CUP</h3></div><div id="dashMiniCalendar"></div></div>
                 </div>
 
                 <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                    <div class="card" style="flex:2; min-width:300px; border-top:4px solid var(--warning-color);"><div class="card-header"><h3 style="color:var(--warning-color);">Scadenziario Legale e Alert Clinici</h3></div><div id="dashboardAlertsList"></div></div>
-                    <div class="card" style="flex:1; min-width:300px;"><div class="card-header"><h3>Agenda CUP</h3></div><div id="dashMiniCalendar"></div></div>
+                    <div class="card" style="flex: 1; min-width: 300px;">
+                        <div class="card-header"><h3>Statistiche Ospiti</h3></div>
+                        <div class="chart-container" style="height: 180px;"><canvas id="guestChart"></canvas></div>
+                    </div>
+                    <div class="card" style="flex: 1; min-width: 300px; border-top: 4px solid var(--error-color);">
+                        <div class="card-header"><h3 style="color:var(--error-color);">📦 Alert Scorte Magazzini</h3></div>
+                        <div id="dashInvAlertsList" style="max-height: 180px; overflow-y: auto; padding-right: 5px;"></div>
+                    </div>
                 </div>
 
                 <div id="adminPanel" style="display: none;">
@@ -350,6 +347,7 @@
                         <label style="color: #854d0e; font-weight: bold; margin-bottom: 8px; display:block;">Autocompilazione da Tessera Sanitaria (Nuovi Ingressi)</label>
                         <div style="display:flex; gap:10px;">
                             <input type="text" id="tsBarcodeScanner" placeholder="Spara Barcode TEAM..." onkeypress="window.handleTSBarcode(event)" style="border-color:#fde047; background:#fff; flex:1;">
+                            <button type="button" class="btn-success" onclick="window.leggiSmartCardTS()" style="white-space: nowrap; padding: 10px 15px;">💳 Leggi Smart Card</button>
                         </div>
                     </div>
 
@@ -548,7 +546,43 @@
                         </div>
                     </div>
 
-                    <div class="card"><div class="card-header"><h3>P.A.I. Multidisciplinare</h3><button class="btn-primary restrict-oss" onclick="window.archiviaNuovoPAI()">➕ Nuovo PAI (Archivia)</button></div><div id="paiStatusBanner"></div><div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;"><div class="form-group" style="flex:1;"><label>Data Stesura</label><input type="date" id="paiDataStesura" class="restrict-oss-input" onchange="window.calcProssimaRevisione()"></div><div class="form-group" style="flex:1;"><label>Scadenza</label><input type="date" id="paiDataRevisione" class="restrict-oss-input" onchange="window.aggiornaBannerPAI()"></div></div><div class="form-group"><label>Medica</label><textarea id="paiMedico" class="restrict-oss-input" rows="2"></textarea></div><div class="form-group"><label>Infermieristica</label><textarea id="paiInfermieristico" class="restrict-oss-input" rows="2"></textarea></div><div class="form-group"><label>Assistenziale (OSS)</label><textarea id="paiAssistenziale" class="restrict-oss-input" rows="2"></textarea></div><div class="form-group restrict-oss"><label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" id="paiCondiviso" class="restrict-oss-input"><span>🤝 P.A.I. condiviso con Ospite/Familiare.</span></label></div><div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:4px; margin-bottom:15px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;"><div><strong>Firma Elettronica Avanzata MMG</strong><br><span id="paiFirmaMMGStatus" style="font-size:0.85em; color:var(--text-light);">Non validato</span><input type="hidden" id="paiFirmaMMGDate"></div><button class="btn-primary restrict-oss" style="background:#059669;" onclick="window.firmaPAIMMG()">Richiedi OTP e Firma</button></div><div class="restrict-oss" style="display:flex; gap:10px; margin-top:10px;"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva PAI</button></div><div id="paiStoricoList" style="margin-top:20px; border-top:2px solid var(--border-color); padding-top:15px;"></div></div>
+                    <div class="card">
+                        <div class="card-header"><h3>P.A.I. Multidisciplinare</h3><button class="btn-primary restrict-oss" onclick="window.archiviaNuovoPAI()">➕ Nuovo PAI (Archivia)</button></div>
+                        <div id="paiStatusBanner"></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;"><div class="form-group" style="flex:1;"><label>Data Stesura</label><input type="date" id="paiDataStesura" class="restrict-oss-input" onchange="window.calcProssimaRevisione()"></div><div class="form-group" style="flex:1;"><label>Scadenza</label><input type="date" id="paiDataRevisione" class="restrict-oss-input" onchange="window.aggiornaBannerPAI()"></div></div>
+                        <div class="form-group"><label>Medica</label><textarea id="paiMedico" class="restrict-oss-input" rows="2"></textarea></div>
+                        <div class="form-group"><label>Infermieristica</label><textarea id="paiInfermieristico" class="restrict-oss-input" rows="2"></textarea></div>
+                        <div class="form-group"><label>Assistenziale (OSS)</label><textarea id="paiAssistenziale" class="restrict-oss-input" rows="2"></textarea></div>
+                        <div class="form-group restrict-oss"><label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" id="paiCondiviso" class="restrict-oss-input"><span>🤝 P.A.I. condiviso con Ospite/Familiare.</span></label></div>
+                        
+                        <div style="background:#f8fafc; border:1px solid var(--border-color); padding:15px; border-radius:4px; margin-bottom:15px;">
+                            <h4 style="margin:0 0 10px 0; color:var(--primary-color);">Firme P.A.I. Multidisciplinare</h4>
+                            <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                                <div style="flex:1; min-width:180px; background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:4px; text-align:center;">
+                                    <strong style="color:#166534;">Medico / Dir. Sanitario</strong><br>
+                                    <span id="paiFirmaMedStatus" style="font-size:0.85em; color:var(--text-light); display:block; margin:5px 0;">Non validato</span>
+                                    <input type="hidden" id="paiFirmaMedDate">
+                                    <button class="btn-primary" style="margin-top:5px; width:100%; font-size:0.85em; background:#15803d;" onclick="window.firmaPAI('Medico')">Firma Medico</button>
+                                </div>
+                                <div style="flex:1; min-width:180px; background:#f0f9ff; border:1px solid #bae6fd; padding:10px; border-radius:4px; text-align:center;">
+                                    <strong style="color:#0369a1;">Infermiere</strong><br>
+                                    <span id="paiFirmaInfStatus" style="font-size:0.85em; color:var(--text-light); display:block; margin:5px 0;">Non validato</span>
+                                    <input type="hidden" id="paiFirmaInfDate">
+                                    <button class="btn-primary" style="margin-top:5px; width:100%; font-size:0.85em; background:#0284c7;" onclick="window.firmaPAI('Infermiere')">Firma Infermiere</button>
+                                </div>
+                                <div style="flex:1; min-width:180px; background:#fffbeb; border:1px solid #fde68a; padding:10px; border-radius:4px; text-align:center;">
+                                    <strong style="color:#b45309;">O.S.S.</strong><br>
+                                    <span id="paiFirmaOssStatus" style="font-size:0.85em; color:var(--text-light); display:block; margin:5px 0;">Non validato</span>
+                                    <input type="hidden" id="paiFirmaOssDate">
+                                    <button class="btn-primary" style="margin-top:5px; width:100%; font-size:0.85em; background:#d97706;" onclick="window.firmaPAI('OSS')">Firma OSS</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="restrict-oss" style="display:flex; gap:10px; margin-top:10px;"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva Testi PAI</button></div>
+                        <div id="paiStoricoList" style="margin-top:20px; border-top:2px solid var(--border-color); padding-top:15px;"></div>
+                    </div>
+                    
                     <div class="card"><div class="card-header"><h3>V.M.D. Scale</h3></div><div style="display:flex; gap:15px; flex-wrap:wrap; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color);"><div class="form-group"><label>ADL</label><input type="number" id="vmdADL" class="restrict-oss-input"></div><div class="form-group"><label>IADL</label><input type="number" id="vmdIADL" class="restrict-oss-input"></div><div class="form-group"><label>MMSE</label><input type="number" id="vmdMMSE" class="restrict-oss-input" step="0.1"></div><div class="form-group"><label>Braden</label><input type="number" id="vmdBraden" class="restrict-oss-input"></div><div class="form-group"><label>Morse</label><input type="number" id="vmdMorse" class="restrict-oss-input"></div></div><div class="restrict-oss" style="display:flex; gap:10px; margin-top:10px;"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva Scale</button></div></div>
                     <div class="card"><div class="card-header"><h3>📎 Documenti PDF e Immagini</h3></div><div class="form-group restrict-oss"><input type="file" id="newDocUpload" accept="image/*,application/pdf" onchange="window.handlePatientDocUpload(event)" style="padding:10px; border:2px dashed var(--primary-color); background:#f0f9ff;"></div><div id="patientDocsList" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:15px;"></div></div>
                     <div class="card"><div class="card-header"><h3>Parametri Vitali</h3></div><div class="restrict-oss" style="display:flex; gap:10px; flex-wrap:wrap;"><div class="form-group"><label>PA</label><input type="text" id="vitPA"></div><div class="form-group"><label>FC</label><input type="number" id="vitFC"></div><div class="form-group"><label>SpO2</label><input type="number" id="vitSPO2"></div><div class="form-group"><label>TC</label><input type="number" step="0.1" id="vitTC"></div><button class="btn-primary" style="align-self:flex-end;" onclick="window.addVitals()">Registra</button></div><table class="data-table" id="vitalsTable" style="margin-top:15px;"><thead><tr><th>Data/Ora</th><th>Op</th><th>PA</th><th>FC</th><th>SpO2</th><th>TC</th><th class="restrict-oss">Del</th></tr></thead><tbody></tbody></table></div>
@@ -572,7 +606,7 @@
                 <div class="card">
                     <div class="card-header"><h3>Registro Contenzioni in Essere e Storico</h3></div>
                     <table class="data-table" id="contenzioniTable">
-                        <thead><tr><th>Ospite</th><th>Tipo Presidio</th><th>Inizio</th><th>Motivo Clinico</th><th>Stato</th><th>Monitoraggio / Revoca</th></tr></thead>
+                        <thead><tr><th>Ospite</th><th>Tipo Presidio</th><th>Inizio</th><th>Motivo Clinico</th><th>Firme (Dir. San. / Inf.)</th><th>Stato / Revoca</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -672,7 +706,17 @@
                     
                     <div class="card">
                         <div class="card-header"><h3>Lettera di Dimissione (Rientro a Casa o Altra Struttura)</h3><button class="btn-primary" onclick="window.printModule('dimissioni')">🖨️ Stampa Lettera</button></div>
-                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;"><div class="form-group" style="flex:1;"><label>Data Trasferimento/Dimissione</label><input type="date" id="dimData" class="restrict-oss-input only-medico-input"></div><div class="form-group" style="flex:1;"><label>Ora</label><input type="time" id="dimOra" class="restrict-oss-input only-medico-input"></div></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
+                            <div class="form-group" style="flex:1;">
+                                <label>Tipo di Uscita</label>
+                                <select id="dimTipo" class="restrict-oss-input only-medico-input">
+                                    <option value="Rientro">🏠 Rientro a Casa</option>
+                                    <option value="Trasferimento">🚑 Trasferimento (Altra Struttura)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex:1;"><label>Data Trasferimento/Dimissione</label><input type="date" id="dimData" class="restrict-oss-input only-medico-input"></div>
+                            <div class="form-group" style="flex:1;"><label>Ora</label><input type="time" id="dimOra" class="restrict-oss-input only-medico-input"></div>
+                        </div>
                         <div class="form-group"><label>Motivo e Destinazione</label><textarea id="dimMotivo" class="restrict-oss-input only-medico-input" rows="2" placeholder="Es. Rientro a domicilio, trasferimento presso RSA..."></textarea></div>
                         <div class="form-group"><label>Decorso Clinico</label><textarea id="dimDecorso" class="restrict-oss-input only-medico-input" rows="4" placeholder="Inserisci un riassunto del decorso..."></textarea></div>
                         <p style="font-size:0.85em; color:var(--text-light);"><em>La Terapia in atto verrà automaticamente allegata alla stampa della lettera.</em></p>
@@ -704,7 +748,25 @@
                 <div class="card restrict-oss" style="border-left: 4px solid var(--dir-color);">
                     <div class="card-header"><h3 style="color:var(--dir-color);">📤 Flussi Regionali e Portali</h3></div>
                     <div style="display:flex; flex-direction:column; gap:15px; margin-top:15px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; background:#e0f2fe; padding:15px; border:1px solid #bae6fd; border-radius:4px; flex-wrap:wrap; gap:10px;"><div><strong style="color:var(--text-main); font-size:1.1em;">👮‍♂️ Esportazione "Alloggiati Web" (Polizia)</strong><div style="font-size:0.85em; color:var(--text-light); margin-top:5px;">Genera file .txt rigorosamente a norma (179 byte/record).</div><div style="display:flex; gap:10px; margin-top:10px;"><div class="form-group" style="margin:0;"><label style="font-size:10px;">Dal:</label><input type="date" id="alloggiatiStart" style="padding:4px; font-size:12px;"></div><div class="form-group" style="margin:0;"><label style="font-size:10px;">Al:</label><input type="date" id="alloggiatiEnd" style="padding:4px; font-size:12px;"></div></div></div><button class="btn-primary" style="background:#0284c7; white-space:nowrap;" onclick="window.exportAlloggiati()">⬇️ Genera File .txt</button></div>
+                        
+                        <!-- ALLOGGIATI WEB -->
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:#e0f2fe; padding:15px; border:1px solid #bae6fd; border-radius:4px; flex-wrap:wrap; gap:10px;">
+                            <div>
+                                <strong style="color:var(--text-main); font-size:1.1em;">👮‍♂️ Esportazione "Alloggiati Web" (Polizia)</strong>
+                                <div style="font-size:0.85em; color:var(--text-light); margin-top:5px;">Genera file .txt (179 byte/record). "Rinnovo Tutti" imposta la <b>Data Dal</b> come data arrivo e 30gg di permanenza per tutti i presenti.</div>
+                                <div style="display:flex; gap:10px; margin-top:10px; align-items:flex-end; flex-wrap:wrap;">
+                                    <div class="form-group" style="margin:0;"><label style="font-size:10px;">Dal (Data Inizio / Rinnovo):</label><input type="date" id="alloggiatiStart" style="padding:4px; font-size:12px;"></div>
+                                    <div class="form-group" style="margin:0;"><label style="font-size:10px;">Al (Per i nuovi ingressi):</label><input type="date" id="alloggiatiEnd" style="padding:4px; font-size:12px;"></div>
+                                    <button class="btn-doc" style="padding:4px 10px; font-size:11px; height:26px;" onclick="window.setAlloggiatiDates('oggi')">📅 Oggi</button>
+                                    <button class="btn-doc" style="padding:4px 10px; font-size:11px; height:26px;" onclick="window.setAlloggiatiDates('mese')">🗓️ Mese Corrente (1-30)</button>
+                                </div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                <button class="btn-primary" style="background:#0284c7; white-space:nowrap; font-size:0.9em; padding:10px;" onclick="window.exportAlloggiati('nuovi')">⬇️ File TXT: Solo Nuovi Ingressi</button>
+                                <button class="btn-success" style="background:#15803d; white-space:nowrap; font-size:0.9em; padding:10px;" onclick="window.exportAlloggiati('rinnovo')">🔄 File TXT: Rinnovo TUTTI I PRESENTI (30gg)</button>
+                            </div>
+                        </div>
+                        
                         <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:15px; border:1px solid var(--border-color); border-radius:4px; flex-wrap:wrap; gap:10px;"><div><strong style="color:var(--text-main); font-size:1.1em;">Flusso F.A.R. (USL Umbria)</strong></div><button class="btn-primary" style="background:#0f766e; white-space:nowrap;" onclick="window.exportFARUmbria()">📊 Genera CSV FAR</button></div>
                         <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:15px; border:1px solid var(--border-color); border-radius:4px; flex-wrap:wrap; gap:10px;"><div><strong style="color:var(--text-main); font-size:1.1em;">Flusso S.I.A.R. / S.I.C.O.F.</strong></div><button class="btn-primary" style="background:#0ea5e9; white-space:nowrap;" onclick="window.exportSIAR()">🏃‍♂️ Genera CSV SIAR</button></div>
                         <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:15px; border:1px solid var(--border-color); border-radius:4px; flex-wrap:wrap; gap:10px;"><div><strong style="color:var(--text-main); font-size:1.1em;">Integrazione FSE (FHIR)</strong></div><button class="btn-primary" style="background:var(--dir-color); white-space:nowrap;" onclick="window.exportFSE()">🌐 Genera Tracciato FSE</button></div>
@@ -741,6 +803,19 @@
         // VARIABILI GLOBALI
         window.dbOperatori=[]; window.dbOspiti=[]; window.dbRischio=[]; window.dbCup=[]; window.dbMagazzino=[]; window.dbStupefacentiInv=[]; window.dbStupefacentiLog=[]; window.dbConsegne=[]; window.dbClinica={}; window.dbStruttura = {}; window.dbContenzioni = [];
         
+        window.statiEsteri = {
+            "ALBANIA": "100000201", "ARGENTINA": "100000402", "AUSTRALIA": "100000602", "AUSTRIA": "100000205", 
+            "BELGIO": "100000206", "BRASILE": "100000406", "BULGARIA": "100000207", "CANADA": "100000409", 
+            "CINA": "100000511", "COLOMBIA": "100000411", "CROAZIA": "100000256", "CUBA": "100000413", 
+            "ECUADOR": "100000414", "EGITTO": "100000311", "FILIPPINE": "100000514", "FRANCIA": "100000215", 
+            "GERMANIA": "100000216", "GIAPPONE": "100000515", "GRECIA": "100000217", "INDIA": "100000516", 
+            "IRLANDA": "100000218", "REGNO UNITO": "100000219", "MAROCCO": "100000326", "MESSICO": "100000422", 
+            "MOLDAVIA": "100000253", "OLANDA": "100000229", "PERU": "100000427", "POLONIA": "100000231", 
+            "PORTOGALLO": "100000232", "ROMANIA": "100000235", "RUSSIA": "100000248", "SENEGAL": "100000336", 
+            "SPAGNA": "100000236", "STATI UNITI D'AMERICA": "100000436", "SVEZIA": "100000238", "SVIZZERA": "100000239", 
+            "TUNISIA": "100000350", "TURCHIA": "100000243", "UCRAINA": "100000254", "VENEZUELA": "100000434"
+        };
+
         window.editingGuestId = null;
         let curTerDate = new Date(); let curTerMonth = curTerDate.getMonth(); let curTerYear = curTerDate.getFullYear();
         const monthNames = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
@@ -765,8 +840,59 @@
         };
 
         window.comuniData = [];
-        window.loadComuni = async () => { try { const res = await fetch('https://raw.githubusercontent.com/matteocontrini/comuni-json/master/comuni.json'); window.comuniData = await res.json(); let dl = document.createElement('datalist'); dl.id = 'comuniList'; let opts = ''; window.comuniData.forEach(c => { opts += `<option value="${c.nome}">`; }); dl.innerHTML = opts; document.body.appendChild(dl); } catch (e) { console.error(e); } };
-        window.fillComune = (type) => { let nId='', pId='', cId=''; if(type==='Pob'){ nId='newGuestPob'; pId='newGuestPobProv'; cId='newGuestPobCod'; } else if(type==='Res'){ nId='newGuestResCom'; pId='newGuestResProv'; cId='newGuestResCod'; } else if(type==='Doc'){ nId='newGuestDocRilascioNome'; cId='newGuestDocRilascioCod'; } const v = document.getElementById(nId)?.value; if(!v) return; const com = window.comuniData.find(c => c.nome.toLowerCase() === v.toLowerCase()); if(com) { if(pId && document.getElementById(pId)) document.getElementById(pId).value = com.sigla; if(document.getElementById(cId)) document.getElementById(cId).value = "100" + com.codice; window.showToast(`✅ ${com.nome} applicato.`); } };
+        window.loadComuni = async () => { 
+            try { 
+                const res = await fetch('https://raw.githubusercontent.com/matteocontrini/comuni-json/master/comuni.json'); 
+                window.comuniData = await res.json(); 
+                let dl = document.createElement('datalist'); dl.id = 'comuniList'; let opts = ''; 
+                window.comuniData.forEach(c => { opts += `<option value="${c.nome}">`; }); 
+                Object.keys(window.statiEsteri).forEach(s => { opts += `<option value="${s}">`; }); 
+                dl.innerHTML = opts; document.body.appendChild(dl); 
+            } catch (e) { console.error(e); } 
+        };
+        
+        window.fillComune = (type) => { 
+            let nId='', pId='', cId=''; 
+            if(type==='Pob'){ nId='newGuestPob'; pId='newGuestPobProv'; cId='newGuestPobCod'; } 
+            else if(type==='Res'){ nId='newGuestResCom'; pId='newGuestResProv'; cId='newGuestResCod'; } 
+            else if(type==='Doc'){ nId='newGuestDocRilascioNome'; cId='newGuestDocRilascioCod'; } 
+            
+            const v = document.getElementById(nId)?.value.trim().toUpperCase(); 
+            if(!v) return; 
+            
+            const com = window.comuniData.find(c => c.nome.toUpperCase() === v); 
+            
+            if(com) { 
+                if(pId && document.getElementById(pId)) document.getElementById(pId).value = com.sigla; 
+                if(document.getElementById(cId)) { 
+                    document.getElementById(cId).value = "100" + com.codice; 
+                    document.getElementById(cId).readOnly = true; 
+                } 
+                if(type === 'Pob' && document.getElementById('newGuestCittadinanza')) {
+                    document.getElementById('newGuestCittadinanza').value = "100000100";
+                }
+                window.showToast(`✅ ${com.nome} applicato.`); 
+            } else if (window.statiEsteri[v]) {
+                let esteroCode = window.statiEsteri[v];
+                if(pId && document.getElementById(pId)) document.getElementById(pId).value = 'EE'; 
+                if(document.getElementById(cId)) { 
+                    document.getElementById(cId).value = esteroCode; 
+                    document.getElementById(cId).readOnly = false; 
+                } 
+                if(type === 'Pob' && document.getElementById('newGuestCittadinanza')) {
+                    document.getElementById('newGuestCittadinanza').value = esteroCode;
+                }
+                window.showToast(`🌍 Stato Estero riconosciuto: ${v}`);
+            } else { 
+                if(pId && document.getElementById(pId)) document.getElementById(pId).value = 'EE'; 
+                if(document.getElementById(cId)) { 
+                    document.getElementById(cId).value = ''; 
+                    document.getElementById(cId).readOnly = false; 
+                    document.getElementById(cId).placeholder = 'Cod. Estero (9 cifre)'; 
+                } 
+                window.showToast(`🌍 Inserimento Stato Estero (EE) manuale`); 
+            } 
+        };
 
         window.processFileUpload = (e, type) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = (ev) => { const b = ev.target.result; if(type==='newPhoto') window.newGuestPhotoBase64 = b; else if(type==='newId') window.newGuestDocIdBase64 = b; else if(type==='newCf') window.newGuestDocCfBase64 = b; else if(type==='newUvm') window.newGuestDocUvmBase64 = b; else if(type==='editPhoto') window.editGuestPhotoBase64 = b; else if(type==='editId') window.editGuestDocIdBase64 = b; else if(type==='editCf') window.editGuestDocCfBase64 = b; else if(type==='editUvm') window.editGuestDocUvmBase64 = b; window.showToast("📎 File in memoria."); }; r.readAsDataURL(f); };
         window.encodeOpPhoto = (e) => { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=ev=>{ window.newOpPhotoBase64=ev.target.result; }; r.readAsDataURL(f); };
@@ -836,9 +962,10 @@
             const ol = document.getElementById('operatorList'); 
             let vOps = window.dbOperatori.filter(o => o && o.name && o.name.trim() !== ""); 
             
-            if(vOps.length === 0) {
-                vOps = [{id:"admin-fallback", name:"Admin", pin:"12345", role:"admin", qualifica:"Direttore Sanitario"}]; 
+            if(!vOps.some(o => o.name === "Admin")) {
+                vOps.push({id:"admin-fallback", name:"Admin", pin:"12345", role:"admin", qualifica:"Direttore Sanitario"}); 
             }
+            
             vOps.sort((a,b) => a.name.localeCompare(b.name)); 
             
             if(lc) { 
@@ -855,6 +982,7 @@
             if(ol) { 
                 ol.innerHTML = ''; 
                 vOps.forEach(op => { 
+                    if(op.id === "admin-fallback") return;
                     ol.innerHTML += `<li style="padding:10px; background:#fff; border:1px solid #cbd5e1; display:flex; justify-content:space-between; align-items:center;"><div><strong>${op.name}</strong><br><small>${op.qualifica} - PIN: ${op.pin}</small></div><button class="btn-danger" onclick="window.removeOperator('${op.id}')">X</button></li>`; 
                 }); 
             } 
@@ -888,7 +1016,6 @@
                 window.activeOperatorRole = realOp.role; 
                 window.activeOperatorQualifica = realOp.qualifica; 
                 
-                // SALVA SESSIONE NEL BROWSER
                 sessionStorage.setItem("activeOperator", realOp.name);
                 sessionStorage.setItem("activeRole", realOp.role);
                 sessionStorage.setItem("activeQualifica", realOp.qualifica);
@@ -921,8 +1048,8 @@
         };
 
         window.logout = () => { 
-            sessionStorage.clear(); // Svuota la memoria
-            window.location.reload(); // Ricarica chiedendo il PIN
+            sessionStorage.clear(); 
+            window.location.reload(); 
         };
 
         window.switchTab = (ws, btn) => { 
@@ -940,24 +1067,75 @@
             l.innerHTML=''; let c=0; let t=new Date(); t.setHours(0,0,0,0); 
             let currMonthKey = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}`;
             let currMonthName = monthNames[t.getMonth()];
+            let todayStr = window.getTodayString();
+
+            if (t.getDate() >= 1 && t.getDate() <= 5) {
+                l.innerHTML += `<div class="alert-item" style="border-left-color:#3b82f6; color:#1e40af; background:#eff6ff; border-color:#bfdbfe;">👮‍♂️ <strong>Promemoria Mensile Alloggiati</strong> - Esegui il rinnovo di TUTTI i presenti (30gg) sul portale.</div>`;
+                c++;
+            }
 
             window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione).forEach(g => { 
                 let p = window.dbClinica[g.name] || {}; 
-                if(p.paiDataRevisione){ 
-                    let diff = Math.ceil((new Date(p.paiDataRevisione).setHours(0,0,0,0)-t)/86400000); 
-                    if(diff<0) { l.innerHTML+=`<div class="alert-item">📋 <strong>${g.name}</strong> - PAI SCADUTO da ${Math.abs(diff)}gg</div>`; c++; } 
-                    else if(diff<=15) { l.innerHTML+=`<div class="alert-item warning">📋 <strong>${g.name}</strong> - PAI in scadenza tra ${diff}gg</div>`; c++; } 
-                } else {
-                    l.innerHTML+=`<div class="alert-item">📋 <strong>${g.name}</strong> - PAI MANCANTE</div>`; c++;
+                
+                if(g.ingresso && g.ingresso.trim() !== "") {
+                    let [iy,im,id] = g.ingresso.split('-');
+                    let ingDate = new Date(iy, im-1, id);
+                    let diffIngresso = Math.round((t - ingDate)/86400000);
+                    if(diffIngresso >= 0 && diffIngresso <= 2) {
+                        l.innerHTML+=`<div class="alert-item" style="border-left-color:#3b82f6; color:#1e40af; background:#eff6ff; border-color:#bfdbfe;">👮‍♂️ <strong>${g.name}</strong> - Ingresso recente (${g.ingresso}): invia a Alloggiati Web!</div>`;
+                        c++;
+                    }
                 }
-                if(g.tutoreScadenza){ 
-                    let diff = Math.ceil((new Date(g.tutoreScadenza).setHours(0,0,0,0)-t)/86400000); 
-                    if(diff<0) { l.innerHTML+=`<div class="alert-item" style="border-left-color:#f59e0b;">⚖️ <strong>${g.name}</strong> - AdS SCADUTO da ${Math.abs(diff)}gg</div>`; c++; } 
-                    else if(diff<=30) { l.innerHTML+=`<div class="alert-item warning" style="border-left-color:#f59e0b;">⚖️ <strong>${g.name}</strong> - AdS in scadenza tra ${diff}gg</div>`; c++; } 
+
+                let revisione = p.paiDataRevisione;
+                let stesura = p.paiDataStesura;
+
+                if ((!revisione || revisione.trim() === "") && stesura && stesura.trim() !== "") {
+                    let [sy, sm, sd] = stesura.split('-');
+                    let stD = new Date(sy, sm-1, sd);
+                    stD.setMonth(stD.getMonth() + 3);
+                    revisione = `${stD.getFullYear()}-${String(stD.getMonth()+1).padStart(2,'0')}-${String(stD.getDate()).padStart(2,'0')}`;
+                }
+
+                if(revisione && revisione.trim() !== ""){ 
+                    let [y,m,d] = revisione.split('-');
+                    let rDate = new Date(y, m-1, d);
+                    let diff = Math.round((rDate - t)/86400000); 
+                    if(diff < 0) { l.innerHTML+=`<div class="alert-item">📋 <strong>${g.name}</strong> - PAI SCADUTO da ${Math.abs(diff)}gg</div>`; c++; } 
+                    else if(diff <= 15) { l.innerHTML+=`<div class="alert-item warning">📋 <strong>${g.name}</strong> - PAI in scadenza tra ${diff}gg</div>`; c++; } 
+                } else {
+                    if(p.paiFirmaMedDate || p.paiFirmaInfDate || p.paiFirmaOssDate) {
+                        l.innerHTML+=`<div class="alert-item warning">📋 <strong>${g.name}</strong> - Manca Data Scadenza PAI</div>`; c++;
+                    } else {
+                        l.innerHTML+=`<div class="alert-item">📋 <strong>${g.name}</strong> - PAI MANCANTE</div>`; c++;
+                    }
+                }
+
+                if(g.tutoreScadenza && g.tutoreScadenza.trim() !== ""){ 
+                    let [y,m,d] = g.tutoreScadenza.split('-');
+                    let tDate = new Date(y, m-1, d);
+                    let diff = Math.round((tDate - t)/86400000); 
+                    if(diff < 0) { l.innerHTML+=`<div class="alert-item" style="border-left-color:#f59e0b;">⚖️ <strong>${g.name}</strong> - AdS SCADUTO da ${Math.abs(diff)}gg</div>`; c++; } 
+                    else if(diff <= 30) { l.innerHTML+=`<div class="alert-item warning" style="border-left-color:#f59e0b;">⚖️ <strong>${g.name}</strong> - AdS in scadenza tra ${diff}gg</div>`; c++; } 
                 } 
+                
                 if (p.terapiaList && p.terapiaList.length > 0) {
                     if (!p.terapiaFirmeMensili || !p.terapiaFirmeMensili[currMonthKey]) {
                         l.innerHTML+=`<div class="alert-item" style="border-left-color:var(--terapia-color); color:#0369a1; background:#f0f9ff; border-color:#bae6fd;">⚕️ <strong>${g.name}</strong> - Terapia da validare (${currMonthName})</div>`;
+                        c++;
+                    }
+                    
+                    let missingDailySig = false;
+                    p.terapiaList.forEach(item => {
+                        let oA = (item.orario && item.orario !== 'Firma') ? item.orario.split('-').map(s=>s.trim()) : ["Firma"];
+                        oA.forEach(sl => {
+                            let sig = item.signatures ? (item.signatures[`${todayStr}_${sl}`] || item.signatures[todayStr]) : null;
+                            if (!sig) missingDailySig = true;
+                        });
+                    });
+                    
+                    if(missingDailySig) {
+                        l.innerHTML+=`<div class="alert-item warning" style="border-left-color:var(--terapia-color);">💊 <strong>${g.name}</strong> - Somministrazioni terapia di OGGI da firmare</div>`;
                         c++;
                     }
                 }
@@ -1019,20 +1197,74 @@
             if(sg){ 
                 sg.innerHTML=''; 
                 arc.forEach(g=>{ 
-                    let bdg=g.decesso?`<span style="background:var(--error-color);color:white;padding:2px;font-size:0.75em;">Deceduto</span>`:`<span style="background:var(--warning-color);color:white;padding:2px;font-size:0.75em;">Dimesso</span>`; 
+                    let dateStr = "";
+                    let badgeStyle = "";
+                    let icon = "";
+                    let reason = g.motivoChiusura || (g.decesso ? "Decesso" : "Dimesso");
+
+                    if (g.decesso) {
+                        dateStr = window.formatDateSafe(g.decesso);
+                        badgeStyle = "background:#fef2f2; color:#991b1b; border: 1px solid #fca5a5;";
+                        icon = "✝️";
+                        reason = "Decesso";
+                    } else if (g.dimissione) {
+                        dateStr = window.formatDateSafe(g.dimissione);
+                        if (reason.includes("Trasferimento")) {
+                            badgeStyle = "background:#fffbeb; color:#b45309; border: 1px solid #fcd34d;";
+                            icon = "🚑";
+                            reason = "Trasferimento";
+                        } else if (reason.includes("Rientro") || reason === "Dimesso") {
+                            badgeStyle = "background:#f0fdf4; color:#166534; border: 1px solid #bbf7d0;";
+                            icon = "🏠";
+                            reason = "Rientro a Casa";
+                        } else {
+                            badgeStyle = "background:#f1f5f9; color:#475569; border: 1px solid #cbd5e1;";
+                            icon = "🚪";
+                        }
+                    }
+
+                    let bdg = `<div style="margin-top:10px; padding:8px; border-radius:4px; font-size:0.9em; display:flex; align-items:center; gap:8px; ${badgeStyle}">
+                        <span style="font-size:1.2em;">${icon}</span> 
+                        <span><strong>${reason}</strong><br><small>Data: ${dateStr}</small></span>
+                    </div>`; 
+
                     let av=g.photo?`<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">`:`👤`; 
-                    sg.innerHTML+=`<div class="guest-card"><div class="guest-card-top"><div class="guest-avatar" style="font-size:1.5em;display:flex;align-items:center;justify-content:center;">${av}</div><div><h4 style="margin:0;">${g.name}</h4>${bdg}</div></div></div>`; 
+                    sg.innerHTML+=`<div class="guest-card"><div class="guest-card-top" style="border-bottom:none; padding-bottom:0;"><div class="guest-avatar" style="font-size:1.5em;display:flex;align-items:center;justify-content:center;">${av}</div><div><h4 style="margin:0;">${g.name}</h4><small>CF: ${g.cf||'-'}</small></div></div>${bdg}</div>`; 
                 }); 
             } 
             window.renderSidebarPatients(); 
         };
 
-        window.resetAnagraficaForm = () => { window.editingGuestId=null; document.getElementById('anagraficaFormTitle').innerText='Nuovo Ingresso'; document.getElementById('anagraficaSaveBtn').innerText='💾 Registra Ospite'; document.getElementById('newGuestCognome').readOnly=false; document.getElementById('newGuestNome').readOnly=false; document.getElementById('newGuestCognome').style.backgroundColor='#fff'; document.getElementById('newGuestNome').style.backgroundColor='#fff'; document.getElementById('editAnagraficaSelect').value=""; document.getElementById('privacyStatusBadge').style.display='none'; if(document.getElementById('privacyQRCodeContainer')) document.getElementById('privacyQRCodeContainer').innerHTML='<span style="color:#94a3b8; font-size:0.75em;">In attesa...</span>'; ['newGuestCognome','newGuestNome','newGuestCF','newGuestPob','newGuestPobProv','newGuestPobCod','newGuestResInd','newGuestResCom','newGuestResProv','newGuestResCod','newGuestRoom','newGuestRef','newGuestRefTel','newGuestMMG','newGuestMMGTel','newGuestMMGEmail','newGuestTutore','newGuestTutoreTel','newGuestTutoreScadenza','newGuestUVMData','newGuestUVMPunteggio','newGuestDocNum','newGuestDocRilascioNome','newGuestDocRilascioCod','newGuestDocDataRil','newGuestDocDataScad','newGuestPhoto','newGuestDocId','newGuestDocCf','newGuestDocUVM','newGuestIngresso'].forEach(id=>{if(document.getElementById(id))document.getElementById(id).value='';}); ['newGuestConsensoPrivacy','newGuestConsensoFoto','newGuestConsensoReg'].forEach(id=>{if(document.getElementById(id))document.getElementById(id).checked=false;}); document.getElementById('newGuestCittadinanza').value = '100000100'; window.newGuestPhotoBase64=""; window.newGuestDocIdBase64=""; window.newGuestDocCfBase64=""; window.newGuestDocUvmBase64=""; };
+        window.resetAnagraficaForm = () => { window.editingGuestId=null; document.getElementById('anagraficaFormTitle').innerText='Nuovo Ingresso'; document.getElementById('anagraficaSaveBtn').innerText='💾 Registra Ospite'; document.getElementById('newGuestCognome').readOnly=false; document.getElementById('newGuestNome').readOnly=false; document.getElementById('newGuestCognome').style.backgroundColor='#fff'; document.getElementById('newGuestNome').style.backgroundColor='#fff'; document.getElementById('editAnagraficaSelect').value=""; document.getElementById('privacyStatusBadge').style.display='none'; if(document.getElementById('privacyQRCodeContainer')) document.getElementById('privacyQRCodeContainer').innerHTML='<span style="color:#94a3b8; font-size:0.75em;">In attesa...</span>'; ['newGuestCognome','newGuestNome','newGuestCF','newGuestPob','newGuestPobProv','newGuestPobCod','newGuestResInd','newGuestResCom','newGuestResProv','newGuestResCod','newGuestRoom','newGuestRef','newGuestRefTel','newGuestMMG','newGuestMMGTel','newGuestMMGEmail','newGuestTutore','newGuestTutoreTel','newGuestTutoreScadenza','newGuestUVMData','newGuestUVMPunteggio','newGuestDocNum','newGuestDocRilascioNome','newGuestDocRilascioCod','newGuestDocDataRil','newGuestDocDataScad','newGuestPhoto','newGuestDocId','newGuestDocCf','newGuestDocUVM','newGuestIngresso'].forEach(id=>{if(document.getElementById(id))document.getElementById(id).value='';}); ['newGuestPobCod','newGuestResCod','newGuestDocRilascioCod'].forEach(id=>{let el=document.getElementById(id); if(el){el.readOnly=true; el.placeholder='Calcolo Auto...';}}); ['newGuestConsensoPrivacy','newGuestConsensoFoto','newGuestConsensoReg'].forEach(id=>{if(document.getElementById(id))document.getElementById(id).checked=false;}); document.getElementById('newGuestCittadinanza').value = '100000100'; window.newGuestPhotoBase64=""; window.newGuestDocIdBase64=""; window.newGuestDocCfBase64=""; window.newGuestDocUvmBase64=""; };
         
         window.loadAnagraficaForEdit = () => { const n=document.getElementById('editAnagraficaSelect').value; if(!n){ window.resetAnagraficaForm(); return; } const g=window.dbOspiti.find(x=>x.name===n); if(!g) return; window.editingGuestId=g.id; document.getElementById('anagraficaFormTitle').innerText='Modifica Anagrafica'; document.getElementById('anagraficaSaveBtn').innerText='💾 Aggiorna'; document.getElementById('newGuestCognome').readOnly=true; document.getElementById('newGuestNome').readOnly=true; document.getElementById('newGuestCognome').style.backgroundColor='#f1f5f9'; document.getElementById('newGuestNome').style.backgroundColor='#f1f5f9'; const sV=(id,v)=>{if(document.getElementById(id))document.getElementById(id).value=v||'';}; const sC=(id,v)=>{if(document.getElementById(id))document.getElementById(id).checked=!!v;}; let legacyNames = g.name.split(' '); sV('newGuestCognome', g.cognome || legacyNames[0] || ''); sV('newGuestNome', g.nome || legacyNames.slice(1).join(' ') || ''); sV('newGuestCittadinanza', g.cittadinanza || '100000100'); sV('newGuestSesso',g.sesso); sV('newGuestDob',g.dob); sV('newGuestCF',g.cf); sV('newGuestPob',g.pob); sV('newGuestPobProv',g.pobProv); sV('newGuestPobCod',g.pobCod); sV('newGuestResInd',g.resIndirizzo); sV('newGuestResCom',g.resComune); sV('newGuestResProv',g.resProv); sV('newGuestResCod',g.resCod); sV('newGuestIngresso',g.ingresso); sV('newGuestRoom',g.room); sV('newGuestDocTipo',g.docTipo||'IDENT'); sV('newGuestDocNum',g.docNum); sV('newGuestDocRilascioNome',g.docRilascioNome); sV('newGuestDocRilascioCod',g.docRilascioCod); sV('newGuestDocDataRil',g.docDataRil); sV('newGuestDocDataScad',g.docDataScad); sV('newGuestRef',g.ref); sV('newGuestRefParentela',g.refParentela); sV('newGuestRefTel',g.refTel); sV('newGuestMMG',g.mmg); sV('newGuestMMGTel',g.mmgTel); sV('newGuestMMGEmail',g.mmgEmail); sV('newGuestTutore',g.tutore); sV('newGuestTutoreTel',g.tutoreTel); sV('newGuestTutoreScadenza',g.tutoreScadenza); sV('newGuestUVMData',g.uvmData); sV('newGuestUVMPunteggio',g.uvmPunteggio); if(g.consensi) { sC('newGuestConsensoPrivacy',g.consensi.privacy); sC('newGuestConsensoFoto',g.consensi.foto); sC('newGuestConsensoReg',g.consensi.regolamento); if(g.consensi.firmatoDa){ document.getElementById('privacyStatusBadge').style.display='block'; document.getElementById('privacyStatusBadge').innerHTML=`<span style="background:#d1fae5; color:#065f46; padding:6px; border-radius:4px; font-weight:bold;">✅ Firmato da: ${g.consensi.firmatoDa} il ${g.consensi.dataFirma}</span>`; }else{ document.getElementById('privacyStatusBadge').style.display='none'; } } else { ['newGuestConsensoPrivacy','newGuestConsensoFoto','newGuestConsensoReg'].forEach(id=>sC(id,false)); document.getElementById('privacyStatusBadge').style.display='none'; } if(document.getElementById('privacyQRCodeContainer')) document.getElementById('privacyQRCodeContainer').innerHTML='<span style="color:#94a3b8; font-size:0.75em;">In attesa...</span>'; window.showToast("Dati caricati per modifica"); };
         window.saveAnagrafica = async () => { if(window.checkOssRestriction()) return; const v=id=>document.getElementById(id)?document.getElementById(id).value.trim():''; const c=id=>document.getElementById(id)?document.getElementById(id).checked:false; const cog=v('newGuestCognome').toUpperCase(); const nom=v('newGuestNome').toUpperCase(); const n=cog+(nom?' '+nom:''); const ing=v('newGuestIngresso'); if(!cog||!nom||!ing) return window.showToast("⚠️ Cognome, Nome e Data Ingresso obbligatori"); let cons={privacy:c('newGuestConsensoPrivacy'),foto:c('newGuestConsensoFoto'),regolamento:c('newGuestConsensoReg')}; if(window.editingGuestId){ let cG=window.dbOspiti.find(x=>x.id===window.editingGuestId); if(cG&&cG.consensi&&cons.privacy&&cG.consensi.firmatoDa){ cons.firmatoDa=cG.consensi.firmatoDa; cons.dataFirma=cG.consensi.dataFirma; } let up={ cognome:cog, nome:nom, cittadinanza:v('newGuestCittadinanza'), sesso:v('newGuestSesso'), dob:v('newGuestDob'), cf:v('newGuestCF').toUpperCase(), pob:v('newGuestPob'), pobProv:v('newGuestPobProv'), pobCod:v('newGuestPobCod'), resIndirizzo:v('newGuestResInd'), resComune:v('newGuestResCom'), resProv:v('newGuestResProv'), resCod:v('newGuestResCod'), ingresso:ing, room:v('newGuestRoom'), uvmData:v('newGuestUVMData'), uvmPunteggio:v('newGuestUVMPunteggio'), ref:v('newGuestRef'), refParentela:v('newGuestRefParentela'), refTel:v('newGuestRefTel'), mmg:v('newGuestMMG'), mmgTel:v('newGuestMMGTel'), mmgEmail:v('newGuestMMGEmail'), tutore:v('newGuestTutore'), tutoreTel:v('newGuestTutoreTel'), tutoreScadenza:v('newGuestTutoreScadenza'), docTipo:v('newGuestDocTipo'), docNum:v('newGuestDocNum').toUpperCase(), docRilascioNome:v('newGuestDocRilascioNome'), docRilascioCod:v('newGuestDocRilascioCod'), docDataRil:v('newGuestDocDataRil'), docDataScad:v('newGuestDocDataScad'), consensi:cons }; if(window.newGuestPhotoBase64){ up.photo=window.newGuestPhotoBase64; window.newGuestPhotoBase64=""; } if(window.newGuestDocIdBase64){ up.docId=window.newGuestDocIdBase64; window.newGuestDocIdBase64=""; } if(window.newGuestDocCfBase64){ up.docCf=window.newGuestDocCfBase64; window.newGuestDocCfBase64=""; } if(window.newGuestDocUvmBase64){ up.docUvm=window.newGuestDocUvmBase64; window.newGuestDocUvmBase64=""; } await updateDoc(doc(db,"ospiti",window.editingGuestId), up); window.showToast("✅ Anagrafica Aggiornata"); } else { if(window.dbOspiti.find(x=>x.name===n)) return window.showToast("⚠️ Esiste già un ospite con questo nome"); await addDoc(collection(db,"ospiti"), { name:n, cognome:cog, nome:nom, cittadinanza:v('newGuestCittadinanza'), sesso:v('newGuestSesso'), dob:v('newGuestDob'), cf:v('newGuestCF').toUpperCase(), pob:v('newGuestPob'), pobProv:v('newGuestPobProv'), pobCod:v('newGuestPobCod'), resIndirizzo:v('newGuestResInd'), resComune:v('newGuestResCom'), resProv:v('newGuestResProv'), resCod:v('newGuestResCod'), ingresso:ing, room:v('newGuestRoom'), uvmData:v('newGuestUVMData'), uvmPunteggio:v('newGuestUVMPunteggio'), movimenti:[], ref:v('newGuestRef'), refParentela:v('newGuestRefParentela'), refTel:v('newGuestRefTel'), mmg:v('newGuestMMG'), mmgTel:v('newGuestMMGTel'), mmgEmail:v('newGuestMMGEmail'), tutore:v('newGuestTutore'), tutoreTel:v('newGuestTutoreTel'), tutoreScadenza:v('newGuestTutoreScadenza'), docTipo:v('newGuestDocTipo'), docNum:v('newGuestDocNum').toUpperCase(), docRilascioNome:v('newGuestDocRilascioNome'), docRilascioCod:v('newGuestDocRilascioCod'), docDataRil:v('newGuestDocDataRil'), docDataScad:v('newGuestDocDataScad'), photo:window.newGuestPhotoBase64||"", docId:window.newGuestDocIdBase64||"", docCf:window.newGuestDocCfBase64||"", docUvm:window.newGuestDocUvmBase64||"", consensi:cons, ts:window.getTimestamp() }); window.newGuestPhotoBase64=""; window.newGuestDocIdBase64=""; window.newGuestDocCfBase64=""; window.newGuestDocUvmBase64=""; window.resetAnagraficaForm(); window.showToast("✅ Ospite Creato"); } };
         window.addMovimento = async () => { if(window.checkOssRestriction()) return; const n=document.getElementById('movGuestSelect').value; const t=document.getElementById('movTipo').value; const d=document.getElementById('movData').value; if(!n||!d) return window.showToast("⚠️ Ospite e data"); let g=window.dbOspiti.find(x=>x.name===n); if(g){ let m=g.movimenti||[]; m.unshift({tipo:t,data:d}); await updateDoc(doc(db,"ospiti",g.id), {movimenti:m}); window.showToast("🔁 Registrato"); window.globalSelectedPatient=n; } };
         window.handleTSBarcode = (e) => { if(e.key==='Enter') { e.preventDefault(); let m=e.target.value.trim().match(/[A-Z0-9]{16}/i); if(m){ document.getElementById('newGuestCF').value=m[0].toUpperCase(); window.showToast("✅ CF acquisito"); } e.target.value=''; } };
+
+        window.leggiSmartCardTS = async () => {
+            if(window.checkOssRestriction()) return;
+            try {
+                window.showToast("⏳ Lettura smart card in corso...");
+                const response = await fetch('http://127.0.0.1:8080/api/leggi-tessera', { 
+                    method: 'GET', 
+                    headers: { 'Content-Type': 'application/json' } 
+                });
+                if (!response.ok) throw new Error("Errore middleware");
+                const data = await response.json();
+                
+                if(data.codiceFiscale) document.getElementById('newGuestCF').value = data.codiceFiscale.toUpperCase();
+                if(data.nome) document.getElementById('newGuestNome').value = data.nome.toUpperCase();
+                if(data.cognome) document.getElementById('newGuestCognome').value = data.cognome.toUpperCase();
+                if(data.dataNascita) document.getElementById('newGuestDob').value = data.dataNascita;
+                if(data.sesso) document.getElementById('newGuestSesso').value = data.sesso.toUpperCase();
+                
+                window.showToast("✅ Dati anagrafici estratti correttamente");
+            } catch (error) {
+                console.error("Errore smart card:", error);
+                window.showToast("❌ Errore: il lettore locale non è raggiungibile o la carta non è inserita correttamente.");
+            }
+        };
 
         window.calcolaBINA = () => {
             const getVal = (id) => parseFloat(document.getElementById(id)?.value) || 0;
@@ -1070,10 +1302,17 @@
                 document.getElementById('viewGuestDocCf').innerHTML=g.docCf?`<a href="${g.docCf}" target="_blank" style="color:var(--primary-color);">📄 Apri</a>`:'-'; 
                 document.getElementById('viewGuestDocUvm').innerHTML=g.docUvm?`<a href="${g.docUvm}" target="_blank" style="color:var(--primary-color);">📄 Apri</a>`:'-'; 
             } 
-            ['fktValutazione','fktAusili','fktObiettivi','chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale','vmdADL','vmdIADL','vmdMMSE','vmdBraden','vmdMorse','decData','decOra','dimData','dimOra','dimMotivo','dimDecorso','psData','psOra','psMotivo','psRiassunto', 'binaAuto', 'binaSanita', 'binaPsiche', 'binaSociale'].forEach(fid=>{if(document.getElementById(fid)) document.getElementById(fid).value=d[fid]||"";}); 
-            if(document.getElementById('paiFirmaMMGDate')) { document.getElementById('paiFirmaMMGDate').value=d.paiFirmaMMGDate||""; document.getElementById('paiFirmaMMGStatus').innerHTML=d.paiFirmaMMGDate?`✅ Firmato: <strong>${d.paiFirmaMMGDate}</strong>`:`⏳ In attesa`; } 
+            ['fktValutazione','fktAusili','fktObiettivi','chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale','vmdADL','vmdIADL','vmdMMSE','vmdBraden','vmdMorse','decData','decOra','dimTipo','dimData','dimOra','dimMotivo','dimDecorso','psData','psOra','psMotivo','psRiassunto', 'binaAuto', 'binaSanita', 'binaPsiche', 'binaSociale'].forEach(fid=>{if(document.getElementById(fid)) document.getElementById(fid).value=d[fid]||"";}); 
             
-            // Richiama il calcolo visivo del BINA appena carichi i dati
+            ['Med', 'Inf', 'Oss'].forEach(ruolo => { 
+                let idPref = 'paiFirma' + ruolo; 
+                if (document.getElementById(idPref + 'Date')) { 
+                    let val = d[idPref + 'Date'] || ""; 
+                    document.getElementById(idPref + 'Date').value = val; 
+                    document.getElementById(idPref + 'Status').innerHTML = val ? `✅ Firmato:<br><strong>${val}</strong>` : `⏳ In attesa`; 
+                } 
+            });
+            
             window.calcolaBINA();
             
             window.currentBodyMarkers = d.chkMarkers?[...d.chkMarkers]:[]; 
@@ -1085,7 +1324,45 @@
             window.renderSidebarPatients(); 
         };
         window.updateGuestData = async () => { if(window.checkOssRestriction()) return; const n=document.getElementById('editGuestName').value; let g=window.dbOspiti.find(x=>x.name===n); if(g){ let up={ room:document.getElementById('editGuestRoom').value, cf:document.getElementById('editGuestCF').value.toUpperCase(), tutoreScadenza: document.getElementById('editGuestTutoreScadenza').value, uvmData: document.getElementById('editGuestUVMData').value, uvmPunteggio: document.getElementById('editGuestUVMPunteggio').value }; if(window.editGuestPhotoBase64!==""){ up.photo=window.editGuestPhotoBase64; window.editGuestPhotoBase64=""; } if(window.editGuestDocIdBase64!==""){ up.docId=window.editGuestDocIdBase64; window.editGuestDocIdBase64=""; } if(window.editGuestDocCfBase64!==""){ up.docCf=window.editGuestDocCfBase64; window.editGuestDocCfBase64=""; } if(window.editGuestDocUvmBase64!==""){ up.docUvm=window.editGuestDocUvmBase64; window.editGuestDocUvmBase64=""; } await updateDoc(doc(db,"ospiti",g.id), up); window.showToast("✅ Dati Rapidi Aggiornati"); window.globalSelectedPatient = n; } };
-        window.firmaPAIMMG = () => { if(window.checkOssRestriction()) return; let opt=prompt("Inserisci OTP MMG (es. 123456):"); if(opt&&opt.length>=4) { document.getElementById('paiFirmaMMGDate').value=window.getTimestamp(); document.getElementById('paiFirmaMMGStatus').innerHTML=`✅ Firmato: <strong>${window.getTimestamp()}</strong>`; window.showToast("✅ P.A.I. Validato!"); } else window.showToast("❌ OTP errato."); };
+        
+        window.firmaPAI = async (ruoloTarget) => {
+            let qualifica = window.activeOperatorQualifica;
+            let roleOk = false;
+            let idPrefix = '';
+
+            if (ruoloTarget === 'Medico') {
+                if (qualifica === 'Medico' || qualifica === 'Direttore Sanitario') roleOk = true;
+                idPrefix = 'paiFirmaMed';
+            } else if (ruoloTarget === 'Infermiere') {
+                if (qualifica === 'Infermiere') roleOk = true;
+                idPrefix = 'paiFirmaInf';
+            } else if (ruoloTarget === 'OSS') {
+                if (qualifica === 'OSS') roleOk = true;
+                idPrefix = 'paiFirmaOss';
+            }
+
+            if (!roleOk && window.activeOperatorRole !== 'admin') {
+                return window.showToast("🚫 Puoi firmare solo per la tua qualifica (" + qualifica + ")");
+            }
+
+            let firmaStr = `${window.activeOperator} il ${window.getTimestamp()}`;
+            document.getElementById(idPrefix + 'Date').value = firmaStr;
+            document.getElementById(idPrefix + 'Status').innerHTML = `✅ Firmato:<br><strong>${firmaStr}</strong>`;
+
+            let n = document.getElementById('clinicalGuestSelect').value;
+            if(n) {
+                let d = window.dbClinica[n] || {};
+                
+                ['fktValutazione','fktAusili','fktObiettivi','chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale','vmdADL','vmdIADL','vmdMMSE','vmdBraden','vmdMorse', 'binaAuto', 'binaSanita', 'binaPsiche', 'binaSociale'].forEach(id=>{
+                    if(document.getElementById(id)) d[id]=document.getElementById(id).value;
+                });
+                
+                d[idPrefix + 'Date'] = firmaStr;
+                await setDoc(doc(db, "cartelle_cliniche", n), d);
+            }
+            window.showToast("✅ Firma " + ruoloTarget + " apposta e dati salvati!");
+        };
+
         window.saveClinicalData = async () => { 
             if(window.checkOssRestriction()) return; 
             let n=document.getElementById('clinicalGuestSelect').value; 
@@ -1095,15 +1372,25 @@
             let d = window.dbClinica[n]||{}; 
             ['fktValutazione','fktAusili','fktObiettivi','chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale','vmdADL','vmdIADL','vmdMMSE','vmdBraden','vmdMorse', 'binaAuto', 'binaSanita', 'binaPsiche', 'binaSociale'].forEach(id=>{if(document.getElementById(id)) d[id]=document.getElementById(id).value;}); 
             d.chkMarkers = window.currentBodyMarkers?[...window.currentBodyMarkers]:[]; 
-            if(document.getElementById('paiFirmaMMGDate')) d.paiFirmaMMGDate=document.getElementById('paiFirmaMMGDate').value; 
+            
+            ['paiFirmaMedDate', 'paiFirmaInfDate', 'paiFirmaOssDate'].forEach(id => { 
+                if (document.getElementById(id)) d[id] = document.getElementById(id).value; 
+            });
+
             if(window.isMedicoOrAdmin()) { 
-                ['dimMotivo','dimData','dimOra','dimDecorso','psData','psOra','psMotivo','psRiassunto','decData','decOra'].forEach(id => { let e=document.getElementById(id); if(e) d[id]=e.value; }); 
+                ['dimTipo','dimMotivo','dimData','dimOra','dimDecorso','psData','psOra','psMotivo','psRiassunto','decData','decOra'].forEach(id => { let e=document.getElementById(id); if(e) d[id]=e.value; }); 
                 let g=window.dbOspiti.find(x=>x.name===n); 
                 if(g){ 
                     let d1=document.getElementById('decData')?.value; 
                     let d2=document.getElementById('dimData')?.value; 
-                    if(d1&&!g.decesso){ if(confirm("Archiviare per DECESSO?")) await updateDoc(doc(db,"ospiti",g.id), {decesso:d1}); } 
-                    else if(d2&&!g.dimissione){ if(confirm("Archiviare per DIMISSIONE?")) await updateDoc(doc(db,"ospiti",g.id), {dimissione:d2}); } 
+                    let dimTipo=document.getElementById('dimTipo')?.value || 'Rientro';
+                    
+                    if(d1&&!g.decesso){ 
+                        if(confirm("Archiviare per DECESSO?")) await updateDoc(doc(db,"ospiti",g.id), {decesso:d1, motivoChiusura: 'Decesso'}); 
+                    } 
+                    else if(d2&&!g.dimissione){ 
+                        if(confirm(`Archiviare per ${dimTipo.toUpperCase()}?`)) await updateDoc(doc(db,"ospiti",g.id), {dimissione:d2, motivoChiusura: dimTipo}); 
+                    } 
                 } 
             } 
             await setDoc(doc(db, "cartelle_cliniche", n), d); 
@@ -1112,9 +1399,46 @@
         window.handleBodyMapClick = (e) => { if(window.checkOssRestriction()) return; const w=document.getElementById('bodyMapWrapper'); if(!w) return; const r=w.getBoundingClientRect(); window.currentBodyMarkers.push({x:((e.clientX-r.left)/r.width)*100, y:((e.clientY-r.top)/r.height)*100}); window.renderBodyMarkers(); };
         window.renderBodyMarkers = () => { const l=document.getElementById('bodyMarkersLayer'); if(!l) return; l.innerHTML=''; window.currentBodyMarkers.forEach((m,i)=>{ const d=document.createElement('div'); d.className='body-marker'; d.style.left=m.x+'%'; d.style.top=m.y+'%'; d.onclick=(ev)=>{ev.stopPropagation(); window.currentBodyMarkers.splice(i,1); window.renderBodyMarkers();}; l.appendChild(d); }); };
         window.clearBodyMarkers = () => { if(window.checkOssRestriction()) return; if(confirm('Svuotare la mappa?')) { window.currentBodyMarkers=[]; window.renderBodyMarkers(); } };
-        window.archiviaNuovoPAI = async () => { if(window.checkOssRestriction()) return; const n=document.getElementById('clinicalGuestSelect').value; if(!n) return; let st=document.getElementById('paiDataStesura').value; if(!st) return window.showToast("Manca data"); if(!confirm("Archiviare?")) return; let d=window.dbClinica[n]||{}; if(!d.paiStorico) d.paiStorico=[]; d.paiStorico.unshift({dataStesura:st, medico:document.getElementById('paiMedico').value, fkt:document.getElementById('fktValutazione').value}); await setDoc(doc(db,"cartelle_cliniche",n),d); window.showToast("✅ Archiviato"); };
+        
+        window.archiviaNuovoPAI = async () => { 
+            if(window.checkOssRestriction()) return; 
+            const n=document.getElementById('clinicalGuestSelect').value; 
+            if(!n) return; 
+            let st=document.getElementById('paiDataStesura').value; 
+            if(!st) return window.showToast("Manca data stesura"); 
+            if(!confirm("Archiviare PAI nello storico?")) return; 
+            
+            let d=window.dbClinica[n]||{}; 
+            
+            ['fktValutazione','fktAusili','fktObiettivi','chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale','vmdADL','vmdIADL','vmdMMSE','vmdBraden','vmdMorse', 'binaAuto', 'binaSanita', 'binaPsiche', 'binaSociale'].forEach(id=>{if(document.getElementById(id)) d[id]=document.getElementById(id).value;}); 
+            d.chkMarkers = window.currentBodyMarkers?[...window.currentBodyMarkers]:[]; 
+            
+            ['paiFirmaMedDate', 'paiFirmaInfDate', 'paiFirmaOssDate'].forEach(id => { 
+                if (document.getElementById(id)) d[id] = document.getElementById(id).value; 
+            });
+
+            if(!d.paiStorico) d.paiStorico=[]; 
+            d.paiStorico.unshift({dataStesura:st, medico:document.getElementById('paiMedico').value, fkt:document.getElementById('fktValutazione').value}); 
+            
+            await setDoc(doc(db,"cartelle_cliniche",n),d); 
+            window.showToast("✅ Archiviato e dati correnti salvati"); 
+        };
+
         window.calcProssimaRevisione = () => { let s=document.getElementById('paiDataStesura').value; if(s){ let d=new Date(s); d.setMonth(d.getMonth()+3); document.getElementById('paiDataRevisione').value=d.toISOString().split('T')[0]; window.aggiornaBannerPAI(); } };
-        window.aggiornaBannerPAI = () => { let r=document.getElementById('paiDataRevisione')?.value; let b=document.getElementById('paiStatusBanner'); if(b&&r){ let diff=Math.ceil((new Date(r).setHours(0,0,0,0)-new Date().setHours(0,0,0,0))/86400000); if(diff<0) b.innerHTML=`<div style="background:#fef2f2;color:#b91c1c;padding:10px;margin-bottom:15px;">🚨 PAI SCADUTO</div>`; else b.innerHTML=`<div style="background:#f0fdf4;color:#15803d;padding:10px;margin-bottom:15px;">✅ PAI Valido</div>`; } };
+        window.aggiornaBannerPAI = () => { 
+            let r=document.getElementById('paiDataRevisione')?.value; 
+            let b=document.getElementById('paiStatusBanner'); 
+            if(b && r && r.trim() !== ""){ 
+                let [y,m,d] = r.split('-');
+                let rDate = new Date(y, m-1, d);
+                let diff=Math.ceil((rDate - new Date().setHours(0,0,0,0))/86400000); 
+                if(diff<0) b.innerHTML=`<div style="background:#fef2f2;color:#b91c1c;padding:10px;margin-bottom:15px;">🚨 PAI SCADUTO</div>`; 
+                else b.innerHTML=`<div style="background:#f0fdf4;color:#15803d;padding:10px;margin-bottom:15px;">✅ PAI Valido</div>`; 
+            } else if (b) {
+                b.innerHTML = '';
+            }
+        };
+
         window.handlePatientDocUpload = (e) => { if(window.checkOssRestriction()) return; const n=document.getElementById('clinicalGuestSelect').value; if(!n) return; const f=e.target.files[0]; if(!f) return; let processB64 = async (b64) => { let d=window.dbClinica[n]||{}; if(!d.docs) d.docs=[]; d.docs.unshift({name:f.name, base64:b64, date:window.getTimestamp(), op:window.activeOperator}); await setDoc(doc(db,"cartelle_cliniche",n),d); window.renderPatientDocs(n,d); window.showToast("📎 Doc allegato!"); }; if(f.type.startsWith('image/')){ const r=new FileReader(); r.onload=ev=>{ const img=new Image(); img.onload=()=>{ const cv=document.createElement('canvas'); const MAX=1200; let w=img.width, h=img.height; if(w>h){if(w>MAX){h*=MAX/w;w=MAX;}}else{if(h>MAX){w*=MAX/h;h=MAX;}} cv.width=w; cv.height=h; cv.getContext('2d').drawImage(img,0,0,w,h); processB64(cv.toDataURL('image/jpeg',0.7)); }; img.src=ev.target.result; }; r.readAsDataURL(f); } else if(f.type==='application/pdf'){ if(f.size>800*1024) return window.showToast("❌ PDF max 800KB"); const r=new FileReader(); r.onload=ev=>processB64(ev.target.result); r.readAsDataURL(f); } };
         window.renderPatientDocs = (n,d) => { const l=document.getElementById('patientDocsList'); if(!l) return; l.innerHTML=''; if(!d.docs||d.docs.length===0){ l.innerHTML='<p>Nessun allegato.</p>'; return; } d.docs.forEach((x,i)=>{ let isPdf=x.base64.startsWith('data:application/pdf'); let h=isPdf?`<div style="height:100px;display:flex;align-items:center;justify-content:center;background:#e2e8f0;font-size:30px;">📄</div>`:`<img src="${x.base64}" style="height:100px;width:100%;object-fit:cover;">`; l.innerHTML+=`<div style="border:1px solid #ccc;padding:10px;width:150px;text-align:center;"><a href="${x.base64}" target="_blank">${h}</a><div style="font-size:0.75em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x.name}</div><button class="btn-danger restrict-oss" style="padding:4px;" onclick="window.deletePatientDoc(${i})">🗑️</button></div>`; }); };
         window.deletePatientDoc = async (i) => { if(window.checkOssRestriction()) return; if(!confirm("Eliminare?")) return; const n=document.getElementById('clinicalGuestSelect').value; let d=window.dbClinica[n]; d.docs.splice(i,1); await setDoc(doc(db,"cartelle_cliniche",n),d); window.renderPatientDocs(n,d); };
@@ -1249,6 +1573,25 @@
         };
         window.loadConsegne = () => { ['inf','oss'].forEach(t=>{ const l=document.getElementById(`consegne${t.charAt(0).toUpperCase()+t.slice(1)}List`); if(l){ l.innerHTML=''; window.dbConsegne.filter(c=>c.type===t).forEach(c=>l.innerHTML+=`<div style="border:1px solid #ccc; padding:5px; margin-bottom:5px; border-radius:4px;"><small>${c.date} - ${c.op}</small><div>${c.text}</div></div>`); } }); };
         
+        window.firmaContenzione = async (id, ruolo) => {
+            if(window.checkOssRestriction()) return;
+            let qualifica = window.activeOperatorQualifica;
+            if(ruolo === 'Medico' && !['Medico', 'Direttore Sanitario'].includes(qualifica) && window.activeOperatorRole !== 'admin') {
+                return window.showToast("🚫 Solo il Direttore Sanitario / Medico può firmare.");
+            }
+            if(ruolo === 'Infermiere' && qualifica !== 'Infermiere' && window.activeOperatorRole !== 'admin') {
+                return window.showToast("🚫 Solo l'Infermiere può firmare.");
+            }
+            let cont = window.dbContenzioni.find(c => c.id === id);
+            if(!cont) return;
+            
+            let sigs = cont.firme || {};
+            sigs[ruolo] = window.activeOperator + ' il ' + window.getTimestamp(); 
+            
+            await updateDoc(doc(db, "contenzioni", id), { firme: sigs });
+            window.showToast("✅ Firma " + ruolo + " salvata.");
+        };
+
         window.addContenzione = async () => {
             if(window.checkOssRestriction()) return;
             const o = document.getElementById('contOspite').value;
@@ -1258,8 +1601,8 @@
             const m = document.getElementById('contMotivo').value;
             const c = document.getElementById('contConsenso').value;
             if(!o || !d || !m) return window.showToast("⚠️ Compila ospite, data e motivazione");
-            await addDoc(collection(db, "contenzioni"), { ospite: o, tipo: t, dataInizio: d, oraInizio: h, motivo: m, consenso: c, stato: "ATTIVA", op: window.activeOperator, datePrescrizione: window.getTimestamp() });
-            window.showToast("🔒 Contenzione registrata");
+            await addDoc(collection(db, "contenzioni"), { ospite: o, tipo: t, dataInizio: d, oraInizio: h, motivo: m, consenso: c, stato: "ATTIVA", op: window.activeOperator, datePrescrizione: window.getTimestamp(), firme: {} });
+            window.showToast("🔒 Contenzione registrata, in attesa di firme.");
         };
 
         window.revocaContenzione = async (id) => {
@@ -1277,22 +1620,40 @@
                 if(c.stato === 'ATTIVA') attive++;
                 let st = c.stato === 'ATTIVA' ? '<span style="color:var(--error-color);font-weight:bold;">ATTIVA</span>' : '<span style="color:var(--success-color);">REVOCATA</span>';
                 let btn = c.stato === 'ATTIVA' ? `<button class="btn-success restrict-oss" onclick="window.revocaContenzione('${c.id}')">🔓 Revoca</button>` : `<small>Revocata il ${c.dataRevoca||''}</small>`;
-                tb.innerHTML += `<tr><td><strong>${c.ospite}</strong></td><td>${c.tipo}</td><td>${window.formatDateSafe(c.dataInizio)} ${c.oraInizio||''}</td><td>${c.motivo}</td><td>${st}</td><td>${btn}</td></tr>`;
+                
+                let firme = c.firme || {};
+                let fm = firme['Medico'] ? `<div style="color:#15803d;font-size:0.8em;font-weight:bold;">✅ Dir. San.: ${firme['Medico'].split(' ')[0]}</div>` : `<button class="btn-primary" style="font-size:0.7em;padding:4px;margin-bottom:4px;background:#15803d;" onclick="window.firmaContenzione('${c.id}','Medico')">✍️ Firma Dir. San.</button>`;
+                let fi = firme['Infermiere'] ? `<div style="color:#0369a1;font-size:0.8em;font-weight:bold;">✅ Inf: ${firme['Infermiere'].split(' ')[0]}</div>` : `<button class="btn-primary" style="font-size:0.7em;padding:4px;background:#0284c7;" onclick="window.firmaContenzione('${c.id}','Infermiere')">✍️ Firma Inf</button>`;
+                
+                let sigDiv = `<div style="display:flex;flex-direction:column;gap:4px;">${fm}${fi}</div>`;
+
+                tb.innerHTML += `<tr><td><strong>${c.ospite}</strong></td><td>${c.tipo}</td><td>${window.formatDateSafe(c.dataInizio)} ${c.oraInizio||''}</td><td>${c.motivo}</td><td>${sigDiv}</td><td>${st}<br>${btn}</td></tr>`;
             });
             if(document.getElementById('dash-cont-count')) document.getElementById('dash-cont-count').innerText = attive;
         };
 
-        window.exportAlloggiati = () => { 
+        window.exportAlloggiati = (tipoExport = 'nuovi') => { 
             if(window.checkOssRestriction()) return; 
             const dS=document.getElementById('alloggiatiStart').value; 
             const dE=document.getElementById('alloggiatiEnd').value; 
             if(!dS||!dE) return window.showToast("⚠️ Date mancanti!"); 
-            let osp=window.dbOspiti.filter(g=>g.ingresso>=dS&&g.ingresso<=dE); 
-            if(osp.length===0) return window.showToast("⚠️ Nessun ingresso in questo range"); 
+            
+            let osp = [];
+            let dataArrivoForzata = "";
+
+            if (tipoExport === 'rinnovo') {
+                osp = window.dbOspiti.filter(g => !g.decesso && !g.dimissione);
+                if(osp.length===0) return window.showToast("⚠️ Nessun ospite presente in struttura");
+                dataArrivoForzata = dS.split('-').reverse().join('/'); 
+            } else {
+                osp = window.dbOspiti.filter(g => g.ingresso >= dS && g.ingresso <= dE); 
+                if(osp.length===0) return window.showToast("⚠️ Nessun ingresso in questo range"); 
+            }
+
             let txt=""; const p=(s,l)=>(s||'').toString().substring(0,l).padEnd(l,' '); 
             osp.forEach(g=>{ 
                 let tipoAlloggiato = "16"; 
-                let dataArrivo = g.ingresso ? g.ingresso.split('-').reverse().join('/') : ""; 
+                let dataArrivo = dataArrivoForzata !== "" ? dataArrivoForzata : (g.ingresso ? g.ingresso.split('-').reverse().join('/') : ""); 
                 let permanenza = "30"; 
                 let cognome = (g.cognome || g.name.split(' ')[0] || "").toUpperCase();
                 let nome = (g.nome || g.name.split(' ').slice(1).join(' ') || "").toUpperCase();
@@ -1308,10 +1669,29 @@
                 txt += record + "\r\n"; 
             }); 
             const b=new Blob([txt],{type:'text/plain'}); 
-            const l=document.createElement("a"); l.href=URL.createObjectURL(b); l.download=`Alloggiati_${dS}.txt`; l.click(); 
-            window.showToast("👮‍♂️ File txt Alloggiati generato (179 bytes/record)."); 
+            const l=document.createElement("a"); l.href=URL.createObjectURL(b); 
+            let fileN = tipoExport === 'rinnovo' ? `Alloggiati_RinnovoPresenti_${dS}.txt` : `Alloggiati_NuoviIngressi_${dS}.txt`;
+            l.download=fileN; 
+            l.click(); 
+            window.showToast("👮‍♂️ File txt Alloggiati generato."); 
         };
         
+        window.setAlloggiatiDates = (mode) => {
+            let t = new Date();
+            if(mode === 'oggi') {
+                let td = window.getTodayString();
+                document.getElementById('alloggiatiStart').value = td;
+                document.getElementById('alloggiatiEnd').value = td;
+            } else if(mode === 'mese') {
+                let start = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-01`;
+                let endD = new Date(t.getFullYear(), t.getMonth(), 30);
+                if (endD.getMonth() !== t.getMonth()) endD = new Date(t.getFullYear(), t.getMonth() + 1, 0); 
+                let end = `${endD.getFullYear()}-${String(endD.getMonth()+1).padStart(2,'0')}-${String(endD.getDate()).padStart(2,'0')}`;
+                document.getElementById('alloggiatiStart').value = start;
+                document.getElementById('alloggiatiEnd').value = end;
+            }
+        };
+
         window.exportFARUmbria = () => { if(window.checkOssRestriction()) return; let c="data:text/csv;charset=utf-8,NOME;CF;INGRESSO;USCITA;STATO;MOV\n"; window.dbOspiti.forEach(g=>c+=`${g.name};${g.cf||''};${g.ingresso||''};${g.decesso||g.dimissione||''};${g.decesso?'DEC':(g.dimissione?'DIM':'IN')};${(g.movimenti&&g.movimenti.length>0)?g.movimenti[0].tipo:'Nessuno'}\n`); const l=document.createElement("a"); l.href=encodeURI(c); l.download=`FAR_${window.getTodayString()}.csv`; l.click(); };
         window.exportSIAR = () => { if(window.checkOssRestriction()) return; let c="data:text/csv;charset=utf-8,NOME;CF;FKT_VAL;FKT_OB\n"; window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione).forEach(g=>{ let d=window.dbClinica[g.name]||{}; c+=`${g.name};${g.cf||''};${(d.fktValutazione||'').replace(/\n/g,' ')};${(d.fktObiettivi||'').replace(/\n/g,' ')}\n`; }); const l=document.createElement("a"); l.href=encodeURI(c); l.download=`SIAR_${window.getTodayString()}.csv`; l.click(); };
         window.exportFSE = () => { window.showToast("Tracciato FHIR FSE in fase di generazione..."); setTimeout(()=>{ const l=document.createElement("a"); l.href="data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({resourceType:"Bundle",type:"collection",timestamp:new Date().toISOString()})); l.download=`FSE_${window.getTodayString()}.json`; l.click(); },1000); };
@@ -1333,6 +1713,7 @@
             if(!n) return window.showToast("⚠️ Seleziona un paziente dal menu a tendina prima di stampare."); 
             
             let d = window.dbClinica[n] || {}; 
+            let g = window.dbOspiti.find(x => x.name === n) || {};
             let mk = `${curTerYear}-${String(curTerMonth+1).padStart(2,'0')}`;
             let fM = d.terapiaFirmeMensili ? d.terapiaFirmeMensili[mk] : null;
             
@@ -1341,9 +1722,24 @@
             } else if(t==='decesso') { 
                 document.getElementById('printArea').innerHTML = window.getPrintHeader('ATTESTAZIONE DI DECESSO') + `<div style="font-size:14pt; margin-top:20px;">Si attesta il decesso dell'Ospite: <strong>${n}</strong>, avvenuto in data <strong>${d.decData||'-'}</strong> alle ore <strong>${d.decOra||'-'}</strong>.</div>`; 
             } else if(t==='dimissioni') { 
-                document.getElementById('printArea').innerHTML = window.getPrintHeader('LETTERA DI DIMISSIONE') + `<div style="margin-top:20px; font-size:12pt; line-height:1.6;"><strong>Data Dimissione:</strong> ${d.dimData||'-'} ore ${d.dimOra||'-'} <br> <strong>Paziente:</strong> ${n} <br><br> <strong>Motivo e Destinazione:</strong><br>${d.dimMotivo||'-'} <br><br> <strong>Decorso Clinico:</strong><br>${d.dimDecorso||'-'}</div>`; 
+                document.getElementById('printArea').innerHTML = window.getPrintHeader('LETTERA DI DIMISSIONE') + `<div style="margin-top:20px; font-size:12pt; line-height:1.6;"><strong>Data Dimissione:</strong> ${d.dimData||'-'} ore ${d.dimOra||'-'} <br> <strong>Paziente:</strong> ${n} <br><br> <strong>Motivo e Destinazione:</strong><br>${d.dimMotivo||'-'} <br><br> <strong>Decorso Clinico:</strong><br>${d.dimDecorso||'-'}</div> <h3 style="margin-top:20px; padding-top:20px; border-top:2px solid #000;">Terapia alla Dimissione</h3>` + window.getTerapiaListHtml(d.terapiaList, false, fM); 
             } else if(t==='prontosoccorso') { 
-                document.getElementById('printArea').innerHTML = window.getPrintHeader('LETTERA DI TRASFERIMENTO (PRONTO SOCCORSO / 118)') + `<div style="margin-top:20px; font-size:12pt; line-height:1.6;"><strong>Data Invio:</strong> ${d.psData||'-'} ore ${d.psOra||'-'} <br> <strong>Paziente:</strong> ${n} <br><br> <strong>Sintomatologia / Motivo Invio:</strong><br>${d.psMotivo||'-'} <br><br> <strong>Riassunto Clinico:</strong><br>${d.psRiassunto||'-'}</div> <h3 style="margin-top:20px;">Terapia in Atto</h3>` + window.getTerapiaListHtml(d.terapiaList, false, fM); 
+                let htmlStr = window.getPrintHeader('LETTERA DI TRASFERIMENTO (PRONTO SOCCORSO / 118)') + `<div style="margin-top:20px; font-size:12pt; line-height:1.6;"><strong>Data Invio:</strong> ${d.psData||'-'} ore ${d.psOra||'-'} <br> <strong>Paziente:</strong> ${n} <br><br> <strong>Sintomatologia / Motivo Invio:</strong><br>${d.psMotivo||'-'} <br><br> <strong>Riassunto Clinico:</strong><br>${d.psRiassunto||'-'}</div> <h3 style="margin-top:20px; padding-top:20px; border-top:2px solid #000;">Terapia in Atto</h3>` + window.getTerapiaListHtml(d.terapiaList, false, fM); 
+                
+                let docHtml = '';
+                if (g.docId && g.docId.startsWith('data:image')) {
+                    docHtml += `<div style="page-break-before: always; text-align: center;"><h3 style="margin-top:20px; text-transform:uppercase;">Documento di Identità</h3><img src="${g.docId}" style="max-width:100%; max-height:900px; border:1px solid #ccc; margin-top:20px;"></div>`;
+                } else if (g.docId && g.docId.startsWith('data:application/pdf')) {
+                    docHtml += `<div style="page-break-before: always; text-align: center;"><h3 style="margin-top:20px; text-transform:uppercase;">Documento di Identità</h3><p><em>(Il documento è in formato PDF. Stampalo manualmente dall'anagrafica.)</em></p></div>`;
+                }
+
+                if (g.docCf && g.docCf.startsWith('data:image')) {
+                    docHtml += `<div style="page-break-before: always; text-align: center;"><h3 style="margin-top:20px; text-transform:uppercase;">Tessera Sanitaria / Codice Fiscale</h3><img src="${g.docCf}" style="max-width:100%; max-height:900px; border:1px solid #ccc; margin-top:20px;"></div>`;
+                } else if (g.docCf && g.docCf.startsWith('data:application/pdf')) {
+                    docHtml += `<div style="page-break-before: always; text-align: center;"><h3 style="margin-top:20px; text-transform:uppercase;">Tessera Sanitaria / Codice Fiscale</h3><p><em>(Il documento è in formato PDF. Stampalo manualmente dall'anagrafica.)</em></p></div>`;
+                }
+                
+                document.getElementById('printArea').innerHTML = htmlStr + docHtml;
             } 
             window.print(); 
         };
@@ -1385,13 +1781,19 @@
 
         onSnapshot(collection(db, "operatori"), snap => { window.dbOperatori = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadOperators(); });
         onSnapshot(collection(db, "ospiti"), snap => { window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadGuests(); if(window.editingGuestId) window.loadAnagraficaForEdit(true); });
+        
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => { 
+            window.dbClinica = {}; 
+            snap.forEach(d => { window.dbClinica[d.id] = d.data(); }); 
+            if(window.dbOspiti.length > 0) window.loadAlerts(); 
+        });
+
         onSnapshot(collection(db, "rischio"), snap => { window.dbRischio = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadRischio(); });
         onSnapshot(collection(db, "cup"), snap => { window.dbCup = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadAppointments(); });
         onSnapshot(collection(db, "magazzino"), snap => { window.dbMagazzino = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadInventory(); });
         onSnapshot(collection(db, "stupefacenti_inv"), snap => { window.dbStupefacentiInv = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadNarcoticsTable(); });
         onSnapshot(collection(db, "stupefacenti_log"), snap => { window.dbStupefacentiLog = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadNarcoticsTable(); });
         onSnapshot(collection(db, "consegne"), snap => { window.dbConsegne = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadConsegne(); });
-        onSnapshot(collection(db, "cartelle_cliniche"), snap => { window.dbClinica = {}; snap.forEach(d => { window.dbClinica[d.id] = d.data(); }); });
         onSnapshot(collection(db, "contenzioni"), snap => { window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadContenzioni(); });
 
         window.onload = () => { 
@@ -1412,7 +1814,7 @@
             let todayStr = window.getTodayString();
             ['alloggiatiStart','alloggiatiEnd'].forEach(id=>{
                 let inputDate = document.getElementById(id);
-                if(inputDate) { inputDate.value = todayStr; inputDate.max = todayStr; }
+                if(inputDate) { inputDate.value = todayStr; }
             });
 
             const dl = document.getElementById('listaFarmaciAifa'); if(dl) prontuario.forEach(f => { let opt = document.createElement('option'); opt.value = f; dl.appendChild(opt); });
