@@ -8,7 +8,6 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="manifest" href="manifest.json">
     <title>NVS - HACCP Mobile Unificato</title>
     
     <style>
@@ -38,7 +37,6 @@
 
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; height: 100vh; overflow: hidden; -webkit-tap-highlight-color: transparent; }
 
-        /* SCHERMATA LOGIN */
         #loginScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100%; position: fixed; top: 0; left: 0; z-index: 9999; background-color: var(--primary-color); padding: 15px; box-sizing: border-box;}
         .login-header-title { text-align: center; color: white; margin-bottom: 20px; animation: slideUpFade 0.6s forwards; }
         .login-header-title h1 { margin: 0; font-size: 2em; font-weight: 800; letter-spacing: 1px; }
@@ -51,7 +49,6 @@
         .profile-avatar { width: 45px; height: 45px; border-radius: 50%; margin-bottom: 8px; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3em; font-weight: bold; }
         .role-badge { display: inline-block; background: #e2e8f0; color: #475569; font-size: 0.75em; padding: 2px 6px; border-radius: 4px; margin-top: 4px; font-weight: bold;}
         
-        /* TASTIERINO PIN */
         .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; justify-items: center; margin-top: 15px; width: 100%; max-width: 280px; margin-left: auto; margin-right: auto; }
         .pin-btn { background: var(--bg-color); color: var(--text-main); border: 2px solid var(--border-color); font-size: 22px; font-weight: 600; width: 70px; height: 70px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; user-select: none; touch-action: manipulation;}
         .pin-btn:active { background: #e2e8f0; transform: scale(0.92); }
@@ -60,7 +57,6 @@
         
         @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* NAVBAR & MENU */
         #top-nav-container { position: sticky; top: 0; z-index: 1000; width: 100%; display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .navbar { background: var(--primary-color); color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; }
         .navbar-brand { font-weight: bold; font-size: 1.1em; }
@@ -74,7 +70,6 @@
         .menu-tab { padding: 14px 16px; background: transparent; border: none; border-bottom: 3px solid transparent; color: var(--text-light); font-weight: 600; font-size: 0.95em; cursor: pointer; white-space: nowrap; scroll-snap-align: start; flex-shrink: 0;}
         .menu-tab.active { color: var(--primary-color); border-bottom: 3px solid var(--primary-color); font-weight: bold; }
 
-        /* WORKSPACE & LAYOUT */
         #appScreen { display: none; flex-direction: column; flex-grow: 1; height: 0; overflow: hidden; }
         .main-content { padding: 10px; flex-grow: 1; overflow-y: auto; box-sizing: border-box; -webkit-overflow-scrolling: touch;}
         
@@ -116,7 +111,6 @@
 <body>
     <div id="toast-container"></div>
 
-    <!-- SCHERMATA LOGIN UNIFICATA -->
     <div id="loginScreen">
         <div class="login-header-title">
             <h1>VILLA SILVANA</h1>
@@ -145,7 +139,6 @@
         </div>
     </div>
 
-    <!-- NAVBAR E MENU APP -->
     <div id="top-nav-container" style="display: none;">
         <div class="navbar">
             <div class="navbar-brand">NVS Mobile</div>
@@ -165,11 +158,8 @@
         </div>
     </div>
 
-    <!-- MAIN CONTENT (Identico al precedente) -->
     <div id="appScreen">
         <div class="main-content">
-            
-            <!-- 1. MERCI -->
             <div id="ws-merci" class="workspace active">
                 <div class="card" style="border-top: 4px solid var(--merci-color);">
                     <div class="card-header"><h3 style="color: var(--merci-color);">📦 Controllo Merci in Arrivo</h3></div>
@@ -178,12 +168,10 @@
                     <div class="form-group"><label>Temperatura (°C) - Se applicabile</label><input type="number" id="merciTemp" step="0.1" inputmode="decimal"></div>
                     <div class="form-group"><label>Stato Imballaggi</label><select id="merciImballaggi"><option value="Intatti">✅ Intatti</option><option value="Danneggiati">❌ Danneggiati</option></select></div>
                     <div class="form-group"><label>Esito Controllo</label><select id="merciEsito"><option value="Merce Accettata">✅ Accettata</option><option value="Accettata con Riserva">⚠️ Riserva</option><option value="Merce Respinta">❌ Respinta</option></select></div>
-                    
                     <div style="margin-top: 20px;"><button class="btn-primary" style="background-color: var(--merci-color);" onclick="requestSignature('merci')">✍️ Firma e Salva</button></div>
                 </div>
             </div>
 
-            <!-- 2. TRACCIABILITÀ -->
             <div id="ws-tracc" class="workspace">
                 <div class="card" style="border-top: 4px solid var(--tracc-color);">
                     <div class="card-header"><h3 style="color: var(--tracc-color);">🔍 Tracciabilità Lotti</h3></div>
@@ -192,7 +180,6 @@
                         <label>Categoria Prodotto</label>
                         <select id="traccCat"><option value="Carne (Fresca/Surgelata)">🥩 Carne (Fresca/Surgelata)</option><option value="Pesce (Fresco/Surgelato)">🐟 Pesce (Fresco/Surgelato)</option><option value="Latticini e Formaggi">🧀 Latticini e Formaggi</option><option value="Altro">📦 Altro...</option></select>
                     </div>
-                    
                     <div class="form-group" style="background:#f8fafc; padding:15px; border:2px dashed var(--tracc-color); border-radius:var(--radius); text-align:center; margin-top:15px;">
                         <input type="file" accept="image/*" capture="environment" id="traccFile" style="display:none;" onchange="previewTraccFoto(event)">
                         <button class="btn-outline" style="border-color: var(--tracc-color); color: var(--tracc-color); background: #f0fdfa;" onclick="document.getElementById('traccFile').click()">📷 Scatta Foto Etichetta</button>
@@ -201,65 +188,46 @@
                             <p style="color:var(--success-color); font-weight:bold; margin-bottom:0; font-size: 0.9em;">✅ Foto acquisita</p>
                         </div>
                     </div>
-
                     <div style="margin-top: 20px;"><button class="btn-primary" style="background-color: var(--tracc-color);" onclick="requestSignature('tracc')">✍️ Firma e Archivia</button></div>
                 </div>
             </div>
 
-            <!-- 3. TEMPERATURE -->
             <div id="ws-temp" class="workspace">
                 <div class="card" style="border-top: 4px solid var(--temp-color);">
-                    <div class="card-header">
-                        <h3 style="color: var(--temp-color);">🌡️ Temperature Impianti</h3>
-                    </div>
+                    <div class="card-header"><h3 style="color: var(--temp-color);">🌡️ Temperature Impianti</h3></div>
                     <div class="form-group"><label>Data Registrazione</label><input type="date" id="tempData"></div>
-                    
                     <div class="temp-grid" id="dynamic-temp-grid"></div>
-                    
                     <div id="tempAlert" class="error-box">
                         <label style="color:var(--error-color); margin-bottom: 5px;">⚠️ Azione Correttiva (obbligatoria):</label>
                         <input type="text" id="tAction" placeholder="Es. Chiamata tecnico...">
                     </div>
-                    
                     <div style="margin-top: 20px;"><button class="btn-primary" style="background-color: var(--temp-color);" onclick="requestSignature('temp')">✍️ Firma e Salva</button></div>
                 </div>
             </div>
 
-            <!-- 4. SANIFICAZIONE AREE -->
             <div id="ws-aree" class="workspace">
                 <div class="card" style="border-top: 4px solid var(--aree-color);">
                     <div class="card-header"><h3 style="color: var(--aree-color);">✨ Sanificazione Aree</h3></div>
                     <div class="form-group"><label>Data Intervento</label><input type="date" id="areeData"></div>
-                    
                     <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--text-light);">Aree Sanificate:</label>
                     <div class="check-grid" id="dynamic-aree-grid"></div>
-                    
                     <div class="form-group"><label>Note Aggiuntive</label><input type="text" id="areeNote" placeholder="Eventuali anomalie..."></div>
-                    
                     <div style="margin-top: 20px;"><button class="btn-primary" style="background-color: var(--aree-color);" onclick="requestSignature('aree')">✍️ Firma e Salva</button></div>
                 </div>
             </div>
 
-            <!-- 5. PULIZIE -->
             <div id="ws-pulizie" class="workspace">
                 <div class="card" style="border-top: 4px solid var(--pulizie-color);">
-                    <div class="card-header">
-                        <h3 style="color: var(--pulizie-color);">🧹 Pulizie (Mod. 05)</h3>
-                    </div>
+                    <div class="card-header"><h3 style="color: var(--pulizie-color);">🧹 Pulizie (Mod. 05)</h3></div>
                     <div class="form-group"><label>Data Esecuzione</label><input type="date" id="pulizieData"></div>
-                    
                     <button class="btn-outline" onclick="selectAllTasks()" style="margin-bottom: 15px; border-color: var(--pulizie-color); color: var(--pulizie-color);">✅ Seleziona Tutte</button>
-
                     <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--text-light);">Operazioni Eseguite:</label>
                     <div class="check-grid" id="dynamic-pulizie-grid"></div>
-                    
                     <div class="form-group"><label>Note / Anomalie</label><input type="text" id="pulizieNote" placeholder="Inserisci dettagli se necessario..."></div>
-                    
                     <div style="margin-top: 20px;"><button class="btn-primary" style="background-color: var(--pulizie-color);" onclick="requestSignature('pulizie')">✍️ Firma e Salva</button></div>
                 </div>
             </div>
 
-            <!-- 6. PEST CONTROL -->
             <div id="ws-pest" class="workspace">
                 <div class="card" style="border-top: 4px solid var(--pest-color);">
                     <div class="card-header"><h3 style="color: var(--pest-color);">🪤 Pest Control</h3></div>
@@ -267,34 +235,27 @@
                     <div class="form-group"><label>Postazione (Es. Esterno 1)</label><input type="text" id="pestName" placeholder="Nome postazione"></div>
                     <div class="form-group"><label>Target</label><select id="pestType"><option value="Roditori">🐀 Roditori</option><option value="Insetti Striscianti">🪳 Insetti Striscianti</option><option value="Insetti Volanti">🪰 Insetti Volanti</option></select></div>
                     <div class="form-group"><label>Esito</label><select id="pestResult"><option value="Regolare (Intatta)">✅ Regolare</option><option value="Esca Consumata">⚠️ Esca Consumata</option><option value="Cattura">❌ Cattura Rilevata</option><option value="Danneggiata">❌ Danneggiata</option></select></div>
-                    
                     <div style="margin-top: 20px;"><button class="btn-primary" style="background-color: var(--pest-color);" onclick="savePestControl()">💾 Salva Controllo</button></div>
                 </div>
             </div>
 
-            <!-- 7. SICUREZZA 81/08 -->
             <div id="ws-sicurezza" class="workspace">
                 <div class="card" style="border-top: 4px solid var(--sicurezza-color);">
                     <div class="card-header"><h3 style="color: var(--sicurezza-color);">🦺 Sicurezza (81/08)</h3></div>
                     <div class="form-group"><label>Nome Documento / Intervento</label><input type="text" id="sicDocName" placeholder="Es. Estintori..."></div>
                     <div class="form-group"><label>Categoria</label><select id="sicDocCat"><option value="Documentale Base">📄 Documentale Base</option><option value="Formazione Personale">👥 Formazione</option><option value="Impianti e Struttura">🏢 Impianti</option><option value="Sanitario">⚕️ Sanitario</option></select></div>
                     <div class="form-group"><label>Data Scadenza</label><input type="date" id="sicDocDate"></div>
-                    
                     <div style="margin-top: 20px;"><button class="btn-primary" style="background-color: var(--sicurezza-color);" onclick="saveSicurezza()">💾 Registra Scadenza</button></div>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- MODALE FIRMA MOBILE MIGLIORATO -->
     <div id="signatureModal">
         <div class="privacy-container">
             <h2 style="margin:0 0 5px 0; text-align:center; color:var(--text-main); font-size: 1.3em;">Firma O.S.A.</h2>
             <p style="text-align:center; font-size:0.85em; color:var(--text-light); margin-top:0; margin-bottom: 15px;">Firma con il dito per validare.</p>
-            
             <canvas id="signatureCanvas"></canvas>
-            
             <button class="btn-outline" onclick="clearSignature()" style="padding: 12px; margin: 10px 0; border-color: var(--text-light); color: var(--text-light);">🗑️ Pulisci Riquadro</button>
             <div style="display:flex; gap:25px;">
                 <button class="btn-outline" style="flex:1;" onclick="closeSignature()">Annulla</button>
@@ -308,7 +269,6 @@
         import { getFirestore, collection, addDoc, serverTimestamp, onSnapshot, doc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
         import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js";
 
-        // CREDENZIALI FIREBASE
         const app = initializeApp({ 
             apiKey: "AIzaSyAACj8J2iOSAwS_DJaJQGvwB8-klMZ_NgE", 
             authDomain: "hccp-nvs.firebaseapp.com", 
@@ -321,14 +281,12 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // ABILITAZIONE PERSISTENZA OFFLINE
-        enableIndexedDbPersistence(db).catch((err) => {
-            if (err.code == 'failed-precondition') {
-                console.warn('Cache locale fallita: più schede aperte.');
-            } else if (err.code == 'unimplemented') {
-                console.warn('Il browser non supporta la persistenza offline.');
-            }
-        });
+        // Previene il crash quando aperto localmente con doppio clic
+        if (window.location.protocol !== 'file:') {
+            enableIndexedDbPersistence(db).catch((err) => {
+                console.warn('Persistenza offline non attivabile:', err);
+            });
+        }
 
         window.activeOp = null; 
         window.activeOpPin = null;
@@ -346,15 +304,13 @@
             setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); 
         };
 
-        // --- INIZIO MODIFICA AUTENTICAZIONE CENTRALIZZATA ---
-        // Sostituisci "utenti" con il nome esatto della collection del tuo gestionale sanitario 
-        // (es. "personale", "staff", "users")
-        onSnapshot(collection(db, "utenti"), (snapshot) => {
+        // GESTIONE ERRORI VISIVA
+        // N.B: Ho ripristinato la collection "operatori" che sappiamo funzionare. 
+        // Cambia la scritta "operatori" con il nome della collection del tuo gestionale solo quando deploy su Netlify/Vercel.
+        onSnapshot(collection(db, "operatori"), (snapshot) => {
             dbOperatori = [];
             snapshot.forEach((docSnap) => { 
                 const userData = docSnap.data();
-                // Filtriamo: mostriamo sul tablet solo gli operatori che hanno un PIN impostato
-                // Questo evita di mostrare admin o profili che usano solo la password testuale da PC
                 if (userData.pin) {
                     dbOperatori.push({
                         nome: userData.nome || userData.nominativo || 'Sconosciuto',
@@ -363,11 +319,17 @@
                     });
                 }
             });
-            // Ordiniamo alfabeticamente per comodità
             dbOperatori.sort((a, b) => a.nome.localeCompare(b.nome));
             renderLoginProfiles();
+        }, (error) => {
+            console.error("ERRORE FIRESTORE:", error);
+            document.getElementById('loginProfilesContainer').innerHTML = 
+                `<div style="grid-column: 1 / -1; background: #fef2f2; padding: 15px; border: 2px solid var(--error-color); border-radius: 8px;">
+                    <p style="color: var(--error-color); font-weight: bold; margin: 0;">🚨 Errore Connessione Database</p>
+                    <p style="color: #475569; font-size: 0.9em; margin-top: 5px;">Dettaglio: ${error.message}</p>
+                    <p style="color: #475569; font-size: 0.8em; margin-top: 5px;">Se vedi "Missing permissions", devi aggiornare le Regole di Sicurezza in Firebase.</p>
+                </div>`;
         });
-        // --- FINE MODIFICA AUTENTICAZIONE ---
 
         onSnapshot(doc(db, "configurazioni", "liste"), (docSnap) => { 
             if (docSnap.exists()) { 
@@ -431,10 +393,8 @@
             const pin = document.getElementById('loginPinInput').value;
             if (!pin || pin.length < 4) return window.showToast("⚠️ PIN incompleto");
             
-            // Il confronto ora avviene in formato stringa per sicurezza (es. "0012")
             if (pin.toString() === window.activeOpPin.toString()) { 
                 window.vibrate([30, 50, 30]); 
-                // Impostiamo il badge nella navbar con Nome e Ruolo
                 document.getElementById('currentOpBadge').innerText = `👨‍🍳 ${window.activeOp.split(' ')[0]} (${window.activeOpRole})`; 
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('top-nav-container').style.display = 'flex';
