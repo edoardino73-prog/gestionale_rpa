@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- ANTI CACHE POTENZIATO -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Dashboard HACCP Integrata</title>
     
-    <!-- LIBRERIE PER LA GENERAZIONE PDF A NORMA -->
+    <!-- LIBRERIE PER GENERAZIONE PDF E QR CODE -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
-        :root { --primary: #1e293b; --secondary: #3b82f6; --bg: #f1f5f9; --surface: #ffffff; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --text-main: #334155; --text-muted: #64748b; --border: #e2e8f0; --purple: #8b5cf6; --purple-light: #f3e8ff; --teal: #14b8a6; --teal-light: #ccfbf1; --blue: #0284c7;}
+        :root { --primary: #1e293b; --secondary: #3b82f6; --bg: #f1f5f9; --surface: #ffffff; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --text-main: #334155; --text-muted: #64748b; --border: #e2e8f0; --purple: #8b5cf6; --purple-light: #f3e8ff; --teal: #14b8a6; --teal-light: #ccfbf1; --blue: #0284c7; --orange: #ea580c; --orange-light: #ffedd5;}
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg); margin: 0; padding: 0; color: var(--text-main); }
         .navbar { background-color: var(--primary); color: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 50;}
@@ -23,22 +23,27 @@
         .tab-btn { background: none; border: none; padding: 15px 15px; font-size: 14px; font-weight: bold; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; }
         .tab-btn:hover { color: var(--primary); } .tab-btn.active { color: var(--secondary); border-bottom-color: var(--secondary); }
         .tab-btn.active-primary { color: var(--primary); border-bottom-color: var(--primary); } .tab-btn.active-purple { color: var(--purple); border-bottom-color: var(--purple); }
-        .tab-btn.active-warning { color: var(--warning); border-bottom-color: var(--warning); } .tab-btn.active-teal { color: var(--teal); border-bottom-color: var(--teal); } .tab-btn.active-blue { color: var(--blue); border-bottom-color: var(--blue); }
+        .tab-btn.active-warning { color: var(--warning); border-bottom-color: var(--warning); } .tab-btn.active-teal { color: var(--teal); border-bottom-color: var(--teal); } .tab-btn.active-blue { color: var(--blue); border-bottom-color: var(--blue); } .tab-btn.active-orange { color: var(--orange); border-bottom-color: var(--orange); }
         .tab-content { display: none; max-width: 1600px; margin: 0 auto; padding: 0 20px; } .tab-content.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .ccp-alert-box { background: #fef2f2; border: 2px solid #ef4444; border-left: 8px solid #b91c1c; padding: 16px 20px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.15); animation: pulseAlert 2s infinite ease-in-out; }
+        @keyframes pulseAlert { 0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); } }
+        .ccp-alert-item { font-size: 14px; color: #991b1b; margin-top: 6px; display: flex; align-items: center; gap: 8px; }
+
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 25px; }
         .kpi-card { background: var(--surface); padding: 25px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 5px solid var(--secondary); }
         .kpi-title { font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: bold; margin-bottom: 5px; display: block;}
         .kpi-value { font-size: 32px; font-weight: 800; color: var(--primary); }
         .kpi-card.success { border-color: var(--success); } .kpi-card.warning { border-color: var(--warning); } .kpi-card.danger { border-color: var(--danger); }
-        .kpi-card.purple { border-color: var(--purple); } .kpi-card.warning-box { border-color: var(--warning); } .kpi-card.teal { border-color: var(--teal); }
+        .kpi-card.purple { border-color: var(--purple); } .kpi-card.warning-box { border-color: var(--warning); } .kpi-card.teal { border-color: var(--teal); } .kpi-card.orange { border-color: var(--orange); }
         .table-wrapper { background: var(--surface); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-x: auto; margin-bottom: 40px;}
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { background: #f8fafc; padding: 16px 20px; font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: bold; border-bottom: 2px solid var(--border); }
         td { padding: 16px 20px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 14px; } tr:hover { background: #f1f5f9; } tr.row-critical { background-color: #fef2f2; } tr.row-warning { background-color: #fffbeb; }
         .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;}
         .badge.conforme { background: #dcfce7; color: #166534; } .badge.gestito { background: #fef3c7; color: #92400e; } .badge.critico { background: #fee2e2; color: #991b1b; }
-        .badge.sicurezza { background: var(--purple-light); color: var(--purple); border: 1px solid #e9d5ff;} .badge.teal-badge { background: var(--teal-light); color: var(--teal); border: 1px solid #99f6e4;}
+        .badge.sicurezza { background: var(--purple-light); color: var(--purple); border: 1px solid #e9d5ff;} .badge.teal-badge { background: var(--teal-light); color: var(--teal); border: 1px solid #99f6e4;} .badge.orange-badge { background: var(--orange-light); color: var(--orange); border: 1px solid #fdba74;}
         .server-time { font-size: 12px; color: var(--secondary); font-weight: 600; display: block; } .firma-img { max-height: 40px; mix-blend-mode: multiply; border: 1px solid #eee; border-radius: 4px; padding: 2px;}
         .thumb-img { max-height: 60px; border-radius: 6px; cursor: pointer; transition: 0.2s; border: 2px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.1);} .thumb-img:hover { transform: scale(1.05); border-color: var(--teal); }
         .items-grid { display: flex; flex-wrap: wrap; gap: 6px; max-width: 350px; } .item-tag { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 6px; font-size: 12px; color: #334155; } .item-tag.alert { background: #fee2e2; border-color: #fca5a5; color: #991b1b; font-weight: bold; }
@@ -47,30 +52,31 @@
         .btn-add, .btn-print { background: var(--secondary); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s;} .btn-add { background: var(--success); height: 43px;} .btn-add:active { transform: scale(0.95); } .btn-print:hover { opacity: 0.9; transform: translateY(-1px);}
         .list-container { max-height: 250px; overflow-y: auto; padding-right: 10px; } .list-item { background: var(--bg); border: 1px solid var(--border); padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; } .btn-del { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;} .btn-del:hover { background: var(--danger); color: white; }
         .doc-btn-upload { background-color: var(--secondary); color: white; padding: 15px 30px; font-size: 16px; border-radius: 12px; font-weight: bold; text-decoration: none; display: inline-flex; justify-content: center; align-items: center; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); } .doc-btn-upload:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); } .doc-btn-drive { background-color: var(--surface); color: var(--primary); border: 2px solid var(--border); padding: 15px 30px; font-size: 16px; border-radius: 12px; font-weight: bold; text-decoration: none; display: inline-flex; justify-content: center; align-items: center; transition: 0.2s; } .doc-btn-drive:hover { border-color: var(--primary); background: #f8fafc; }
-        .btn-back { background-color: rgba(255, 255, 255, 0.15); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 10px 18px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s ease; margin-right: 20px; }
-        .btn-back:hover { background-color: rgba(255, 255, 255, 0.25); border-color: white; transform: translateY(-1px); }
+        
+        .btn-back { background-color: rgba(255, 255, 255, 0.15); color: white; border: 1px solid rgba(255, 255, 255, 0.35); padding: 10px 18px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s ease; margin-right: 20px; cursor: pointer; }
+        .btn-back:hover { background-color: rgba(255, 255, 255, 0.28); border-color: white; transform: translateY(-1px); }
     </style>
 </head>
 <body>
 
     <div class="navbar">
         <div style="display:flex; align-items:center;">
-            <!-- PULSANTE DI RITORNO -->
-            <a href="gestionale_sanitario.html" class="btn-back">⬅️ Torna al Gestionale</a>
+            <a href="index.html" class="btn-back">⬅️ TORNA AL GESTIONALE</a>
             
             <div>
                 <h1 id="main-title">Struttura Non Impostata</h1>
-                <span>Intranet & Cruscotto Direzionale</span>
+                <span>Intranet & Cruscotto Direzionale HACCP</span>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
             <span style="width:10px; height:10px; background:var(--success); border-radius:50%; box-shadow: 0 0 5px var(--success);"></span>
-            <span style="font-size:13px; font-weight:bold;">Sistema Cloud Attivo</span>
+            <span style="font-size:13px; font-weight:bold;">Firebase Sincronizzato</span>
         </div>
     </div>
 
     <div class="tabs-container">
         <button class="tab-btn active" onclick="openTab('tab-dashboard', this, '')">📊 Cruscotto & Admin</button>
+        <button class="tab-btn" onclick="openTab('tab-cottura', this, 'orange')">🍳 Cottura & Abbattimento</button>
         <button class="tab-btn" onclick="openTab('tab-temp', this, 'primary')">🌡️ Temperature</button>
         <button class="tab-btn" onclick="openTab('tab-aree', this, 'blue')">✨ Sanificazioni Aree</button>
         <button class="tab-btn" onclick="openTab('tab-pulizie', this, 'purple')">🧹 Pulizie (Mod.05)</button>
@@ -83,10 +89,24 @@
     
     <!-- DASHBOARD E ADMIN -->
     <div id="tab-dashboard" class="tab-content active">
+        <div id="ccp-alert-container" style="display:none;" class="ccp-alert-box">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="font-size:16px; color:#991b1b; display:flex; align-items:center; gap:8px;">
+                    🚨 ALLARME NON CONFORMITÀ CRITICA CCP (Cucina / Lavorazioni)
+                </strong>
+                <button class="btn-print" style="padding:6px 12px; font-size:12px; background:#dc2626;" onclick="openTab('tab-cottura', document.querySelectorAll('.tab-btn')[1], 'orange')">Visualizza Schede CCP ➔</button>
+            </div>
+            <div id="ccp-alert-details" style="margin-top:10px;"></div>
+        </div>
+
         <h3 style="color: var(--secondary); margin-bottom: 15px; margin-top: 0;">📊 Stato Generale Procedure HACCP</h3>
-        <div class="kpi-grid"><div class="kpi-card"><span class="kpi-title">Registrazioni Totali</span><span class="kpi-value" id="kpi-totali">0</span></div><div class="kpi-card success" id="kpi-box-conformi"><span class="kpi-title">Stato Impianti</span><span class="kpi-value" id="kpi-conformi">Conformi</span></div><div class="kpi-card warning"><span class="kpi-title">Anomalie Gestite</span><span class="kpi-value" id="kpi-gestite">0</span></div><div class="kpi-card danger"><span class="kpi-title">Non Conformità</span><span class="kpi-value" id="kpi-critiche">0</span></div></div>
+        <div class="kpi-grid">
+            <div class="kpi-card"><span class="kpi-title">Registrazioni Totali</span><span class="kpi-value" id="kpi-totali">0</span></div>
+            <div class="kpi-card success" id="kpi-box-conformi"><span class="kpi-title">Stato Impianti</span><span class="kpi-value" id="kpi-conformi">Conformi</span></div>
+            <div class="kpi-card warning"><span class="kpi-title">Anomalie Gestite</span><span class="kpi-value" id="kpi-gestite">0</span></div>
+            <div class="kpi-card danger"><span class="kpi-title">Non Conformità</span><span class="kpi-value" id="kpi-critiche">0</span></div>
+        </div>
         
-        <!-- NUOVO PANNELLO: DATI STRUTTURA -->
         <div class="admin-panel" style="margin-top: 35px; border-left: 5px solid var(--secondary);">
             <h3 style="color: var(--secondary); margin-bottom: 15px;">🏢 Dati Struttura (Intestazione Stampe PDF)</h3>
             <div class="flex-row">
@@ -95,15 +115,105 @@
                 <div class="input-group" style="flex:1; min-width: 150px;"><label>P. IVA / C.F.</label><input type="text" id="strutPiva"></div>
             </div>
             <div class="flex-row" style="margin-top: 10px;">
-                <div class="input-group" style="flex:1; min-width: 200px;"><label>Amministratore / Legale Rappr.</label><input type="text" id="strutAdmin"></div>
-                <div class="input-group" style="flex:1; min-width: 200px;"><label>Responsabile HACCP</label><input type="text" id="strutHaccp"></div>
+                <div class="input-group" style="flex:1; min-width: 200px;"><label>Amministratore / Ragione Sociale</label><input type="text" id="strutAdmin"></div>
+                <div class="input-group" style="flex:1; min-width: 200px;"><label>Responsabile HACCP / Qualifica</label><input type="text" id="strutHaccp"></div>
                 <button class="btn-print" style="height: 43px; margin-bottom: 15px; background-color: var(--secondary);" id="btnSalvaStruttura">💾 Salva Dati Struttura</button>
             </div>
         </div>
 
         <div class="admin-grid" style="margin-top: 20px;">
-            <div class="admin-panel"><h3>👥 Gestione Operatori Tablet</h3><div class="flex-row" style="margin-bottom: 25px;"><div class="input-group" style="flex:2; margin:0;"><input type="text" id="newOpName" placeholder="Nome Completo"></div><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newOpRole" placeholder="Ruolo"></div><div class="input-group" style="flex:1; margin:0;"><input type="number" id="newOpPin" placeholder="PIN (es. 1234)"></div><button class="btn-add" id="btnAddOp">Aggiungi</button></div><div class="list-container" id="op-list-container"></div></div>
-            <div class="admin-panel"><h3>⚙️ Configurazione Voci Tablet</h3><div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newFrigo" placeholder="Nuovo Frigorifero / Cella"></div><button class="btn-add" onclick="addConfigItem('frigoriferi', 'newFrigo')">Aggiungi</button></div><div class="items-grid" id="list-frigoriferi" style="margin-bottom: 20px;"></div><div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newArea" placeholder="Nuova Area Sanificazione"></div><button class="btn-add" onclick="addConfigItem('aree', 'newArea')">Aggiungi</button></div><div class="items-grid" id="list-aree" style="margin-bottom: 20px;"></div><div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newPulizia" placeholder="Nuova Voce Pulizie (Mod 05)"></div><button class="btn-add" onclick="addConfigItem('pulizie', 'newPulizia')">Aggiungi</button></div><div class="items-grid" id="list-pulizie"></div></div>
+            <div class="admin-panel">
+                <h3>👥 Gestione Operatori (Sincronizzati con Gestionale)</h3>
+                <div class="flex-row" style="margin-bottom: 25px;">
+                    <div class="input-group" style="flex:2; margin:0;"><input type="text" id="newOpName" placeholder="Nome Completo"></div>
+                    <div class="input-group" style="flex:1; margin:0;">
+                        <select id="newOpRole">
+                            <option value="Cuoco / Addetto Cucina">Cuoco / Cucina</option>
+                            <option value="Infermiere">Infermiere</option>
+                            <option value="Direttore Sanitario">Direttore Sanitario</option>
+                            <option value="OSS">OSS</option>
+                            <option value="Amministrazione">Amministrazione</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex:1; margin:0;"><input type="password" id="newOpPin" placeholder="PIN (es. 1234)"></div>
+                    <button class="btn-add" id="btnAddOp">Aggiungi</button>
+                </div>
+                <div class="list-container" id="op-list-container"></div>
+            </div>
+            
+            <div class="admin-panel">
+                <h3>⚙️ Configurazione Voci Monitoraggio</h3>
+                <div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newFrigo" placeholder="Nuovo Frigorifero / Cella"></div><button class="btn-add" onclick="addConfigItem('frigoriferi', 'newFrigo')">Aggiungi</button></div>
+                <div class="items-grid" id="list-frigoriferi" style="margin-bottom: 20px;"></div>
+                <div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newArea" placeholder="Nuova Area Sanificazione"></div><button class="btn-add" onclick="addConfigItem('aree', 'newArea')">Aggiungi</button></div>
+                <div class="items-grid" id="list-aree" style="margin-bottom: 20px;"></div>
+                <div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newPulizia" placeholder="Nuova Voce Pulizie (Mod 05)"></div><button class="btn-add" onclick="addConfigItem('pulizie', 'newPulizia')">Aggiungi</button></div>
+                <div class="items-grid" id="list-pulizie"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: COTTURA E ABBATTIMENTO (CCP) -->
+    <div id="tab-cottura" class="tab-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
+            <div>
+                <h2 style="color: var(--orange); margin: 0 0 5px 0;">🍳 Registro Cottura e Abbattimento Rapido (CCP)</h2>
+                <small style="color:var(--text-muted)">Limiti critici: Cottura al cuore &ge; 75°C - Abbattimento rapido post-cottura in max 90 min (&le; +3°C)</small>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn-print" style="background-color: var(--secondary);" onclick="window.filtraERiportaReportCottura()">📊 Report Periodico PDF</button>
+                <button class="btn-print" style="background-color: var(--orange);" onclick="generatePDF('table-cottura', 'REGISTRO COTTURA E ABBATTIMENTO RAPIDO (CCP)')">🖨️ Stampa Registro Completo PDF</button>
+            </div>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card orange"><span class="kpi-title" style="color:var(--orange)">Lotti Registrati</span><span class="kpi-value" id="kpi-cottura-tot">0</span></div>
+            <div class="kpi-card success"><span class="kpi-title">Cotture Idonee (&ge; 75°C)</span><span class="kpi-value" id="kpi-cottura-ok">0</span></div>
+            <div class="kpi-card teal"><span class="kpi-title">Abbattimenti Conclusi</span><span class="kpi-value" id="kpi-abbatt-ok">0</span></div>
+            <div class="kpi-card danger"><span class="kpi-title">Non Conformità CCP</span><span class="kpi-value" id="kpi-cottura-ko">0</span></div>
+        </div>
+
+        <div class="admin-panel" style="margin-bottom: 25px; border-left: 5px solid var(--orange);">
+            <h3 style="color: var(--orange); margin-bottom: 15px;">➕ Nuova Registrazione Cottura / Abbattimento</h3>
+            <div class="flex-row" style="margin-bottom:10px;">
+                <div class="input-group" style="flex:1.2; min-width:140px; margin:0;"><label>Data Lavorazione</label><input type="date" id="cotturaDate"></div>
+                <div class="input-group" style="flex:2.5; min-width:200px; margin:0;"><label>Pietanza / Preparazione *</label><input type="text" id="cotturaAlimento" placeholder="Es. Arrosto di Vitello, Pasta al Forno..."></div>
+                <div class="input-group" style="flex:1.5; min-width:130px; margin:0;"><label>Lotto Materia Prima</label><input type="text" id="cotturaLotto" placeholder="Es. L-2026/09"></div>
+                <div class="input-group" style="flex:1.2; min-width:130px; margin:0;"><label>Temp. Cottura Cuore (°C) *</label><input type="number" step="0.1" id="cotturaTemp" placeholder="Min. 75.0°C"></div>
+                <div class="input-group" style="flex:1; min-width:100px; margin:0;"><label>Ora Fine Cottura</label><input type="time" id="cotturaOraFine"></div>
+            </div>
+
+            <div class="flex-row" style="margin-top: 15px;">
+                <div class="input-group" style="flex:2; min-width:180px; margin:0;"><label>Trattamento Post-Cottura</label>
+                    <select id="cotturaTrattamento">
+                        <option value="Abbattimento Positivo (+3°C)">Abbattimento Positivo (+3°C in max 90 min)</option>
+                        <option value="Abbattimento Negativo (-18°C)">Abbattimento Negativo / Surgelazione (-18°C)</option>
+                        <option value="Consumo Diretto / Caldo (&ge; 65°C)">Consumo Diretto / Caldo (&ge; 65°C)</option>
+                    </select>
+                </div>
+                <div class="input-group" style="flex:1.2; min-width:130px; margin:0;"><label>Temp. Fine Abbatt. (°C)</label><input type="number" step="0.1" id="cotturaTempAbbatt" placeholder="Es. 2.5°C"></div>
+                <div class="input-group" style="flex:1; min-width:100px; margin:0;"><label>Ora Fine Abbattimento</label><input type="time" id="cotturaOraAbbatt"></div>
+                <div class="input-group" style="flex:1.5; min-width:150px; margin:0;"><label>Operatore</label><select id="cotturaOperatore"><option value="Operatore Cucina">Operatore Cucina</option></select></div>
+                <div class="input-group" style="flex:2; min-width:180px; margin:0;"><label>Note / Azioni Correttive</label><input type="text" id="cotturaNote" placeholder="Eventuali prolungamenti cottura o ripassi"></div>
+                <button class="btn-print" style="background-color: var(--orange); height:43px;" id="btnAddCottura">💾 Salva Lavorazione</button>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="pdf-table-cottura">
+                <thead>
+                    <tr>
+                        <th>Stato CCP</th>
+                        <th>Data e Orari</th>
+                        <th>Pietanza e Lotto</th>
+                        <th>Temp. Cottura</th>
+                        <th>Trattamento & Post-Abbatt.</th>
+                        <th>Operatore / Note</th>
+                        <th>Azioni & Stampe</th>
+                    </tr>
+                </thead>
+                <tbody id="table-cottura"><tr><td colspan="7" style="text-align:center; padding: 30px;">Caricamento in corso...</td></tr></tbody>
+            </table>
         </div>
     </div>
 
@@ -148,6 +258,13 @@
     <div id="tab-infestanti" class="tab-content">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><div><h2 style="color: var(--warning); margin: 0 0 5px 0;">🪤 Pest Control (Monitoraggio)</h2></div>
         <button class="btn-print" style="background-color: var(--warning);" onclick="generatePDF('table-pest', 'REGISTRO MONITORAGGIO INFESTANTI (PEST CONTROL)')">🖨️ Stampa PDF</button></div>
+        
+        <div class="kpi-grid">
+            <div class="kpi-card warning-box"><span class="kpi-title" style="color:var(--warning)">Controlli Totali</span><span class="kpi-value" id="kpi-pest-totali">0</span></div>
+            <div class="kpi-card success"><span class="kpi-title">Postazioni Integre</span><span class="kpi-value" id="kpi-pest-ok">0</span></div>
+            <div class="kpi-card danger"><span class="kpi-title">Anomalie / Catture</span><span class="kpi-value" id="kpi-pest-err">0</span></div>
+        </div>
+
         <div class="admin-panel" style="margin-bottom: 25px; border-left: 5px solid var(--warning);"><h3 style="color: var(--warning); margin-bottom: 15px;">➕ Registra Controllo Interno Postazione</h3><div class="flex-row"><div class="input-group" style="flex:1; margin:0;"><label>Data</label><input type="date" id="pestDate"></div><div class="input-group" style="flex:2; margin:0;"><label>Nome Postazione</label><input type="text" id="pestName" placeholder="Es. Trappola 1 Esterno..."></div><div class="input-group" style="flex:1; margin:0;"><label>Infestante</label><select id="pestType"><option value="Roditori">Roditori</option><option value="Insetti Striscianti">Insetti Striscianti</option><option value="Insetti Volanti">Insetti Volanti</option></select></div><div class="input-group" style="flex:1; margin:0;"><label>Esito</label><select id="pestResult"><option value="Regolare (Intatta)">Regolare (Intatta)</option><option value="Esca Consumata">Esca Consumata</option><option value="Cattura">Cattura Rilevata</option><option value="Danneggiata">Danneggiata</option></select></div><button class="btn-print" style="background-color: var(--warning);" id="btnAddPest">Salva Controllo</button></div></div>
         <div class="table-wrapper"><table id="pdf-table-pest"><thead><tr><th>Data Controllo</th><th>Postazione</th><th>Target</th><th>Esito Rilevato</th><th>Stato</th><th>Azioni</th></tr></thead><tbody id="table-pest"><tr><td colspan="6" style="text-align:center; padding: 40px;">Caricamento in corso...</td></tr></tbody></table></div>
     </div>
@@ -176,35 +293,191 @@
         <p style="color:white; font-weight:bold; margin-top: 15px; background: rgba(0,0,0,0.5); padding: 8px 15px; border-radius: 20px;">Tocca per chiudere</p>
     </div>
 
-    <!-- FUNZIONE GENERAZIONE PDF A NORMA MULTI-STRUTTURA -->
+    <!-- FUNZIONI PDF & STAMPA ETICHETTA TERMICA 100x60 MM -->
     <script>
-        // Oggetto globale che conterrà i dati della struttura scaricati da Firebase
         window.datiStruttura = {
-            nome: 'STRUTTURA NON IMPOSTATA',
+            nome: 'NUOVA VILLA SILVANA',
             indirizzo: '-',
             piva: '-',
             admin: '-',
             haccp: '-'
         };
 
+        // Generatore asincrono QR Code in formato Base64 PNG per jsPDF
+        function generaQrBase64(testo) {
+            return new Promise((resolve) => {
+                const tempDiv = document.createElement('div');
+                tempDiv.style.display = 'none';
+                document.body.appendChild(tempDiv);
+                
+                new QRCode(tempDiv, {
+                    text: testo,
+                    width: 140,
+                    height: 140,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+
+                setTimeout(() => {
+                    let dataUrl = '';
+                    const img = tempDiv.querySelector('img');
+                    const canvas = tempDiv.querySelector('canvas');
+                    if(img && img.src && img.src.startsWith('data:image')) {
+                        dataUrl = img.src;
+                    } else if(canvas) {
+                        dataUrl = canvas.toDataURL('image/png');
+                    }
+                    tempDiv.remove();
+                    resolve(dataUrl);
+                }, 80);
+            });
+        }
+
+        // STAMPA ETICHETTA TERMICA AUTOADESIVA (100 mm x 60 mm)
+        window.stampaSchedaSingola = async function(id) {
+            const item = (window.dbCottura || []).find(x => x.id === id);
+            if(!item) return alert("Record di lavorazione non trovato.");
+
+            const { jsPDF } = window.jspdf;
+            // Dimensioni esatte rotolo termico: 100mm larghezza x 60mm altezza
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [100, 60] });
+
+            const isOk = !item.esito_ccp || item.esito_ccp.startsWith('CONFORME');
+
+            // Bordo etichetta termica
+            doc.setDrawColor(30, 41, 59);
+            doc.setLineWidth(0.6);
+            doc.rect(2, 2, 96, 56);
+
+            // Testata
+            doc.setFontSize(8);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(30, 41, 59);
+            doc.text((window.datiStruttura.nome || 'NUOVA VILLA SILVANA').toUpperCase(), 4, 6);
+
+            doc.setFontSize(6.5);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(100);
+            doc.text("CCP COTTURA & ABBATTIMENTO (REG. CE 852/04)", 96, 6, { align: 'right' });
+
+            doc.setLineWidth(0.3);
+            doc.setDrawColor(200);
+            doc.line(4, 7.5, 96, 7.5);
+
+            // Pietanza (Nome grande e ben leggibile)
+            doc.setFontSize(10.5);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(15, 23, 42);
+            doc.text(String(item.alimento || 'PREPARAZIONE ALIMENTARE').toUpperCase().substring(0, 32), 4, 12);
+
+            // Dati Lavorazione e Lotto
+            doc.setFontSize(7);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(50);
+            doc.text(`Lotto Mat. Prima: ${item.lotto || 'INTERNO'}`, 4, 16.5);
+            doc.text(`Data Prep.: ${item.data_lavorazione || '-'}`, 40, 16.5);
+
+            // Box Parametri CCP
+            doc.setFillColor(248, 250, 252);
+            doc.rect(4, 18.5, 66, 17, 'F');
+            doc.setDrawColor(226, 232, 240);
+            doc.rect(4, 18.5, 66, 17, 'S');
+
+            doc.setFontSize(7);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(30);
+            doc.text("COTTURA AL CUORE:", 6, 23);
+            doc.setTextColor(item.temp_cottura < 75 ? 220 : 15, item.temp_cottura < 75 ? 38 : 128, item.temp_cottura < 75 ? 38 : 61);
+            doc.text(`${item.temp_cottura || '-'} °C (ore ${item.ora_fine_cottura || '-'})`, 34, 23);
+
+            doc.setTextColor(30);
+            doc.text("ABBATTIMENTO:", 6, 28);
+            doc.setTextColor(15, 118, 110);
+            const tAbbStr = item.temp_abbattimento !== null && item.temp_abbattimento !== undefined ? `${item.temp_abbattimento} °C` : '-';
+            const durStr = item.durata_abbatt_min ? ` in ${item.durata_abbatt_min} min` : '';
+            doc.text(`${tAbbStr}${durStr}`, 34, 28);
+
+            doc.setTextColor(100);
+            doc.setFontSize(6);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Trattamento: ${(item.trattamento || '-').substring(0, 38)}`, 6, 33);
+
+            // Calcolo Data Limite di Consumo (Scadenza secondaria interna)
+            let scadenzaStr = "-";
+            if(item.data_lavorazione) {
+                const [y, m, d] = item.data_lavorazione.split('-').map(Number);
+                const dt = new Date(y, m - 1, d);
+                const giorniAggiunti = (item.trattamento || '').includes('-18°C') ? 90 : 3;
+                dt.setDate(dt.getDate() + giorniAggiunti);
+                scadenzaStr = `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
+            }
+
+            doc.setFontSize(7.5);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(15, 23, 42);
+            doc.text("DA CONSUMARSI ENTRO:", 4, 39.5);
+            doc.setFontSize(9);
+            doc.setTextColor(185, 28, 28);
+            doc.text(scadenzaStr, 40, 39.5);
+
+            // Modalità di Conservazione & Operatore
+            doc.setFontSize(6.5);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(70);
+            const modoCons = (item.trattamento || '').includes('-18°C') ? "Conservare a temp. <= -18°C nel congelatore" : "Conservare a temp. tra 0°C e +4°C in frigorifero";
+            doc.text(modoCons, 4, 44);
+            doc.text(`Operatore responsabile: ${item.operatore || 'Staff Cucina'}`, 4, 48);
+
+            // Esito CCP timbro
+            doc.setFontSize(7);
+            doc.setFont(undefined, 'bold');
+            if(isOk) {
+                doc.setTextColor(16, 120, 60);
+                doc.text("✓ CCP CONFORME", 4, 53);
+            } else {
+                doc.setTextColor(220, 38, 38);
+                doc.text("⚠️ ANOMALIA CCP SEGNALATA", 4, 53);
+            }
+
+            // Generazione e disegno QR Code (quadrato 23x23 mm a destra)
+            const qrPayload = `HACCP|${item.alimento}|L:${item.lotto||'INT'}|DT:${item.data_lavorazione}|TC:${item.temp_cottura}C|TA:${item.temp_abbattimento}C|EXP:${scadenzaStr}|${window.datiStruttura.nome}`;
+            try {
+                const qrImgData = await generaQrBase64(qrPayload);
+                if(qrImgData) {
+                    doc.addImage(qrImgData, 'PNG', 72, 11, 23, 23);
+                }
+            } catch(err) {
+                console.warn("Impossibile generare QR su etichetta:", err);
+            }
+
+            doc.setFontSize(5.5);
+            doc.setTextColor(120);
+            doc.text("Scansiona per dati CCP", 83.5, 36.5, { align: 'center' });
+            doc.text(`ID:${item.id.substring(0, 10)}`, 83.5, 39.5, { align: 'center' });
+
+            // File stampabile termicamente
+            doc.save(`Etichetta_100x60_${(item.alimento||'Lotto').replace(/ /g,'_')}_${item.data_lavorazione||''}.pdf`);
+        };
+
+        // STAMPA REGISTRO GENERALE TABELLARE PDF
         window.generatePDF = function(tableId, titoloDocumento) {
             try {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('landscape'); 
                 
-                // Intestazione Ufficiale Dinamica (legge i dati salvati dal pannello Admin)
                 doc.setFontSize(18);
                 doc.setTextColor(30, 41, 59);
-                doc.text((window.datiStruttura.nome || 'STRUTTURA NON IMPOSTATA').toUpperCase(), 14, 20);
+                doc.text((window.datiStruttura.nome || 'NUOVA VILLA SILVANA').toUpperCase(), 14, 20);
                 
                 doc.setFontSize(10);
                 doc.setTextColor(100, 116, 139);
                 let stringaIndirizzo = `Indirizzo: ${window.datiStruttura.indirizzo || '-'} | P.IVA/C.F.: ${window.datiStruttura.piva || '-'}`;
-                let stringaResp = `Legale Rappresentante: ${window.datiStruttura.admin || '-'} | Resp. HACCP: ${window.datiStruttura.haccp || '-'}`;
+                let stringaResp = `Legale Rappr.: ${window.datiStruttura.admin || '-'} | Resp. HACCP: ${window.datiStruttura.haccp || '-'}`;
                 doc.text(stringaIndirizzo, 14, 26);
                 doc.text(stringaResp, 14, 31);
                 
-                doc.setFontSize(14);
+                doc.setFontSize(13);
                 doc.setTextColor(0, 0, 0);
                 doc.text(titoloDocumento, 14, 42);
 
@@ -213,52 +486,23 @@
                 doc.setFontSize(9);
                 doc.text('Generato il: ' + dataStampa + ' alle ' + oraStampa, 280, 20, { align: 'right' });
 
-                // Impostazioni base della tabella
                 let autoTableOptions = {
                     html: '#pdf-' + tableId,
-                    startY: 48, // Spostato leggermente più giù per far spazio alla nuova intestazione
+                    startY: 48,
                     theme: 'grid',
-                    styles: { fontSize: 9, cellPadding: 3, valign: 'middle' },
+                    styles: { fontSize: 8.5, cellPadding: 3, valign: 'middle' },
                     headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold' },
                     alternateRowStyles: { fillColor: [241, 245, 249] },
                     didParseCell: function(data) {
                         if(data.cell.text && Array.isArray(data.cell.text)) {
                             for(let i=0; i<data.cell.text.length; i++){
                                 if(typeof data.cell.text[i] === 'string') {
-                                    data.cell.text[i] = data.cell.text[i].replace(/⚠️|✅|❌|✓|📦|🔍|🌡️|✨|🧹|🪤|🦺|📁|Rimuovi/g, '').trim();
+                                    data.cell.text[i] = data.cell.text[i].replace(/⚠️|✅|❌|✓|📦|🔍|🌡️|✨|🧹|🪤|🦺|📁|🍳|🏷️ Etichetta 100x60|Elimina/g, '').trim();
                                 }
                             }
                         }
-
                         if (tableId === 'table-tracc' && data.section === 'body' && data.column.index === 2) {
                             data.cell.text = []; 
-                        }
-
-                        if(data.section === 'body' && (data.column.index === 5 || (tableId === 'table-tracc' && data.column.index === 3))) {
-                            let opName = (data.cell.text && data.cell.text[0]) ? data.cell.text[0].split('\n')[0] : "Operatore";
-                            data.cell.text = [opName, "(Firma Acquisita a Sistema)"];
-                        }
-                    },
-                    didDrawCell: function(data) {
-                        if (tableId === 'table-tracc' && data.section === 'body' && data.column.index === 2) {
-                            var td = data.cell.raw;
-                            if(td && typeof td.getElementsByTagName === 'function') {
-                                var img = td.getElementsByTagName('img')[0];
-                                if (img) {
-                                    var base64Str = img.getAttribute('src');
-                                    if (base64Str && base64Str.startsWith('data:image')) {
-                                        var dim = 30; 
-                                        var textPosX = data.cell.x + (data.cell.width / 2) - (dim / 2);
-                                        var textPosY = data.cell.y + 2;
-                                        var format = base64Str.indexOf('image/png') > -1 ? 'PNG' : 'JPEG';
-                                        try {
-                                            doc.addImage(base64Str, format, textPosX, textPosY, dim, dim);
-                                        } catch (e) {
-                                            console.error("Errore renderizzazione immagine PDF:", e);
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
                 };
@@ -274,29 +518,83 @@
                     doc.setPage(i);
                     doc.setFontSize(8);
                     doc.setTextColor(150);
-                    doc.text('Documento informatico validato digitalmente ai sensi del D.Lgs 193/07 e successivi.', 14, doc.internal.pageSize.height - 10);
+                    doc.text('Documento informatico validato digitalmente ai sensi del Reg. CE 852/04 e D.Lgs 193/07.', 14, doc.internal.pageSize.height - 10);
                     doc.text('Pagina ' + i + ' di ' + pageCount, 280, doc.internal.pageSize.height - 10, { align: 'right' });
                 }
 
                 doc.save(titoloDocumento.replace(/ /g, '_') + '_' + dataStampa + '.pdf');
-                
             } catch(error) {
-                alert("🚨 Si è verificato un errore durante la creazione del PDF:\n\n" + error.message);
-                console.error("Errore JS:", error);
+                alert("🚨 Errore creazione PDF:\n" + error.message);
+                console.error("Errore PDF:", error);
             }
+        };
+
+        // REPORT PERIODICO COTTURA & ABBATTIMENTO
+        window.filtraERiportaReportCottura = function() {
+            const dal = prompt("Inserisci data di INIZIO (formato AAAA-MM-GG):", new Date().toISOString().slice(0,7) + "-01");
+            if(!dal) return;
+            const al = prompt("Inserisci data di FINE (formato AAAA-MM-GG):", new Date().toISOString().slice(0,10));
+            if(!al) return;
+
+            const lista = (window.dbCottura || []).filter(x => x.data_lavorazione >= dal && x.data_lavorazione <= al);
+            if(lista.length === 0) return alert("Nessuna registrazione trovata nell'intervallo selezionato.");
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+
+            doc.setFontSize(16);
+            doc.setTextColor(30, 41, 59);
+            doc.text((window.datiStruttura.nome || 'NUOVA VILLA SILVANA').toUpperCase(), 14, 18);
+            doc.setFontSize(9);
+            doc.setTextColor(100);
+            doc.text(`REPORT PERIODICO MONITORAGGIO CCP COTTURA E ABBATTIMENTO (${dal} / ${al})`, 14, 25);
+            doc.text(`Generato da Dashboard il ${new Date().toLocaleDateString('it-IT')}`, 280, 18, { align: 'right' });
+
+            const bodyRows = lista.map(item => [
+                item.esito_ccp || 'CONFORME',
+                item.data_lavorazione || '-',
+                `${item.alimento || ''} (Lotto: ${item.lotto || '-'})`,
+                `${item.temp_cottura || '-'} °C (ore ${item.ora_fine_cottura || '-'})`,
+                item.trattamento || '-',
+                `${item.temp_abbattimento !== null && item.temp_abbattimento !== undefined ? item.temp_abbattimento + ' °C' : '-'} (${item.durata_abbatt_min ? item.durata_abbatt_min + 'm' : '-'})`,
+                item.operatore || '-',
+                item.note || '-'
+            ]);
+
+            doc.autoTable({
+                head: [['Esito CCP', 'Data', 'Pietanza e Lotto', 'Cottura Cuore', 'Trattamento', 'Abbattimento', 'Operatore', 'Note']],
+                body: bodyRows,
+                startY: 32,
+                theme: 'grid',
+                styles: { fontSize: 8, cellPadding: 2.5 },
+                headStyles: { fillColor: [234, 88, 12], textColor: 255 }
+            });
+
+            doc.save(`Report_Cottura_${dal}_al_${al}.pdf`);
         };
     </script>
 
-    <!-- SCRIPT FIREBASE E LOGICA -->
+    <!-- LOGICA FIREBASE E VERIFICA CCP -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
         import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyAACj8J2iOSAwS_DJaJQGvwB8-klMZ_NgE", authDomain: "hccp-nvs.firebaseapp.com", projectId: "hccp-nvs", storageBucket: "hccp-nvs.firebasestorage.app", messagingSenderId: "426557690382", appId: "1:426557690382:web:9c45087394117f8953a25f" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
         const app = initializeApp(firebaseConfig); 
         const db = getFirestore(app);
 
-        document.getElementById('pestDate').value = new Date().toISOString().split('T')[0];
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('pestDate').value = todayStr;
+        if(document.getElementById('cotturaDate')) document.getElementById('cotturaDate').value = todayStr;
+
+        window.dbCottura = [];
 
         window.openTab = (tabId, btn, colorClass) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -307,40 +605,197 @@
 
         function formatTime(ts) { return !ts ? "Attendere..." : ts.toDate().toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
 
-        // --- GESTIONE DATI STRUTTURA MULTIPLA ---
-        onSnapshot(doc(db, "configurazioni", "struttura"), (docSnap) => {
+        function calcMinutesDiff(tInizio, tFine) {
+            if(!tInizio || !tFine) return null;
+            const [h1, m1] = tInizio.split(':').map(Number);
+            const [h2, m2] = tFine.split(':').map(Number);
+            let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+            if(diff < 0) diff += 1440;
+            return diff;
+        }
+
+        // Dati struttura sincronizzati
+        onSnapshot(doc(db, "struttura", "info"), (docSnap) => {
             if (docSnap.exists()) {
                 const d = docSnap.data();
-                window.datiStruttura = d;
-                document.getElementById('strutNome').value = d.nome || '';
-                document.getElementById('strutIndirizzo').value = d.indirizzo || '';
-                document.getElementById('strutPiva').value = d.piva || '';
-                document.getElementById('strutAdmin').value = d.admin || '';
-                document.getElementById('strutHaccp').value = d.haccp || '';
+                window.datiStruttura = {
+                    nome: d.denominazione || d.nome || 'NUOVA VILLA SILVANA',
+                    indirizzo: d.indirizzo || '-',
+                    piva: d.piva || '-',
+                    admin: d.ragioneSociale || d.admin || '-',
+                    haccp: d.haccp || 'Resp. HACCP'
+                };
+                document.getElementById('strutNome').value = window.datiStruttura.nome;
+                document.getElementById('strutIndirizzo').value = window.datiStruttura.indirizzo;
+                document.getElementById('strutPiva').value = window.datiStruttura.piva;
+                document.getElementById('strutAdmin').value = window.datiStruttura.admin;
+                document.getElementById('strutHaccp').value = window.datiStruttura.haccp;
                 
-                if(d.nome) {
-                    document.getElementById('main-title').innerText = d.nome;
-                    document.title = "Dashboard - " + d.nome;
+                if(window.datiStruttura.nome) {
+                    document.getElementById('main-title').innerText = window.datiStruttura.nome;
+                    document.title = "Dashboard HACCP - " + window.datiStruttura.nome;
                 }
             }
         });
 
         document.getElementById('btnSalvaStruttura').addEventListener('click', async () => {
-            const payload = {
-                nome: document.getElementById('strutNome').value.trim(),
-                indirizzo: document.getElementById('strutIndirizzo').value.trim(),
-                piva: document.getElementById('strutPiva').value.trim(),
-                admin: document.getElementById('strutAdmin').value.trim(),
-                haccp: document.getElementById('strutHaccp').value.trim()
-            };
-            if(!payload.nome) return alert("Devi inserire almeno la Denominazione della Struttura!");
+            const nome = document.getElementById('strutNome').value.trim();
+            const ind = document.getElementById('strutIndirizzo').value.trim();
+            const piva = document.getElementById('strutPiva').value.trim();
+            const adm = document.getElementById('strutAdmin').value.trim();
+            const hac = document.getElementById('strutHaccp').value.trim();
+            
+            if(!nome) return alert("Inserisci almeno la Denominazione della Struttura!");
+            
+            const payload = { denominazione: nome, indirizzo: ind, piva: piva, ragioneSociale: adm, haccp: hac };
             try {
-                await setDoc(doc(db, "configurazioni", "struttura"), payload);
-                alert("✅ Dati della struttura salvati! Ora appariranno in tutte le stampe PDF.");
+                await setDoc(doc(db, "struttura", "info"), payload, { merge: true });
+                await setDoc(doc(db, "configurazioni", "struttura"), { nome, indirizzo: ind, piva, admin: adm, haccp: hac }, { merge: true });
+                alert("✅ Dati struttura salvati e sincronizzati con il gestionale!");
             } catch(e) { alert("Errore di salvataggio: " + e.message); }
         });
 
-        // --- MOTORE SMISTAMENTO REGISTRI ---
+        // Cottura & Abbattimento
+        document.getElementById('btnAddCottura').addEventListener('click', async () => {
+            const dataLav = document.getElementById('cotturaDate').value;
+            const alim = document.getElementById('cotturaAlimento').value.trim();
+            const lot = document.getElementById('cotturaLotto').value.trim();
+            const tCot = parseFloat(document.getElementById('cotturaTemp').value);
+            const oraCot = document.getElementById('cotturaOraFine').value;
+            const tratt = document.getElementById('cotturaTrattamento').value;
+            const tAbb = document.getElementById('cotturaTempAbbatt').value !== '' ? parseFloat(document.getElementById('cotturaTempAbbatt').value) : null;
+            const oraAbb = document.getElementById('cotturaOraAbbatt').value;
+            const op = document.getElementById('cotturaOperatore').value;
+            const note = document.getElementById('cotturaNote').value.trim();
+
+            if(!dataLav || !alim || isNaN(tCot)) {
+                return alert("Compila almeno Data, Alimento e Temperatura di cottura al cuore.");
+            }
+
+            const durataMin = calcMinutesDiff(oraCot, oraAbb);
+            let anomalie = [];
+
+            if(tCot < 75.0) {
+                anomalie.push("Cottura insufficiente (< 75°C)");
+            }
+
+            if(tratt.includes('Abbattimento') && durataMin !== null && durataMin > 90) {
+                anomalie.push(`Abbattimento lento (${durataMin} min > 90 min)`);
+            }
+
+            if(tAbb !== null) {
+                if(tratt.includes('+3°C') && tAbb > 4.0) anomalie.push(`Temp. finale > +4°C (${tAbb}°C)`);
+                if(tratt.includes('-18°C') && tAbb > -15.0) anomalie.push(`Surgelazione insufficiente (${tAbb}°C)`);
+            }
+
+            const esito = anomalie.length === 0 ? "CONFORME" : `NON CONFORME: ${anomalie.join(', ')}`;
+
+            try {
+                await addDoc(collection(db, "haccp_cottura_abbattimento"), {
+                    data_lavorazione: dataLav,
+                    alimento: alim,
+                    lotto: lot || 'Interno',
+                    temp_cottura: tCot,
+                    ora_fine_cottura: oraCot,
+                    trattamento: tratt,
+                    temp_abbattimento: tAbb,
+                    ora_fine_abbattimento: oraAbb,
+                    durata_abbatt_min: durataMin,
+                    operatore: op,
+                    note: note,
+                    esito_ccp: esito,
+                    timestamp: new Date()
+                });
+                document.getElementById('cotturaAlimento').value = '';
+                document.getElementById('cotturaLotto').value = '';
+                document.getElementById('cotturaTemp').value = '';
+                document.getElementById('cotturaTempAbbatt').value = '';
+                document.getElementById('cotturaNote').value = '';
+                alert("✅ Registrazione Lavorazione salvata con successo!");
+            } catch(e) {
+                alert("Errore inserimento: " + e.message);
+            }
+        });
+
+        window.deleteCottura = async (id) => {
+            if(confirm("Eliminare questa registrazione?")) {
+                await deleteDoc(doc(db, "haccp_cottura_abbattimento", id));
+            }
+        };
+
+        onSnapshot(query(collection(db, "haccp_cottura_abbattimento"), orderBy("data_lavorazione", "desc")), (snapshot) => {
+            const tb = document.getElementById('table-cottura');
+            const alertBox = document.getElementById('ccp-alert-container');
+            const alertDetails = document.getElementById('ccp-alert-details');
+
+            let html = '';
+            let cTot = 0, cOk = 0, aOk = 0, cKo = 0;
+            let nonConformitaAttive = [];
+            window.dbCottura = [];
+
+            snapshot.forEach(docSnap => {
+                const data = { id: docSnap.id, ...docSnap.data() };
+                window.dbCottura.push(data);
+                cTot++;
+
+                const isCritico = (data.temp_cottura < 75) || (data.durata_abbatt_min && data.durata_abbatt_min > 90) || !(data.esito_ccp || '').startsWith('CONFORME');
+
+                if(isCritico) {
+                    cKo++;
+                    nonConformitaAttive.push({
+                        data: data.data_lavorazione,
+                        alimento: data.alimento,
+                        motivo: data.temp_cottura < 75 ? `Cottura a ${data.temp_cottura}°C (< 75°C)` : `Abbattimento in ${data.durata_abbatt_min} min (> 90 min)`
+                    });
+                } else {
+                    cOk++;
+                }
+
+                if(data.temp_abbattimento !== null && data.temp_abbattimento !== undefined) aOk++;
+
+                const badge = !isCritico 
+                    ? `<span class="badge conforme">✓ CCP Idoneo</span>` 
+                    : `<span class="badge critico">❌ ${data.esito_ccp}</span>`;
+                const rowClass = !isCritico ? '' : 'row-critical';
+
+                html += `
+                    <tr class="${rowClass}">
+                        <td>${badge}</td>
+                        <td><strong>${data.data_lavorazione}</strong><br><small style="color:var(--text-muted)">Cottura: ${data.ora_fine_cottura || '-'}<br>Abbatt.: ${data.ora_fine_abbattimento || '-'}</small></td>
+                        <td><strong style="font-size:15px;">${data.alimento}</strong><br><span style="font-size:12px; color:var(--text-muted)">Lotto: ${data.lotto || '-'}</span></td>
+                        <td><strong style="font-size:16px; color:${data.temp_cottura < 75 ? 'var(--danger)' : 'var(--primary)'};">${data.temp_cottura} °C</strong></td>
+                        <td><span class="badge orange-badge">${data.trattamento || '-'}</span><br><strong>${data.temp_abbattimento !== null && data.temp_abbattimento !== undefined ? data.temp_abbattimento + ' °C' : '-'}</strong> ${data.durata_abbatt_min ? `<small style="color:${data.durata_abbatt_min > 90 ? 'var(--danger)' : 'var(--text-muted)'}">(${data.durata_abbatt_min} min)</small>` : ''}</td>
+                        <td><strong>${data.operatore || '-'}</strong><br><small style="font-style:italic;">${data.note || '-'}</small></td>
+                        <td>
+                            <div style="display:flex; gap:6px;">
+                                <button class="btn-print" style="padding:6px 10px; font-size:11px; background-color:var(--orange);" onclick="stampaSchedaSingola('${data.id}')">🏷️ Etichetta 100x60</button>
+                                <button class="btn-del" onclick="deleteCottura('${data.id}')">Elimina</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tb.innerHTML = html || '<tr><td colspan="7" style="text-align:center; padding: 25px;">Nessuna preparazione registrata.</td></tr>';
+            document.getElementById('kpi-cottura-tot').innerText = cTot;
+            document.getElementById('kpi-cottura-ok').innerText = cOk;
+            document.getElementById('kpi-abbatt-ok').innerText = aOk;
+            document.getElementById('kpi-cottura-ko').innerText = cKo;
+
+            if(nonConformitaAttive.length > 0) {
+                alertBox.style.display = 'block';
+                alertDetails.innerHTML = nonConformitaAttive.slice(0, 5).map(nc => `
+                    <div class="ccp-alert-item">
+                        ⚠️ <strong>${nc.data}</strong> - <em>${nc.alimento}</em>: <span style="font-weight:bold; text-decoration:underline;">${nc.motivo}</span>
+                    </div>
+                `).join('');
+            } else {
+                alertBox.style.display = 'none';
+                alertDetails.innerHTML = '';
+            }
+        });
+
+        // Registri standard
         onSnapshot(query(collection(db, "haccp_registri"), orderBy("timestamp_server", "desc")), 
             (snapshot) => {
                 const tbTemp = document.getElementById('table-temp');
@@ -352,7 +807,6 @@
 
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data(); 
-                    
                     let tipo = data.tipo_registro;
                     if (!tipo) {
                         if (data.temperature && Object.keys(data.temperature).length > 0) tipo = 'temperature';
@@ -383,11 +837,9 @@
                     } else { isEmpty = true; }
 
                     tagsHtml += '</div>';
-
                     if (isEmpty || tipo === 'sconosciuto') return; 
 
                     tCount++;
-
                     let noteText = data.note ? data.note.trim() : ""; let statusBadge = ""; let rowClass = "";
                     if (!hasAnomaly) { statusBadge = `<span class="badge conforme">✓ Conforme</span>`; } 
                     else if (hasAnomaly && noteText.length > 3) { statusBadge = `<span class="badge gestito">⚠️ Gestito (Note)</span>`; gCount++; } 
@@ -431,7 +883,7 @@
                 tbody.innerHTML = htmlTracc || '<tr><td colspan="4" style="text-align:center; padding: 20px;">Nessun lotto tracciato.</td></tr>';
                 document.getElementById('kpi-tracc-tot').innerText = tTot;
             },
-            (error) => { document.getElementById('table-tracc').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center; padding:20px;">🚨 ERRORE DATABASE: ${error.message} (Controlla le regole Firebase)</td></tr>`; }
+            (error) => { document.getElementById('table-tracc').innerHTML = `<tr><td colspan="4" style="color:red; text-align:center; padding:20px;">🚨 ERRORE DATABASE: ${error.message}</td></tr>`; }
         );
 
         onSnapshot(query(collection(db, "haccp_merci"), orderBy("timestamp_server", "desc")), (snapshot) => {
@@ -445,18 +897,36 @@
             document.getElementById('kpi-merci-tot').innerText = mTot; document.getElementById('kpi-merci-ok').innerText = mOk; document.getElementById('kpi-merci-ko').innerText = mKo;
         });
 
+        // Operatori
         onSnapshot(query(collection(db, "operatori"), orderBy("nome")), (snapshot) => {
-            const container = document.getElementById('op-list-container'); container.innerHTML = '';
-            snapshot.forEach((docSnap) => { const op = docSnap.data(); container.innerHTML += `<div class="list-item"><div><strong>${op.nome}</strong><span>${op.qualifica} | PIN: ${op.pin}</span></div><button class="btn-del" onclick="deleteOp('${docSnap.id}')">Rimuovi</button></div>`; });
+            const container = document.getElementById('op-list-container'); 
+            const selCot = document.getElementById('cotturaOperatore');
+            container.innerHTML = '';
+            if(selCot) selCot.innerHTML = '';
+
+            snapshot.forEach((docSnap) => { 
+                const op = docSnap.data(); 
+                const nome = op.nome || op.name || 'Operatore';
+                const qual = op.qualifica || op.role || 'Staff';
+                const pin = op.pin || '****';
+
+                container.innerHTML += `<div class="list-item"><div><strong>${nome}</strong><span>${qual} | PIN: ${pin}</span></div><button class="btn-del" onclick="deleteOp('${docSnap.id}')">Rimuovi</button></div>`; 
+                if(selCot) selCot.innerHTML += `<option value="${nome}">${nome} (${qual})</option>`;
+            });
         });
         window.deleteOp = async (id) => { if(confirm("Rimuovere operatore?")) await deleteDoc(doc(db, "operatori", id)); };
+        
         document.getElementById('btnAddOp').addEventListener('click', async () => {
-            const n = document.getElementById('newOpName').value.trim(); const r = document.getElementById('newOpRole').value.trim(); const p = document.getElementById('newOpPin').value.trim();
+            const n = document.getElementById('newOpName').value.trim(); 
+            const r = document.getElementById('newOpRole').value.trim(); 
+            const p = document.getElementById('newOpPin').value.trim();
             if(!n || !r || p.length < 4) return alert("Compila tutti i campi. PIN min. 4 cifre.");
-            await addDoc(collection(db, "operatori"), { nome: n, qualifica: r, pin: p });
-            document.getElementById('newOpName').value = ''; document.getElementById('newOpRole').value = ''; document.getElementById('newOpPin').value = '';
+            await addDoc(collection(db, "operatori"), { nome: n, name: n, qualifica: r, role: 'user', pin: p });
+            document.getElementById('newOpName').value = ''; 
+            document.getElementById('newOpPin').value = '';
         });
 
+        // Liste
         const configRef = doc(db, "configurazioni", "liste"); let currentConfig = { frigoriferi: [], aree: [], pulizie: [] };
         onSnapshot(configRef, (docSnap) => {
             if (docSnap.exists()) currentConfig = docSnap.data();
@@ -466,6 +936,7 @@
         window.addConfigItem = async (key, inputId) => { const el = document.getElementById(inputId); const val = el.value.trim(); if (!val) return; let arr = currentConfig[key] || []; arr.push(val); await setDoc(configRef, { [key]: arr }, { merge: true }); el.value = ''; };
         window.removeConfigItem = async (key, idx) => { let arr = currentConfig[key] || []; arr.splice(idx, 1); await setDoc(configRef, { [key]: arr }, { merge: true }); };
 
+        // Sicurezza
         document.getElementById('btnAddSicurezza').addEventListener('click', async () => {
             const n = document.getElementById('sicDocName').value.trim(); const c = document.getElementById('sicDocCat').value; const d = document.getElementById('sicDocDate').value;
             if(!n || !d) return alert("Inserisci Nome e Data di scadenza.");
@@ -487,6 +958,7 @@
             document.getElementById('kpi-sic-totali').innerText = sTot; document.getElementById('kpi-sic-ok').innerText = sOk; document.getElementById('kpi-sic-warn').innerText = sWarn; document.getElementById('kpi-sic-err').innerText = sErr;
         });
 
+        // Pest Control
         document.getElementById('btnAddPest').addEventListener('click', async () => {
             const d = document.getElementById('pestDate').value; const n = document.getElementById('pestName').value.trim(); const t = document.getElementById('pestType').value; const r = document.getElementById('pestResult').value;
             if(!d || !n) return alert("Inserisci Data e Nome postazione.");
@@ -494,16 +966,27 @@
             document.getElementById('pestName').value = ''; 
         });
         window.deletePest = async (id) => { if(confirm("Rimuovere controllo?")) await deleteDoc(doc(db, "haccp_pest_control", id)); };
+        
         onSnapshot(query(collection(db, "haccp_pest_control"), orderBy("data_controllo", "desc")), (snapshot) => {
-            const tbody = document.getElementById('table-pest'); let htmlPest = ''; let pTot = 0, pOk = 0, pErr = 0;
+            const tbody = document.getElementById('table-pest'); 
+            let htmlPest = ''; 
+            let pTot = 0, pOk = 0, pErr = 0;
+            
             snapshot.forEach((docSnap) => {
                 const data = docSnap.data(); pTot++; let badge = ""; let rowClass = "";
                 if (data.esito === "Regolare (Intatta)") { badge = `<span class="badge conforme">✓ Regolare</span>`; pOk++; } else { badge = `<span class="badge critico">⚠️ ${data.esito}</span>`; rowClass = "row-warning"; pErr++; }
-                const parts = data.data_controllo.split('-'); const dataFormattata = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : data.data_controllo;
+                const parts = (data.data_controllo || '').split('-'); 
+                const dataFormattata = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : data.data_controllo;
                 htmlPest += `<tr class="${rowClass}"><td style="font-size: 15px; font-weight: bold;">${dataFormattata}</td><td style="font-size: 15px;"><strong>${data.postazione}</strong></td><td>${data.tipo}</td><td>${data.esito}</td><td>${badge}</td><td><button class="btn-del" onclick="deletePest('${docSnap.id}')">Rimuovi</button></td></tr>`;
             });
-            tbody.innerHTML = htmlPest || '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nessun controllo registrato.</td></tr>';
-            document.getElementById('kpi-pest-totali').innerText = pTot; document.getElementById('kpi-pest-ok').innerText = pOk; document.getElementById('kpi-pest-err').innerText = pErr;
+            tbody.innerHTML = htmlPest || '<tr><td colspan="6" style="text-align:center; padding: 40px;">Nessun controllo registrato.</td></tr>';
+            
+            const kTot = document.getElementById('kpi-pest-totali');
+            const kOk = document.getElementById('kpi-pest-ok');
+            const kErr = document.getElementById('kpi-pest-err');
+            if(kTot) kTot.innerText = pTot; 
+            if(kOk) kOk.innerText = pOk; 
+            if(kErr) kErr.innerText = pErr;
         });
     </script>
 </body>
