@@ -61,7 +61,7 @@
 
         #top-nav-container { position: sticky; top: 0; z-index: 1000; width: 100%; display: flex; flex-direction: column; flex-shrink: 0; }
         .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); }
-        .navbar-brand { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1em; }
+        .navbar-brand { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1em; letter-spacing: 0.5px; }
         .navbar-actions { display: flex; gap: 10px; align-items: center; }
         .nav-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: var(--radius); cursor: pointer; transition: 0.2s; text-decoration:none; display:flex; align-items:center; }
         .nav-btn:hover { background: rgba(255,255,255,0.2); }
@@ -259,9 +259,9 @@
 
     <div id="top-nav-container">
         <div class="navbar">
-            <div style="display:flex; align-items:center;">
-                <a href="index.html" class="btn-back">⬅️ TORNA AL GESTIONALE</a>
-                <div class="navbar-brand" style="margin-left: 10px;"><span>🏥 NVS Masterpiece [Clinica]</span></div>
+            <!-- INTESTAZIONE DINAMICA DELLA STRUTTURA -->
+            <div class="navbar-brand">
+                <span id="navbarStructureBrand">🏥 NUOVA VILLA SILVANA - Residenza Protetta</span>
             </div>
             <div class="navbar-actions">
                 <a href="iso_9001_accreditamento.html" target="_blank" class="nav-btn" style="text-decoration:none; color:#fde047; font-weight:bold;">🏆 Area Direzione (ISO)</a>
@@ -879,6 +879,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
@@ -890,6 +891,7 @@
         };
         
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
         self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
         let appCheck = null;
@@ -1144,8 +1146,48 @@
             } 
         };
 
-        window.addOperator = async () => { const n=document.getElementById('newOpInput').value; const p=document.getElementById('newOpPin').value; if(!n||!p) return window.showToast("⚠️ Nome e PIN"); await addDoc(collection(db,"operatori"),{name:n, pin:p, role:document.getElementById('newOpRole').value, qualifica:document.getElementById('newOpQualifica').value}); document.getElementById('newOpInput').value=''; document.getElementById('newOpPin').value=''; window.showToast("✅ Aggiunto"); };
-        window.removeOperator = async (id) => { if(confirm("Eliminare?")) await deleteDoc(doc(db,"operatori",id)); };
+        // GESTIONE STAFF CON INTEGRALITÀ FIREBASE AUTH
+        window.addOperator = async () => { 
+            const n = document.getElementById('newOpInput').value.trim(); 
+            const p = document.getElementById('newOpPin').value.trim(); 
+            const r = document.getElementById('newOpRole').value;
+            const q = document.getElementById('newOpQualifica').value;
+
+            if(!n || !p || p.length < 4) return window.showToast("⚠️ Inserisci Nome e un PIN di almeno 4 cifre"); 
+
+            const emailFittizia = n.toLowerCase().replace(/[^a-z0-9]/g, '.') + "@villasilvana.local";
+
+            try {
+                // 1. Crea utente su Firebase Auth
+                const userCredential = await createUserWithEmailAndPassword(auth, emailFittizia, p);
+                const uid = userCredential.user.uid;
+
+                // 2. Salva record su Firestore
+                await setDoc(doc(db, "operatori", uid), {
+                    uid: uid,
+                    name: n,
+                    nome: n,
+                    pin: p,
+                    role: r,
+                    qualifica: q,
+                    email: emailFittizia
+                });
+
+                document.getElementById('newOpInput').value = ''; 
+                document.getElementById('newOpPin').value = ''; 
+                window.showToast("✅ Operatore registrato con successo (Auth + DB)!");
+            } catch(e) {
+                console.error(e);
+                window.showToast("❌ Errore registrazione operatore: " + e.message);
+            }
+        };
+
+        window.removeOperator = async (id) => { 
+            if(confirm("Eliminare operatore?")) {
+                await deleteDoc(doc(db, "operatori", id)); 
+                window.showToast("🗑️ Operatore eliminato.");
+            }
+        };
         
         window.selectLoginProfile = (n) => { 
             window.selectedLoginOperator = n; 
@@ -1162,12 +1204,12 @@
             document.getElementById('loginPinInput').value = ''; 
         };
 
-        window.performLogin = () => { 
+        window.performLogin = async () => { 
             const p = document.getElementById('loginPinInput').value; 
-            const op = window.dbOperatori.find(o => o.name === window.selectedLoginOperator); 
+            const op = window.dbOperatori.find(o => o.name === window.selectedLoginOperator || o.nome === window.selectedLoginOperator); 
             
-            if((op && op.pin === p) || (window.selectedLoginOperator === 'Admin' && p === '12345')) { 
-                let realOp = op || {name: "Admin", role: "admin", qualifica: "Direttore Sanitario"};
+            if(window.selectedLoginOperator === 'Admin' && p === '12345') {
+                let realOp = {name: "Admin", role: "admin", qualifica: "Direttore Sanitario"};
                 window.activeOperator = realOp.name; 
                 window.activeOperatorRole = realOp.role; 
                 window.activeOperatorQualifica = realOp.qualifica; 
@@ -1183,10 +1225,38 @@
                 window.applyRolePermissions(); 
                 window.resetLoginSelection(); 
                 setTimeout(window.renderCharts, 500);
-            } else { 
-                window.showToast("❌ PIN Errato"); 
+                return;
+            }
+
+            if (!op) {
+                return window.showToast("❌ Profilo non trovato");
+            }
+
+            const emailFittizia = op.email || (op.name || op.nome).toLowerCase().replace(/[^a-z0-9]/g, '.') + "@villasilvana.local";
+
+            try {
+                await signInWithEmailAndPassword(auth, emailFittizia, p);
+
+                window.activeOperator = op.name || op.nome; 
+                window.activeOperatorRole = op.role || 'user'; 
+                window.activeOperatorQualifica = op.qualifica || 'OSS'; 
+                
+                sessionStorage.setItem("activeOperator", window.activeOperator);
+                sessionStorage.setItem("activeRole", window.activeOperatorRole);
+                sessionStorage.setItem("activeQualifica", window.activeOperatorQualifica);
+                
+                document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`; 
+                document.getElementById('loginScreen').style.display = 'none'; 
+                document.getElementById('appScreen').style.display = 'flex'; 
+                
+                window.applyRolePermissions(); 
+                window.resetLoginSelection(); 
+                setTimeout(window.renderCharts, 500);
+            } catch (e) {
+                console.error(e);
+                window.showToast("❌ PIN Errato o credenziali non valide"); 
                 document.getElementById('loginPinInput').value = ''; 
-            } 
+            }
         };
 
         window.isMedicoOrAdmin = () => ['Medico','Direttore Sanitario'].includes(window.activeOperatorQualifica) || window.activeOperatorRole==='admin';
@@ -1203,7 +1273,6 @@
             
             if(document.getElementById('adminPanel')) document.getElementById('adminPanel').style.display = window.activeOperatorRole==='admin' ? 'block' : 'none'; 
 
-            // Controllo visibilità form Diari Clinici
             const medWarning = document.getElementById('noMedRoleWarning');
             const medBox = document.querySelector('.only-medico');
             const infBox = document.getElementById('infDiaryEditBox');
@@ -1424,7 +1493,6 @@
                     } 
                     let av=g.photo?`<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">`:`👤`; 
                     
-                    // Sezione Recapiti visibile anche agli OSS
                     let contattiHtml = `
                         <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:8px; border-radius:4px; font-size:0.8em; margin-top:4px;">
                             <div>📞 <strong>Familiare (${g.refParentela||'Ref'}):</strong> ${g.ref||'-'} (${g.refTel||'N.D.'})</div>
@@ -2279,6 +2347,13 @@
                 sV('strutPiva', window.dbStruttura.piva);
                 sV('strutTelefono', window.dbStruttura.telefono);
                 sV('strutEmail', window.dbStruttura.email);
+                
+                const navBrand = document.getElementById('navbarStructureBrand');
+                if(navBrand) {
+                    let dName = window.dbStruttura.denominazione || 'NUOVA VILLA SILVANA';
+                    let dTipo = window.dbStruttura.tipo ? ` - ${window.dbStruttura.tipo}` : '';
+                    navBrand.innerText = `🏥 ${dName}${dTipo}`;
+                }
             }
         });
 
