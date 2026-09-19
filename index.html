@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NVS Masterpiece - UI Istituzionale (Regione Umbria) & Clinica</title>
     
-    <!-- Librerie esterne essenziali -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
@@ -44,7 +43,6 @@
         body[data-qualifica="Infermiere"] .inf-edit-area, body[data-qualifica="Infermiere"] .inf-delete-btn { display: block !important; }
         body[data-qualifica="OSS"] .oss-edit-area, body[data-qualifica="OSS"] .oss-delete-btn { display: block !important; }
 
-        /* MARKER LESIONI ANATOMICHE NUMERATI */
         .body-marker { 
             position: absolute; width: 22px; height: 22px; 
             background-color: var(--error-color); 
@@ -52,11 +50,9 @@
             transform: translate(-50%, -50%); cursor: pointer; z-index: 10; 
             box-shadow: 0 2px 6px rgba(225,29,72,0.6);
             display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 11px; font-weight: bold;
-            user-select: none;
+            color: white; font-size: 11px; font-weight: bold; user-select: none;
         }
         
-        /* MODALE FIRMA DIGITALE CANVAS */
         #signature-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.85); z-index: 30000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .signature-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 520px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; display:flex; flex-direction:column; gap: 15px;}
         #sig-canvas { border: 2px dashed var(--primary-color); border-radius: 6px; width: 100%; height: 220px; background: #f8fafc; cursor: crosshair; touch-action: none; }
@@ -185,7 +181,7 @@
     <div id="toast-container"></div>
     <div id="printArea"></div>
 
-    <!-- MODALE FIRMA CANVAS -->
+    <!-- MODALE CANVAS FIRMA -->
     <div id="signature-modal">
         <div class="signature-box">
             <h3 id="sig-title" style="margin:0; color:var(--primary-color); font-size:1.3em;">Apponi Firma Digitale</h3>
@@ -199,7 +195,7 @@
         </div>
     </div>
 
-    <!-- SCHERMATA LOGIN -->
+    <!-- SCHERMATA LOGIN CON PROFILI E FALLBACK -->
     <div id="loginScreen">
         <div class="login-header-title">
             <h1>NUOVA VILLA SILVANA</h1>
@@ -262,13 +258,18 @@
             <!-- DASHBOARD -->
             <div id="ws-dashboard" class="workspace active">
                 <div class="metrics-grid">
-                    <div class="metric-card"><h2 id="dash-guests-count" style="margin-bottom:0;">0</h2><span id="dash-guests-detail" style="font-size:0.85em; color:var(--text-light);">0 Presenti | 0 Assenti</span><br><span style="margin-top:5px; display:inline-block; font-size:0.8em; text-transform:uppercase;">Posti Letto Occupati</span></div>
-                    <div class="metric-card" style="border-left-color: var(--app-color);"><h2 id="dash-app-count" style="color: var(--app-color);">0</h2><span style="font-size:0.8em; text-transform:uppercase;">Visite (CUP)</span></div>
+                    <div class="metric-card">
+                        <h2 id="dash-guests-count" style="margin-bottom:0;">0</h2>
+                        <span id="dash-guests-detail" style="font-size:0.85em; color:var(--text-light); font-weight:normal;">0 Presenti | 0 Assenti</span><br>
+                        <span style="margin-top:5px; display:inline-block; font-size:0.8em; text-transform:uppercase;">Posti Letto Occupati</span>
+                    </div>
+                    <div class="metric-card" style="border-left-color: var(--app-color);"><h2 id="dash-app-count" style="color: var(--app-color);">0</h2><span style="font-size:0.8em; text-transform:uppercase;">Visite Programmate (CUP)</span></div>
                     <div class="metric-card" style="border-left-color: var(--error-color);"><h2 id="dash-cont-count" style="color: var(--error-color);">0</h2><span style="font-size:0.8em; text-transform:uppercase;">Contenzioni Attive</span></div>
                 </div>
-                <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                    <div class="card" style="flex:2; min-width:300px; border-top:4px solid var(--warning-color);"><div class="card-header"><h3 style="color:var(--warning-color);">Scadenziario Legale e Alert Clinici</h3></div><div id="dashboardAlertsList"></div></div>
-                    <div class="card" style="flex:1; min-width:300px;"><div class="card-header"><h3>Agenda CUP</h3></div><div id="dashMiniCalendar"></div></div>
+                
+                <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom: 20px;">
+                    <div class="card" style="flex:2; min-width:300px; margin-bottom:0; border-top:4px solid var(--warning-color);"><div class="card-header"><h3 style="color:var(--warning-color);">Scadenziario Legale e Alert Clinici</h3></div><div id="dashboardAlertsList"></div></div>
+                    <div class="card" style="flex:1; min-width:300px; margin-bottom:0;"><div class="card-header"><h3>Agenda CUP</h3></div><div id="dashMiniCalendar"></div></div>
                 </div>
             </div>
 
@@ -280,8 +281,8 @@
                         <button class="btn-doc" onclick="window.resetAnagraficaForm()">🔄 Svuota Campi</button>
                     </div>
                     <div class="form-group" style="background:#e0f2fe; padding:10px; border:1px solid #bae6fd; border-radius:4px; margin-bottom:15px;">
-                        <label style="color:#0284c7;"><strong>✏️ Modifica Anagrafica</strong></label>
-                        <select id="editAnagraficaSelect" onchange="window.loadAnagraficaForEdit()"><option value="">-- ➕ Crea Nuovo Ospite --</option></select>
+                        <label style="color:#0284c7;"><strong>✏️ Modifica Anagrafica / Recupera Ospite</strong></label>
+                        <select id="editAnagraficaSelect" onchange="window.loadAnagraficaForEdit()" style="border-color:#0284c7;"><option value="">-- ➕ Crea Nuovo Ospite --</option></select>
                     </div>
                     <div class="section-box" style="border-left: 4px solid var(--error-color);">
                         <h4>1. Dati Generali <span class="alloggiati-badge">🔴 Obbligatorio Alloggiati</span></h4>
@@ -292,14 +293,9 @@
                             <div class="form-group" style="flex:1.2;"><label>Data Nascita *</label><input type="date" id="newGuestDob" class="alloggiati-req"></div>
                             <div class="form-group" style="flex:1.5;"><label>Codice Fiscale *</label><input type="text" id="newGuestCF"></div>
                         </div>
-                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                            <div class="form-group" style="flex:2;"><label>Comune di Nascita *</label><input type="text" id="newGuestPob" list="comuniList" onchange="window.fillComune('Pob')" class="alloggiati-req"></div>
-                            <div class="form-group" style="flex:0.6;"><label>Prov. *</label><input type="text" id="newGuestPobProv" maxlength="2" readonly class="alloggiati-req"></div>
-                            <div class="form-group" style="flex:1.5;"><label>Codice Alloggiati *</label><input type="text" id="newGuestPobCod" readonly class="alloggiati-req"></div>
-                        </div>
                     </div>
                     <div class="section-box">
-                        <h4>2. Ingresso e Residenza</h4>
+                        <h4>2. Ingresso in Struttura</h4>
                         <div style="display:flex; gap:10px; flex-wrap:wrap;">
                             <div class="form-group" style="flex:1.2;"><label>Data Ingresso *</label><input type="date" id="newGuestIngresso" class="alloggiati-req"></div>
                             <div class="form-group" style="flex:1;"><label>Stanza</label><input type="text" id="newGuestRoom"></div>
@@ -334,7 +330,7 @@
                 <div id="clinicalContent" style="display:none;">
                     <div class="clinical-header" id="clinicalHeader"></div>
 
-                    <!-- BOX STATO E ANTEPRIMA FIRMA PRIVACY NELLA CLINICA -->
+                    <!-- BOX STATO E ANTEPRIMA FIRMA CLINICA -->
                     <div class="card" style="border-left: 6px solid var(--success-color); background: #f8fafc;">
                         <div class="card-header"><h3 style="color: var(--success-color);">✍️ Privacy & Consenso Informato (L. 219/2017)</h3></div>
                         <div style="display:flex; gap:15px; flex-wrap:wrap; align-items:center; background:#fff; padding:12px; border:1px solid var(--border-color); border-radius:6px;">
@@ -352,7 +348,7 @@
                         </div>
                     </div>
 
-                    <!-- MAPPATURA LESIONI CON MODELLINO UMANO & FOTO -->
+                    <!-- MAPPATURA LESIONI -->
                     <div class="card" style="border-top: 5px solid var(--error-color);">
                         <div class="card-header"><h3 style="color:var(--error-color);">Check-in e Mappatura Lesioni da Decubito</h3></div>
                         <div class="form-group"><label>Condizioni Generali</label><textarea id="chkGen" class="restrict-oss-input" rows="2" placeholder="Stato generale, cute..."></textarea></div>
@@ -361,9 +357,9 @@
                         <div class="form-group restrict-oss" style="background:#f8fafc; border:1px solid var(--border-color); padding:15px; border-radius:6px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                                 <label style="font-weight:bold; margin:0;">📍 Modellino Anatomico (Clicca per segnare le lesioni):</label>
-                                <button type="button" class="btn-doc" style="padding:4px 10px; font-size:0.8em;" onclick="window.clearBodyMarkers()">🗑️ Cancella Punti</button>
+                                <button type="button" class="btn-doc" style="padding:4px 10px; font-size:0.8em;" onclick="window.clearBodyMarkers()">🗑️ Cancella</button>
                             </div>
-                            <small style="color:var(--text-light); display:block; margin-bottom:10px;">Zone a rischio (Occipite, Scapole, Gomiti, Sacro, Trocanteri, Ischio, Malleoli, Talloni).</small>
+                            <small style="color:var(--text-light); display:block; margin-bottom:10px;">Zone a rischio (Occipite, Scapole, Gomiti, Sacro, Trocanteri, Ischio, Malleoli, Talloni). Clicca su un punto rosso per rimuoverlo.</small>
                             
                             <div id="bodyMapWrapper" style="position:relative; width: 100%; max-width: 440px; margin: 0 auto; border: 2px solid #cbd5e1; background: #ffffff; border-radius:8px; overflow:hidden;" onclick="window.handleBodyMapClick(event)">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" id="bodyMapSvg" style="width:100%; height:auto; display:block; cursor:crosshair; pointer-events:none;">
@@ -400,7 +396,7 @@
                         <div class="restrict-oss"><button class="btn-success" style="width:100%; padding:12px;" onclick="window.saveClinicalData()">💾 Salva Check-in, Mappa e Foto Lesioni</button></div>
                     </div>
 
-                    <!-- BINA & PAI -->
+                    <!-- BINA -->
                     <div class="card" style="border-top: 4px solid var(--primary-color);">
                         <div class="card-header"><h3 style="color:var(--primary-color);">🏛️ Scheda B.I.N.A.</h3><button class="btn-primary" onclick="window.calcolaBINA()">📊 Calcola</button></div>
                         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; background:#f8fafc; padding:15px; border-radius:6px; margin-bottom:15px;">
@@ -441,6 +437,7 @@
         </div>
     </div>
 
+    <!-- SCRIPT E LOGICA FIREBASE CON DOPPIO LIVELLO DI FALLBACK PROFILI -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
@@ -477,8 +474,8 @@
         window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
         window.getTodayString = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
         window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
-
-        /* CANVAS FIRMA DIGITALE */
+        
+        /* CANVAS FIRMA */
         let sigCanvas = document.getElementById('sig-canvas');
         let ctx = sigCanvas ? sigCanvas.getContext('2d') : null;
         let isDrawing = false; let signatureCallback = null;
@@ -600,7 +597,7 @@
             const l = document.getElementById('sidebarPatientList'); const s = document.getElementById('sidebarSearch')?.value.toLowerCase()||''; if(!l) return; l.innerHTML=''; 
             window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione).sort((a,b)=>a.name.localeCompare(b.name)).forEach(g => { 
                 if(s && !g.name.toLowerCase().includes(s)) return; 
-                l.innerHTML += `<div class="sidebar-item ${g.name===window.globalSelectedPatient?'active':''}" onclick="window.selectPatientGlobal('${g.name.replace(/'/g, "\\'")}')"><div class="sidebar-avatar">👤</div><div style="font-weight:bold; overflow:hidden; text-overflow:ellipsis;">${g.name}</div></div>`; 
+                l.innerHTML += `<div class="sidebar-item ${g.name===window.globalSelectedPatient?'active':''}" onclick="window.selectPatientGlobal('${g.name.replace(/'/g, "\\'")}')"><div class="sidebar-avatar">👤</div><div style="font-size:0.9em; font-weight:bold; overflow:hidden; text-overflow:ellipsis;">${g.name}</div></div>`; 
             }); 
         };
         window.selectPatientGlobal = (n) => { 
@@ -611,14 +608,17 @@
         window.goToNuovoOspite = () => { document.querySelectorAll('.menu-tab')[1].click(); setTimeout(()=>document.getElementById('newGuestCognome')?.focus(), 200); };
         
         window.loadGuests = () => { 
-            let att = window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione); 
+            let att = window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione); let arc = window.dbOspiti.filter(g=>g.decesso||g.dimissione); 
             ['clinicalGuestSelect','diariGuestSelect','terapiaGuestSelect','appGuestSelect','newRischioOspite','lettereGuestSelect','editAnagraficaSelect','contOspite'].forEach(id=>{ 
                 const s=document.getElementById(id); if(s){ let cv=s.value; s.innerHTML = id==='editAnagraficaSelect'?'<option value="">-- Crea Nuovo --</option>':'<option value="" disabled selected>Scegli...</option>'; 
-                att.forEach(g=>s.innerHTML+=`<option value="${g.name}">${g.name}</option>`); if(cv) s.value=cv; } 
+                let o1=document.createElement('optgroup'); o1.label="Attivi"; att.forEach(g=>o1.innerHTML+=`<option value="${g.name}">${g.name}</option>`); s.appendChild(o1); 
+                if(cv) s.value=cv; } 
             }); 
             if(document.getElementById('dash-guests-count')){ document.getElementById('dash-guests-count').innerText=att.length; document.getElementById('dash-guests-detail').innerText=`${att.length} Presenti | 0 Assenti`; window.renderCharts(); window.loadAlerts(); } 
             const gg=document.getElementById('guestGrid'); 
-            if(gg){ gg.innerHTML=''; att.forEach(g=>{ gg.innerHTML+=`<div class="guest-card"><div class="guest-card-top"><div class="guest-avatar" style="display:flex;align-items:center;justify-content:center;">👤</div><div><h4 style="margin:0;">${g.name}</h4><small>Stanza: ${g.room||'-'}</small></div></div><div class="guest-details">CF: ${g.cf||'-'}</div></div>`; }); } 
+            if(gg){ 
+                gg.innerHTML=''; att.forEach(g=>{ gg.innerHTML+=`<div class="guest-card"><div class="guest-card-top"><div class="guest-avatar" style="display:flex;align-items:center;justify-content:center;">👤</div><div><h4 style="margin:0;">${g.name}</h4><small>Stanza: ${g.room||'-'}</small></div></div><div class="guest-details">CF: ${g.cf||'-'}</div></div>`; }); 
+            } 
             window.renderSidebarPatients(); 
         };
 
@@ -768,25 +768,38 @@
             });
         };
 
-        /* SNAPSHOTS DI SICUREZZA */
+        /* SNAPSHOTS OPERATORI CON DOPPIO LIVELLO DI FALLBACK */
+        let profilesLoaded = false;
         onSnapshot(collection(db, "operatori"), snap => { 
+            profilesLoaded = true;
             let ops = snap.docs.map(d => ({id: d.id, ...d.data()})); 
-            ops = ops.filter(o => o && (o.name || o.nome)); 
+            ops = ops.filter(o => o && (o.name || o.nome) && (o.name || o.nome).trim() !== ""); 
             ops.forEach(o => { if(!o.name && o.nome) o.name = o.nome; });
-            if(!ops.some(o => o.name === "Admin")) ops.push({id:"admin-fallback", name:"Admin", pin:"12345", role:"admin", qualifica:"Direttore Sanitario"}); 
+            
+            if(!ops.some(o => o.name === "Admin")) { 
+                ops.push({id:"admin-fallback", name:"Admin", pin:"12345", role:"admin", qualifica:"Direttore Sanitario"}); 
+            } 
             window.dbOperatori = ops.sort((a,b) => a.name.localeCompare(b.name)); 
             window.loadOperators(); 
         }, err => {
+            console.warn("Rete rallentata per operatori, fallback locale attivo:", err);
             window.dbOperatori = [{id:"admin-fallback", name:"Admin", pin:"12345", role:"admin", qualifica:"Direttore Sanitario"}];
             window.loadOperators();
         });
+
+        setTimeout(() => {
+            if(!profilesLoaded) {
+                console.warn("Timeout Firebase operatori: forzatura sblocco locale.");
+                window.loadOperators();
+            }
+        }, 1500);
 
         onSnapshot(collection(db, "ospiti"), snap => { window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadGuests(); });
         onSnapshot(collection(db, "cartelle_cliniche"), snap => { window.dbClinica = {}; snap.forEach(d => { window.dbClinica[d.id] = d.data(); }); if(window.dbOspiti.length > 0) window.loadAlerts(); });
         onSnapshot(collection(db, "rischio"), snap => { window.dbRischio = snap.docs.map(d=>({id:d.id, ...d.data()})); });
         onSnapshot(collection(db, "cup"), snap => { window.dbCup = snap.docs.map(d=>({id:d.id, ...d.data()})); });
-        onSnapshot(collection(db, "consegne"), snap => { window.dbConsegne = snap.docs.map(d=>({id:d.id, ...d.data()})); });
-        onSnapshot(collection(db, "contenzioni"), snap => { window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()})); });
+        onSnapshot(collection(db, "consegne"), snap => { window.dbConsegne = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadConsegne(); });
+        onSnapshot(collection(db, "contenzioni"), snap => { window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadContenzioni(); });
 
         window.onload = () => { 
             const dl = document.getElementById('listaFarmaciAifa'); if(dl) prontuario.forEach(f => { let opt = document.createElement('option'); opt.value = f; dl.appendChild(opt); }); 
