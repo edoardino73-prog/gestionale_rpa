@@ -286,6 +286,24 @@
                             <div class="form-group" style="flex:1;"><label>Stanza</label><input type="text" id="newGuestRoom"></div>
                         </div>
                     </div>
+                    <!-- BOX PRIVACY DESKTOP -->
+                    <div class="section-box" style="border-left: 4px solid var(--primary-color);">
+                        <h4>5. Privacy & Consenso Informato (Firma in Loco)</h4>
+                        <div style="display:flex; gap:20px; flex-wrap:wrap; background:#f8fafc; padding:15px; border-radius:4px; border:1px solid var(--border-color);">
+                            <div style="flex:2; display:flex; flex-direction:column; gap:8px;">
+                                <label><input type="checkbox" id="newGuestConsensoPrivacy" disabled style="transform:scale(1.2);"> <strong>Privacy:</strong> Trattamento dati sanitari.</label>
+                                <label><input type="checkbox" id="newGuestConsensoFoto" disabled style="transform:scale(1.2);"> <strong>Immagini:</strong> Uso foto interne.</label>
+                                <label><input type="checkbox" id="newGuestConsensoReg" style="transform:scale(1.2);"> <strong>Regolamento:</strong> Consegnato.</label>
+                            </div>
+                            <div style="flex:1.5; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:6px; text-align:center;">
+                                <strong style="color:var(--success-color);">Firma in Loco (Touch / Mouse)</strong>
+                                <div id="signaturePreviewBoxDesktop" style="height:65px; width:140px; background:#fff; border:1px dashed #cbd5e1; border-radius:4px; display:flex; align-items:center; justify-content:center; overflow:hidden; margin:8px auto;">
+                                    <span style="color:#94a3b8; font-size:0.75em;">Nessuna firma</span>
+                                </div>
+                                <button id="btnAvviaFirmaPrivacyDesktop" class="btn-success" style="width:100%; font-size:0.9em; padding:8px;" onclick="window.avviaFirmaPrivacyDesktop()">✍️ Firma in Loco</button>
+                            </div>
+                        </div>
+                    </div>
                     <button id="anagraficaSaveBtn" class="btn-primary" style="width:100%; padding:12px; font-size:1.1em;" onclick="window.saveAnagrafica()">💾 Registra / Aggiorna Ospite</button>
                 </div>
                 <div class="card"><div class="card-header"><h3>Elenco Ospiti</h3></div><div class="guest-grid" id="guestGrid"></div></div>
@@ -296,6 +314,24 @@
                 <div class="card"><div class="form-group"><label>Seleziona Fascicolo Paziente</label><select id="clinicalGuestSelect" onchange="window.handlePatientSelect('clinicalGuestSelect')" style="padding: 10px;"><option value="" disabled selected>Scegli...</option></select></div></div>
                 <div id="clinicalContent" style="display:none;">
                     <div class="clinical-header" id="clinicalHeader"></div>
+
+                    <!-- BOX STATO E ANTEPRIMA FIRMA CLINICA -->
+                    <div class="card" style="border-left: 6px solid var(--success-color); background: #f8fafc;">
+                        <div class="card-header"><h3 style="color: var(--success-color);">✍️ Privacy & Consenso Informato (L. 219/2017)</h3></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; align-items:center; background:#fff; padding:12px; border:1px solid var(--border-color); border-radius:6px;">
+                            <div style="flex:1; min-width:220px;">
+                                <div id="clinicaPrivacyStatus" style="font-weight:bold; margin-bottom:4px;">Stato: In attesa di firma</div>
+                                <p style="margin:0 0 4px 0; font-size:0.9em;"><strong>Firmatario:</strong> <span id="clinicaFirmatarioNome">-</span></p>
+                                <p style="margin:0; font-size:0.9em;"><strong>Data e Ora:</strong> <span id="clinicaFirmatarioData">-</span></p>
+                            </div>
+                            <div style="text-align:center; min-width:160px;">
+                                <div style="font-size:0.8em; font-weight:bold; color:var(--text-light); margin-bottom:3px;">Anteprima Firma:</div>
+                                <div id="signaturePreviewBoxClinica" style="height:65px; width:140px; background:#f1f5f9; border:1px dashed #94a3b8; border-radius:4px; display:flex; align-items:center; justify-content:center; overflow:hidden; margin:0 auto;">
+                                    <span style="color:#94a3b8; font-size:0.75em;">Nessuna firma</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- MAPPATURA LESIONI -->
                     <div class="card" style="border-top: 5px solid var(--error-color);">
@@ -386,7 +422,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT E LOGICA FIREBASE AGGANCIATA CORRETTAMENTE AL DOMINIO WINDOW -->
+    <!-- SCRIPT E LOGICA FIREBASE CON DOPPIO LIVELLO DI FALLBACK PROFILI -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -401,8 +437,8 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        window.dbOperatori = []; window.dbOspiti = []; window.dbRischio = []; window.dbCup = []; window.dbStupefacentiInv = []; window.dbStupefacentiLog = []; window.dbConsegne = []; window.dbClinica = {}; window.dbStruttura = {}; window.dbContenzioni = [];
-        window.currentBodyMarkers = []; window.currentLesioniPhotos = []; window.comuniData = [];
+        window.dbOperatori=[]; window.dbOspiti=[]; window.dbRischio=[]; window.dbCup=[]; window.dbStupefacentiInv=[]; window.dbStupefacentiLog=[]; window.dbConsegne=[]; window.dbClinica={}; window.dbStruttura = {}; window.dbContenzioni = [];
+        window.currentBodyMarkers = []; window.currentLesioniPhotos = []; 
         window.activeOperator = ""; window.activeOperatorRole = "user"; window.activeOperatorQualifica = ""; window.selectedLoginOperator = ""; 
         window.globalSelectedPatient = "";
 
@@ -414,15 +450,151 @@
         window.getTodayString = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
         window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
         
-        /* FUNZIONI GLOBALI AGGANCIATE A WINDOW */
-        window.loadComuni = async () => { 
-            try { 
-                const res = await fetch('https://raw.githubusercontent.com/matteocontrini/comuni-json/master/comuni.json'); 
-                window.comuniData = await res.json(); 
-                let dl = document.createElement('datalist'); dl.id = 'comuniList'; let opts = ''; 
-                window.comuniData.forEach(c => { opts += `<option value="${c.nome.replace(/"/g, '&quot;')}">`; }); 
-                dl.innerHTML = opts; document.body.appendChild(dl); 
-            } catch (e) { console.error("Comuni load error:", e); } 
+        /* CANVAS FIRMA */
+        let sigCanvas = document.getElementById('sig-canvas');
+        let ctx = sigCanvas ? sigCanvas.getContext('2d') : null;
+        let isDrawing = false; let signatureCallback = null;
+
+        const resizeCanvas = () => { if(!sigCanvas) return; sigCanvas.width = sigCanvas.offsetWidth; sigCanvas.height = sigCanvas.offsetHeight; ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.strokeStyle = "#0f172a"; };
+        const getPos = (e) => { let rect = sigCanvas.getBoundingClientRect(); if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top }; return { x: e.clientX - rect.left, y: e.clientY - rect.top }; };
+        const startDrawing = (e) => { e.preventDefault(); isDrawing = true; let p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+        const draw = (e) => { e.preventDefault(); if (!isDrawing) return; let p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+        const stopDrawing = (e) => { e.preventDefault(); isDrawing = false; };
+
+        if(sigCanvas) {
+            sigCanvas.addEventListener("touchstart", startDrawing, {passive: false});
+            sigCanvas.addEventListener("touchmove", draw, {passive: false});
+            sigCanvas.addEventListener("touchend", stopDrawing);
+            sigCanvas.addEventListener("mousedown", startDrawing);
+            sigCanvas.addEventListener("mousemove", draw);
+            sigCanvas.addEventListener("mouseup", stopDrawing);
+            sigCanvas.addEventListener("mouseout", stopDrawing);
+        }
+
+        window.requestSignature = (actionDesc, callback) => { signatureCallback = callback; document.getElementById('sig-action-desc').innerText = actionDesc; document.getElementById('signature-modal').style.display = 'flex'; setTimeout(resizeCanvas, 50); };
+        window.clearSignature = () => { if(ctx && sigCanvas) ctx.clearRect(0, 0, sigCanvas.width, sigCanvas.height); };
+        window.cancelSignature = () => { document.getElementById('signature-modal').style.display = 'none'; signatureCallback = null; window.clearSignature(); };
+        window.confirmSignature = async () => {
+            const blank = document.createElement('canvas'); blank.width = sigCanvas.width; blank.height = sigCanvas.height;
+            if (sigCanvas.toDataURL() === blank.toDataURL()) return alert("⚠️ Firma obbligatoria.");
+            let sigImg = sigCanvas.toDataURL("image/png"); document.getElementById('signature-modal').style.display = 'none';
+            if(signatureCallback) signatureCallback(sigImg); window.clearSignature(); signatureCallback = null;
+        };
+
+        window.avviaFirmaPrivacyDesktop = () => {
+            let cog = document.getElementById('newGuestCognome')?.value.trim();
+            let nom = document.getElementById('newGuestNome')?.value.trim();
+            let n = (cog + ' ' + nom).trim().toUpperCase();
+
+            if(!n) {
+                if(window.globalSelectedPatient) n = window.globalSelectedPatient;
+                else return window.showToast("⚠️ Compila prima Nome e Cognome.");
+            }
+
+            let g = window.dbOspiti.find(x => x.name.toUpperCase() === n.toUpperCase());
+            if(g && g.consensi && g.consensi.firmatoDa) return window.showToast("🔒 Già firmato.");
+
+            let nomeFamiliare = prompt("Nome e Cognome del Firmatario (Familiare / AdS):");
+            if(!nomeFamiliare || nomeFamiliare.trim().length < 3) return;
+
+            window.requestSignature(`Informativa Privacy (${nomeFamiliare.trim()})`, async (sigBase64) => {
+                let cons = {
+                    privacy: true, consensoInformato: true, foto: true, regolamento: true,
+                    firmatoDa: nomeFamiliare.trim(), dataFirma: window.getTimestamp(), firmaImmagine: sigBase64
+                };
+
+                if(g) {
+                    await updateDoc(doc(db, "ospiti", g.id), { consensi: cons });
+                } else {
+                    let ing = document.getElementById('newGuestIngresso')?.value || window.getTodayString();
+                    const docRef = await addDoc(collection(db, "ospiti"), {
+                        name: n, cognome: cog.toUpperCase(), nome: nom.toUpperCase(), ingresso: ing, movimenti: [], consensi: cons, ts: window.getTimestamp()
+                    });
+                    window.editingGuestId = docRef.id;
+                }
+                window.renderTabletPrivacyUI(cons);
+                window.showToast("✅ Consenso e Privacy registrati!");
+            });
+        };
+
+        window.renderTabletPrivacyUI = (cons) => {
+            const previewDesk = document.getElementById('signaturePreviewBoxDesktop');
+            const previewClinica = document.getElementById('signaturePreviewBoxClinica');
+            const btnFirmaDesk = document.getElementById('btnAvviaFirmaPrivacyDesktop');
+            const statusClinica = document.getElementById('clinicaPrivacyStatus');
+            const nomeClinica = document.getElementById('clinicaFirmatarioNome');
+            const dataClinica = document.getElementById('clinicaFirmatarioData');
+
+            const sC = (id, val) => { if(document.getElementById(id)) document.getElementById(id).checked = !!val; };
+
+            if(cons && cons.firmatoDa) {
+                sC('newGuestConsensoPrivacy', true); sC('newGuestConsensoFoto', true); sC('newGuestConsensoReg', true);
+                let imgHtml = cons.firmaImmagine ? `<img src="${cons.firmaImmagine}" style="max-width:100%; max-height:100%; object-fit:contain;">` : `<span style="color:var(--success-color); font-weight:bold;">Firmato</span>`;
+
+                if(previewDesk) previewDesk.innerHTML = imgHtml;
+                if(previewClinica) previewClinica.innerHTML = imgHtml;
+                if(statusClinica) statusClinica.innerHTML = `<span style="color:var(--success-color);">✅ Regolarmente Acquisiti</span>`;
+                if(nomeClinica) nomeClinica.innerText = cons.firmatoDa;
+                if(dataClinica) dataClinica.innerText = cons.dataFirma || '-';
+
+                if(btnFirmaDesk) {
+                    btnFirmaDesk.disabled = true; btnFirmaDesk.style.opacity = '0.55';
+                    btnFirmaDesk.style.cursor = 'not-allowed'; btnFirmaDesk.innerHTML = '🔒 Già Acquisiti';
+                }
+            } else {
+                sC('newGuestConsensoPrivacy', false); sC('newGuestConsensoFoto', false); sC('newGuestConsensoReg', false);
+                if(previewDesk) previewDesk.innerHTML = `<span style="color:#94a3b8; font-size:0.75em;">Nessuna firma</span>`;
+                if(previewClinica) previewClinica.innerHTML = `<span style="color:#94a3b8; font-size:0.75em;">Nessuna firma</span>`;
+                if(statusClinica) statusClinica.innerHTML = `⏳ In attesa di firma`;
+                if(nomeClinica) nomeClinica.innerText = '-';
+                if(dataClinica) dataClinica.innerText = '-';
+
+                if(btnFirmaDesk) {
+                    btnFirmaDesk.disabled = false; btnFirmaDesk.style.opacity = '1';
+                    btnFirmaDesk.style.cursor = 'pointer'; btnFirmaDesk.innerHTML = '✍️ Firma in Loco';
+                }
+            }
+        };
+
+        window.loadAlerts = () => {
+            const container = document.getElementById('dashboardAlertsList'); if (!container) return; container.innerHTML = ''; let count = 0;
+            (window.dbOspiti || []).forEach(g => {
+                const d = (window.dbClinica && window.dbClinica[g.name]) ? window.dbClinica[g.name] : {};
+                if (d.paiDataRevisione) {
+                    const diff = Math.ceil((new Date(d.paiDataRevisione) - new Date()) / (1000 * 60 * 60 * 24));
+                    if (diff < 0) { container.innerHTML += `<div class="alert-item">🚨 P.A.I. Scaduto: <strong>${g.name}</strong></div>`; count++; }
+                }
+            });
+            if (count === 0) container.innerHTML = '<div style="padding:15px; color:var(--success-color); font-weight:bold;">✅ Nessun alert clinico attivo.</div>';
+        };
+
+        window.renderSidebarPatients = () => { 
+            const l = document.getElementById('sidebarPatientList'); const s = document.getElementById('sidebarSearch')?.value.toLowerCase()||''; if(!l) return; l.innerHTML=''; 
+            window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione).sort((a,b)=>a.name.localeCompare(b.name)).forEach(g => { 
+                if(s && !g.name.toLowerCase().includes(s)) return; 
+                l.innerHTML += `<div class="sidebar-item ${g.name===window.globalSelectedPatient?'active':''}" onclick="window.selectPatientGlobal('${g.name.replace(/'/g, "\\'")}')"><div class="sidebar-avatar">👤</div><div style="font-size:0.9em; font-weight:bold; overflow:hidden; text-overflow:ellipsis;">${g.name}</div></div>`; 
+            }); 
+        };
+        window.selectPatientGlobal = (n) => { 
+            window.globalSelectedPatient = n; 
+            ['clinicalGuestSelect', 'diariGuestSelect', 'terapiaGuestSelect', 'lettereGuestSelect', 'appGuestSelect', 'newRischioOspite', 'contOspite'].forEach(id => { const s=document.getElementById(id); if(s && [...s.options].some(o=>o.value===n)) s.value=n; }); 
+            window.handlePatientSelect('clinicalGuestSelect'); window.renderSidebarPatients(); 
+        };
+        window.goToNuovoOspite = () => { document.querySelectorAll('.menu-tab')[1].click(); setTimeout(()=>document.getElementById('newGuestCognome')?.focus(), 200); };
+        
+        window.loadGuests = () => { 
+            let att = window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione); 
+            ['clinicalGuestSelect','diariGuestSelect','terapiaGuestSelect','appGuestSelect','editAnagraficaSelect','contOspite'].forEach(id=>{ 
+                const s=document.getElementById(id); if(s){ let cv=s.value; s.innerHTML = id==='editAnagraficaSelect'?'<option value="">-- Crea Nuovo --</option>':'<option value="" disabled selected>Scegli...</option>'; 
+                att.forEach(g=>s.innerHTML+=`<option value="${g.name}">${g.name}</option>`); 
+                if(cv) s.value=cv; } 
+            }); 
+            if(document.getElementById('dash-guests-count')){ document.getElementById('dash-guests-count').innerText=att.length; document.getElementById('dash-guests-detail').innerText=`${att.length} Presenti | 0 Assenti`; window.renderCharts(); window.loadAlerts(); } 
+            const gg=document.getElementById('guestGrid'); 
+            if(gg){ 
+                gg.innerHTML=''; att.forEach(g=>{ gg.innerHTML+=`<div class="guest-card"><div class="guest-card-top"><div class="guest-avatar" style="display:flex;align-items:center;justify-content:center;">👤</div><div><h4 style="margin:0;">${g.name}</h4><small>Stanza: ${g.room||'-'}</small></div></div><div class="guest-details">CF: ${g.cf||'-'}</div></div>`; }); 
+            } 
+            window.renderSidebarPatients(); 
         };
 
         window.loadOperators = () => { 
@@ -437,37 +609,6 @@
                 let b = document.createElement('div'); b.className = 'profile-btn'; 
                 b.innerHTML = `<div class="profile-avatar">${i}</div><span class="profile-name">${opName.split(' ')[0]}</span><span class="profile-qual">${op.qualifica||''}</span>`; 
                 b.onclick = () => window.selectLoginProfile(opName); lc.appendChild(b); 
-            }); 
-        };
-
-        window.renderCharts = () => { 
-            const ctxGuest = document.getElementById('guestChart'); const ctxGender = document.getElementById('genderChart'); if(!ctxGuest) return; 
-            let att = window.dbOspiti.filter(g => !g.decesso && !g.dimissione); let pr=0, as=0, uo=0, don=0; 
-            att.forEach(g => { if(g.movimenti&&g.movimenti.length>0&&(g.movimenti[0].tipo==='RICOVERO'||g.movimenti[0].tipo==='FAMIGLIA')) as++; else pr++; if((g.sesso||'').toUpperCase() === 'F') don++; else uo++; }); 
-            if(window.guestChartInstance) window.guestChartInstance.destroy(); 
-            window.guestChartInstance = new Chart(ctxGuest, { type:'doughnut', data:{labels:['Presenti','Assenti'], datasets:[{data:[pr,as], backgroundColor:['#0d9488','#f59e0b'], borderWidth:0}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}} });
-            if(ctxGender) {
-                if(window.genderChartInstance) window.genderChartInstance.destroy();
-                window.genderChartInstance = new Chart(ctxGender, { type:'doughnut', data:{labels:['Uomini','Donne'], datasets:[{data:[uo,don], backgroundColor:['#0284c7','#db2777'], borderWidth:0}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}} });
-            }
-        };
-
-        window.loadConsegne = () => { 
-            ['inf','oss'].forEach(t => { 
-                const l = document.getElementById(`consegne${t.charAt(0).toUpperCase()+t.slice(1)}List`); 
-                if(l){ 
-                    l.innerHTML=''; 
-                    window.dbConsegne.filter(c=>c.type===t).forEach(c=>l.innerHTML+=`<div style="border:1px solid #cbd5e1; background:#f8fafc; padding:10px; margin-bottom:8px; border-radius:6px;"><small style="color:var(--text-light); font-weight:bold;">${c.date} - ${c.op}</small><div style="margin-top:4px;">${c.text}</div></div>`); 
-                } 
-            }); 
-        };
-
-        window.loadContenzioni = () => { 
-            const tb = document.querySelector('#contenzioniTable tbody'); if(!tb) return; 
-            tb.innerHTML = ''; 
-            window.dbContenzioni.forEach(c => {
-                let st = c.stato === 'ATTIVA' ? '<span style="color:var(--error-color);font-weight:bold;">ATTIVA</span>' : '<span style="color:var(--success-color);">REVOCATA</span>';
-                tb.innerHTML+=`<tr><td><strong>${c.ospite}</strong></td><td>${c.tipo}</td><td>${window.formatDateSafe(c.dataInizio)}</td><td>${c.motivo}</td><td>${c.firme?Object.keys(c.firme).join(', '):'-'}</td><td>${st}</td></tr>`;
             }); 
         };
 
@@ -527,47 +668,51 @@
             document.getElementById('ws-'+ws).classList.add('active'); if(btn) btn.classList.add('active'); if(ws==='dashboard') window.renderCharts(); 
         };
 
-        window.loadGuests = () => { 
-            let att = window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione); 
-            ['clinicalGuestSelect','diariGuestSelect','terapiaGuestSelect','appGuestSelect','editAnagraficaSelect','contOspite'].forEach(id=>{ 
-                const s=document.getElementById(id); if(s){ let cv=s.value; s.innerHTML = id==='editAnagraficaSelect'?'<option value="">-- Crea Nuovo --</option>':'<option value="" disabled selected>Scegli...</option>'; 
-                att.forEach(g=>s.innerHTML+=`<option value="${g.name}">${g.name}</option>`); 
-                if(cv) s.value=cv; } 
-            }); 
-            if(document.getElementById('dash-guests-count')){ document.getElementById('dash-guests-count').innerText=att.length; document.getElementById('dash-guests-detail').innerText=`${att.length} Presenti | 0 Assenti`; window.renderCharts(); window.loadAlerts(); } 
-            window.renderSidebarPatients(); 
+        window.renderCharts = () => { 
+            const ctxGuest = document.getElementById('guestChart'); const ctxGender = document.getElementById('genderChart'); if(!ctxGuest) return; 
+            let att = window.dbOspiti.filter(g => !g.decesso && !g.dimissione); let pr=0, as=0, uo=0, don=0; 
+            att.forEach(g => { if(g.movimenti&&g.movimenti.length>0&&(g.movimenti[0].tipo==='RICOVERO'||g.movimenti[0].tipo==='FAMIGLIA')) as++; else pr++; if((g.sesso||'').toUpperCase() === 'F') don++; else uo++; }); 
+            if(window.guestChartInstance) window.guestChartInstance.destroy(); 
+            window.guestChartInstance = new Chart(ctxGuest, { type:'doughnut', data:{labels:['Presenti','Assenti'], datasets:[{data:[pr,as], backgroundColor:['#0d9488','#f59e0b'], borderWidth:0}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}} });
+            if(ctxGender) {
+                if(window.genderChartInstance) window.genderChartInstance.destroy();
+                window.genderChartInstance = new Chart(ctxGender, { type:'doughnut', data:{labels:['Uomini','Donne'], datasets:[{data:[uo,don], backgroundColor:['#0284c7','#db2777'], borderWidth:0}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}} });
+            }
         };
 
-        window.loadAlerts = () => {
-            const container = document.getElementById('dashboardAlertsList'); if (!container) return; container.innerHTML = ''; let count = 0;
-            (window.dbOspiti || []).forEach(g => {
-                const d = (window.dbClinica && window.dbClinica[g.name]) ? window.dbClinica[g.name] : {};
-                if (d.paiDataRevisione) {
-                    const diff = Math.ceil((new Date(d.paiDataRevisione) - new Date()) / (1000 * 60 * 60 * 24));
-                    if (diff < 0) { container.innerHTML += `<div class="alert-item">🚨 P.A.I. Scaduto: <strong>${g.name}</strong></div>`; count++; }
-                }
-            });
-            if (count === 0) container.innerHTML = '<div style="padding:15px; color:var(--success-color); font-weight:bold;">✅ Nessun alert clinico attivo.</div>';
+        window.resetAnagraficaForm = () => { 
+            window.editingGuestId=null; document.getElementById('anagraficaFormTitle').innerText='Nuovo Ingresso'; document.getElementById('anagraficaSaveBtn').innerText='💾 Registra Ospite'; 
+            ['newGuestCognome','newGuestNome','newGuestCF','newGuestRoom','newGuestIngresso'].forEach(id=>{if(document.getElementById(id))document.getElementById(id).value='';}); 
+            window.renderTabletPrivacyUI(null);
         };
 
-        window.renderSidebarPatients = () => { 
-            const l = document.getElementById('sidebarPatientList'); const s = document.getElementById('sidebarSearch')?.value.toLowerCase()||''; if(!l) return; l.innerHTML=''; 
-            window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione).sort((a,b)=>a.name.localeCompare(b.name)).forEach(g => { 
-                if(s && !g.name.toLowerCase().includes(s)) return; 
-                l.innerHTML += `<div class="sidebar-item ${g.name===window.globalSelectedPatient?'active':''}" onclick="window.selectPatientGlobal('${g.name.replace(/'/g, "\\'")}')"><div class="sidebar-avatar">👤</div><div style="font-size:0.9em; font-weight:bold; overflow:hidden; text-overflow:ellipsis;">${g.name}</div></div>`; 
-            }); 
+        window.loadAnagraficaForEdit = () => { 
+            const n=document.getElementById('editAnagraficaSelect').value; if(!n){ window.resetAnagraficaForm(); return; } 
+            const g=window.dbOspiti.find(x=>x.name===n); if(!g) return; window.editingGuestId=g.id; 
+            document.getElementById('anagraficaFormTitle').innerText='Modifica Anagrafica'; document.getElementById('anagraficaSaveBtn').innerText='💾 Aggiorna'; 
+            const sV=(id,v)=>{if(document.getElementById(id))document.getElementById(id).value=v||'';}; 
+            sV('newGuestCognome', g.cognome); sV('newGuestNome', g.nome); sV('newGuestCF', g.cf); sV('newGuestDob', g.dob); sV('newGuestIngresso', g.ingresso); sV('newGuestRoom', g.room); 
+            window.renderTabletPrivacyUI(g.consensi); 
         };
-        
-        window.selectPatientGlobal = (n) => { 
-            window.globalSelectedPatient = n; 
-            ['clinicalGuestSelect', 'diariGuestSelect', 'terapiaGuestSelect', 'appGuestSelect'].forEach(id => { const s=document.getElementById(id); if(s && [...s.options].some(o=>o.value===n)) s.value=n; }); 
-            window.handlePatientSelect('clinicalGuestSelect'); window.renderSidebarPatients(); 
+
+        window.saveAnagrafica = async () => { 
+            const v=id=>document.getElementById(id)?document.getElementById(id).value.trim():''; 
+            const cog=v('newGuestCognome').toUpperCase(); const nom=v('newGuestNome').toUpperCase(); const n=cog+(nom?' '+nom:''); const ing=v('newGuestIngresso'); 
+            if(!cog||!nom||!ing) return window.showToast("⚠️ Cognome, Nome e Ingresso obbligatori"); 
+            let payload = { name: n, cognome: cog, nome: nom, ingresso: ing, room: v('newGuestRoom'), cf: v('newGuestCF').toUpperCase() };
+            if(window.editingGuestId){ 
+                await updateDoc(doc(db,"ospiti",window.editingGuestId), payload); window.showToast("✅ Anagrafica Aggiornata"); 
+            } else { 
+                if(window.dbOspiti.find(x=>x.name===n)) return window.showToast("⚠️ Ospite già esistente"); 
+                payload.movimenti = []; payload.consensi = { privacy: false, consensoInformato: false }; payload.ts = window.getTimestamp();
+                await addDoc(collection(db,"ospiti"), payload); window.resetAnagraficaForm(); window.showToast("✅ Ospite Creato"); 
+            } 
         };
 
         window.handlePatientSelect = (id) => { 
             const n=document.getElementById(id).value; if(!n) return; window.globalSelectedPatient=n; 
-            ['clinicalGuestSelect','diariGuestSelect','terapiaGuestSelect'].forEach(i=>{if(document.getElementById(i))document.getElementById(i).value=n;}); 
-            ['clinicalContent','diariContent','terapiaContent'].forEach(i=>{if(document.getElementById(i))document.getElementById(i).style.display='block';}); 
+            ['clinicalGuestSelect','diariGuestSelect','terapiaGuestSelect','lettereGuestSelect'].forEach(i=>{if(document.getElementById(i))document.getElementById(i).value=n;}); 
+            ['clinicalContent','diariContent','terapiaContent','lettereContent'].forEach(i=>{if(document.getElementById(i))document.getElementById(i).style.display='block';}); 
             
             let d = window.dbClinica[n] || {terapiaList:[], vitals:[], chkMarkers:[], lesioniPhotos:[], diarioMedico:[], diarioInfermieristico:[], docs:[]}; 
             const g = window.dbOspiti.find(x=>x.name===n)||{}; 
@@ -577,8 +722,34 @@
             if(document.getElementById('diariHeader')) document.getElementById('diariHeader').innerHTML=h; 
             if(document.getElementById('terapiaHeader')) document.getElementById('terapiaHeader').innerHTML=h; 
             
-            ['chkGen','chkPiaghe','binaAuto','binaSanita','binaPsiche','binaSociale'].forEach(fid=>{if(document.getElementById(fid)) document.getElementById(fid).value=d[fid]||"";}); 
-            window.renderDiari(n, d); window.renderSidebarPatients(); 
+            if(document.getElementById('editGuestName')){ 
+                document.getElementById('editGuestName').value=n; document.getElementById('editGuestCF').value=g.cf||''; document.getElementById('editGuestRoom').value=g.room||''; 
+            } 
+            ['chkGen','chkPiaghe','binaAuto','binaSanita','binaPsiche','binaSociale','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale'].forEach(fid=>{if(document.getElementById(fid)) document.getElementById(fid).value=d[fid]||"";}); 
+            
+            window.renderTabletPrivacyUI(g.consensi);
+            window.currentBodyMarkers = d.chkMarkers?[...d.chkMarkers]:[]; window.renderBodyMarkers(); 
+            window.currentLesioniPhotos = d.lesioniPhotos?[...d.lesioniPhotos]:[]; window.renderLesioniPhotos();
+            window.calcolaBINA(); window.renderVitals(n,d); window.renderDiari(n,d); window.renderSidebarPatients(); 
+        };
+
+        window.addDiarioEntry = async (tipo) => {
+            const n = document.getElementById('diariGuestSelect').value; if(!n) return window.showToast("⚠️ Seleziona paziente.");
+            let txt = document.getElementById(tipo==='medico'?'newDiarioMedicoText':'newDiarioInfText').value.trim();
+            if(!txt) return window.showToast("⚠️ Inserisci il testo.");
+            
+            let d = window.dbClinica[n] || {};
+            let entry = { date: window.getTimestamp(), op: window.activeOperator, qualifica: window.activeOperatorQualifica, text: txt };
+            if(tipo==='medico') {
+                if(!d.diarioMedico) d.diarioMedico = [];
+                d.diarioMedico.unshift(entry);
+            } else {
+                if(!d.diarioInfermieristico) d.diarioInfermieristico = [];
+                d.diarioInfermieristico.unshift(entry);
+            }
+            await setDoc(doc(db, "cartelle_cliniche", n), d);
+            document.getElementById(tipo==='medico'?'newDiarioMedicoText':'newDiarioInfText').value = '';
+            window.renderDiari(n, d); window.showToast("✅ Nota registrata.");
         };
 
         window.renderDiari = (n, d) => {
@@ -601,25 +772,6 @@
             else iNotes.forEach(item => il.innerHTML += `<div class="diary-entry infermiere"><div class="diary-meta"><span>📅 <strong>${item.date}</strong></span><span>💉 <strong>${item.op}</strong></span></div><div>${item.text}</div></div>`);
         };
 
-        window.addDiarioEntry = async (tipo) => {
-            const n = document.getElementById('diariGuestSelect').value; if(!n) return window.showToast("⚠️ Seleziona paziente.");
-            let txt = document.getElementById(tipo==='medico'?'newDiarioMedicoText':'newDiarioInfText').value.trim();
-            if(!txt) return window.showToast("⚠️ Inserisci il testo.");
-            
-            let d = window.dbClinica[n] || {};
-            let entry = { date: window.getTimestamp(), op: window.activeOperator, qualifica: window.activeOperatorQualifica, text: txt };
-            if(tipo==='medico') {
-                if(!d.diarioMedico) d.diarioMedico = [];
-                d.diarioMedico.unshift(entry);
-            } else {
-                if(!d.diarioInfermieristico) d.diarioInfermieristico = [];
-                d.diarioInfermieristico.unshift(entry);
-            }
-            await setDoc(doc(db, "cartelle_cliniche", n), d);
-            document.getElementById(tipo==='medico'?'newDiarioMedicoText':'newDiarioInfText').value = '';
-            window.renderDiari(n, d); window.showToast("✅ Nota registrata.");
-        };
-
         window.saveClinicalData = async () => { 
             let n = document.getElementById('clinicalGuestSelect').value; if(!n) return window.showToast("⚠️ Seleziona paziente."); 
             let d = window.dbClinica[n] || {}; 
@@ -637,22 +789,13 @@
             document.getElementById('binaClasseBadge').innerText = `Classe: ${cls}`;
         };
 
-        window.handleBodyMapClick = (e) => { 
-            if(window.checkOssRestriction()) return; 
-            const w=document.getElementById('bodyMapWrapper'); if(!w) return; 
-            const r=w.getBoundingClientRect(); 
-            window.currentBodyMarkers.push({x:((e.clientX-r.left)/r.width)*100, y:((e.clientY-r.top)/r.height)*100}); 
-            window.renderBodyMarkers(); 
+        window.addVitals = async () => { 
+            const n=document.getElementById('clinicalGuestSelect').value; if(!n) return;
+            let d=window.dbClinica[n]||{}; if(!d.vitals) d.vitals=[]; 
+            d.vitals.unshift({date:window.getTimestamp(), op:window.activeOperator, pa:document.getElementById('vitPA').value, fc:document.getElementById('vitFC').value, spo2:document.getElementById('vitSPO2').value, tc:document.getElementById('vitTC').value}); 
+            await setDoc(doc(db,"cartelle_cliniche",n),d); window.renderVitals(n,d); window.showToast("Parametri salvati"); 
         };
-        window.renderBodyMarkers = () => { 
-            const l=document.getElementById('bodyMarkersLayer'); if(!l) return; l.innerHTML=''; 
-            window.currentBodyMarkers.forEach((m,i)=>{ 
-                const d=document.createElement('div'); d.className='body-marker'; d.style.left=m.x+'%'; d.style.top=m.y+'%'; d.innerText=(i+1); 
-                d.onclick=(ev)=>{ev.stopPropagation(); window.currentBodyMarkers.splice(i,1); window.renderBodyMarkers();}; 
-                l.appendChild(d); 
-            }); 
-        };
-        window.clearBodyMarkers = () => { if(window.checkOssRestriction()) return; window.currentBodyMarkers=[]; window.renderBodyMarkers(); };
+        window.renderVitals = (n,d) => { const tb=document.querySelector('#vitalsTable tbody'); if(tb){ tb.innerHTML=''; if(d.vitals) d.vitals.forEach(v=>tb.innerHTML+=`<tr><td>${v.date}</td><td>${window.getInitials(v.op)}</td><td>${v.pa}</td><td>${v.fc}</td><td>${v.spo2}</td><td>${v.tc}</td><td>X</td></tr>`); } };
 
         window.handleLesionePhotoUpload = (e) => {
             const file = e.target.files[0]; if (!file) return;
@@ -670,8 +813,10 @@
             });
         };
 
-        /* ASCOLTATORI REALTIME */
+        /* SNAPSHOTS OPERATORI CON FALLBACK */
+        let profilesLoaded = false;
         onSnapshot(collection(db, "operatori"), snap => { 
+            profilesLoaded = true;
             let ops = snap.docs.map(d => ({id: d.id, ...d.data()})); 
             ops = ops.filter(o => o && (o.name || o.nome) && (o.name || o.nome).trim() !== ""); 
             ops.forEach(o => { if(!o.name && o.nome) o.name = o.nome; });
@@ -681,17 +826,17 @@
             window.dbOperatori = ops.sort((a,b) => a.name.localeCompare(b.name)); 
             window.loadOperators(); 
         }, err => {
+            console.warn("Fallback operatori attivo:", err);
             window.dbOperatori = [{id:"admin-fallback", name:"Admin", pin:"12345", role:"admin", qualifica:"Direttore Sanitario"}];
             window.loadOperators();
         });
 
+        setTimeout(() => { if(!profilesLoaded) window.loadOperators(); }, 1500);
+
         onSnapshot(collection(db, "ospiti"), snap => { window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadGuests(); });
         onSnapshot(collection(db, "cartelle_cliniche"), snap => { window.dbClinica = {}; snap.forEach(d => { window.dbClinica[d.id] = d.data(); }); if(window.dbOspiti.length > 0) window.loadAlerts(); });
-        onSnapshot(collection(db, "consegne"), snap => { window.dbConsegne = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadConsegne(); });
-        onSnapshot(collection(db, "contenzioni"), snap => { window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadContenzioni(); });
 
         window.onload = () => { 
-            window.loadComuni(); window.loadOperators(); 
             let savedOp = sessionStorage.getItem("activeOperator");
             if(savedOp) {
                 window.activeOperator = savedOp;
@@ -701,7 +846,9 @@
                 document.getElementById('loginScreen').style.display = 'none'; 
                 document.getElementById('appScreen').style.display = 'flex'; 
                 window.applyRolePermissions(); 
-            }
+            } else { 
+                window.loadOperators(); 
+            } 
         };
     </script>
 </body>
