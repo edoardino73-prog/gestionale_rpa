@@ -259,7 +259,6 @@
 
     <div id="top-nav-container">
         <div class="navbar">
-            <!-- INTESTAZIONE DINAMICA DELLA STRUTTURA -->
             <div class="navbar-brand">
                 <span id="navbarStructureBrand">🏥 NUOVA VILLA SILVANA - Residenza Protetta</span>
             </div>
@@ -315,7 +314,6 @@
                 </div>
 
                 <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                    <!-- STATISTICHE OSPITI: UOMINI E DONNE SOTTO A PRESENZE -->
                     <div class="card" style="max-width: 380px; flex: 1; min-width: 280px; margin-bottom: 20px;">
                         <div class="card-header"><h3>📊 Statistiche Ospiti</h3></div>
                         <div style="display:flex; flex-direction:column; gap:16px; align-items:center;">
@@ -452,12 +450,13 @@
                     </div>
 
                     <div class="section-box" style="border-left: 4px solid var(--error-color);">
-                        <h4>3. Estremi Documento Identità <span class="alloggiati-badge">🔴 Bordo Rosso = Obbligatorio Portale Alloggiati</span></h4>
+                        <h4>3. Estremi Documento Identità (Inclusa CIE) <span class="alloggiati-badge">🔴 Bordo Rosso = Obbligatorio Portale Alloggiati</span></h4>
                         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-                            <div class="form-group" style="flex:1;">
+                            <div class="form-group" style="flex:1.2;">
                                 <label>Tipo Documento * <span class="alloggiati-badge">(Alloggiati)</span></label>
                                 <select id="newGuestDocTipo" class="alloggiati-req">
                                     <option value="IDENT">Carta d'Identità</option>
+                                    <option value="CIE">Carta d'Identità Elettronica (CIE)</option>
                                     <option value="PASSP">Passaporto</option>
                                     <option value="PATEN">Patente</option>
                                 </select>
@@ -654,7 +653,6 @@
                 </div>
             </div>
 
-            <!-- TAB DIARI CLINICI (MEDICO E INFERMIERISTICO) -->
             <div id="ws-diari" class="workspace">
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -672,7 +670,6 @@
                     <div class="clinical-header" id="diariHeader"></div>
 
                     <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                        <!-- DIARIO MEDICO -->
                         <div style="flex:1; min-width:320px;">
                             <div class="card" style="border-top: 4px solid #15803d;">
                                 <div class="card-header"><h3 style="color:#15803d;">🩺 Diario Medico (Visite & Diagnosi)</h3></div>
@@ -691,7 +688,6 @@
                             </div>
                         </div>
 
-                        <!-- DIARIO INFERMIERISTICO -->
                         <div style="flex:1; min-width:320px;">
                             <div class="card" style="border-top: 4px solid var(--terapia-color);">
                                 <div class="card-header"><h3 style="color:var(--terapia-color);">💉 Diario Infermieristico (Decorso & Medicazioni)</h3></div>
@@ -817,24 +813,37 @@
                     
                     <div class="card">
                         <div class="card-header"><h3>Attestazione di Decesso</h3><button class="btn-primary" onclick="window.printModule('decesso')">🖨️ Stampa Documento</button></div>
-                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;"><div class="form-group" style="flex:1;"><label>Data Decesso</label><input type="date" id="decData" class="restrict-oss-input only-medico-input"></div><div class="form-group" style="flex:1;"><label>Ora Decesso</label><input type="time" id="decOra" class="restrict-oss-input only-medico-input"></div></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
+                            <div class="form-group" style="flex:1;"><label>Data Decesso</label><input type="date" id="decData" class="restrict-oss-input only-medico-input"></div>
+                            <div class="form-group" style="flex:1;"><label>Ora Decesso</label><input type="time" id="decOra" class="restrict-oss-input only-medico-input"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Testo Personalizzato Attestazione di Decesso</label>
+                            <textarea id="decTesto" class="restrict-oss-input only-medico-input" rows="3" placeholder="Modifica o personalizza il testo dell'attestazione prima della stampa..."></textarea>
+                        </div>
                         <div class="restrict-oss only-medico"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva ed Archivia Paziente</button></div>
                     </div>
                     
                     <div class="card">
                         <div class="card-header"><h3>Lettera di Dimissione (Rientro a Casa o Altra Struttura)</h3><button class="btn-primary" onclick="window.printModule('dimissioni')">🖨️ Stampa Lettera</button></div>
-                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;"><div class="form-group" style="flex:1;"><label>Data Trasferimento/Dimissione</label><input type="date" id="dimData" class="restrict-oss-input only-medico-input"></div><div class="form-group" style="flex:1;"><label>Ora</label><input type="time" id="dimOra" class="restrict-oss-input only-medico-input"></div></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
+                            <div class="form-group" style="flex:1;"><label>Data Trasferimento/Dimissione</label><input type="date" id="dimData" class="restrict-oss-input only-medico-input"></div>
+                            <div class="form-group" style="flex:1;"><label>Ora</label><input type="time" id="dimOra" class="restrict-oss-input only-medico-input"></div>
+                        </div>
                         <div class="form-group"><label>Motivo e Destinazione</label><textarea id="dimMotivo" class="restrict-oss-input only-medico-input" rows="2" placeholder="Es. Rientro a domicilio, trasferimento presso RSA..."></textarea></div>
-                        <div class="form-group"><label>Decorso Clinico</label><textarea id="dimDecorso" class="restrict-oss-input only-medico-input" rows="4" placeholder="Inserisci un riassunto del decorso..."></textarea></div>
+                        <div class="form-group"><label>Decorso Clinico</label><textarea id="dimDecorso" class="restrict-oss-input only-medico-input" rows="4" placeholder="Inserisci o modifica il riassunto del decorso..."></textarea></div>
                         <p style="font-size:0.85em; color:var(--text-light);"><em>La Terapia in atto verrà automaticamente allegata alla stampa della lettera.</em></p>
                         <div class="restrict-oss only-medico"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva ed Archivia Paziente</button></div>
                     </div>
 
                     <div class="card" style="border-top: 4px solid var(--error-color);">
                         <div class="card-header"><h3 style="color:var(--error-color);">Lettera di Trasferimento in Pronto Soccorso</h3><button class="btn-primary" onclick="window.printModule('prontosoccorso')">🖨️ Stampa Lettera per 118 / P.S.</button></div>
-                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;"><div class="form-group" style="flex:1;"><label>Data Invio</label><input type="date" id="psData" class="restrict-oss-input only-medico-input"></div><div class="form-group" style="flex:1;"><label>Ora Invio</label><input type="time" id="psOra" class="restrict-oss-input only-medico-input"></div></div>
-                        <div class="form-group"><label>Motivo Invio / Sintomi Acuti</label><textarea id="psMotivo" class="restrict-oss-input only-medico-input" rows="2"></textarea></div>
-                        <div class="form-group"><label>Riassunto Cartella Clinica</label><textarea id="psRiassunto" class="restrict-oss-input only-medico-input" rows="4"></textarea></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
+                            <div class="form-group" style="flex:1;"><label>Data Invio</label><input type="date" id="psData" class="restrict-oss-input only-medico-input"></div>
+                            <div class="form-group" style="flex:1;"><label>Ora Invio</label><input type="time" id="psOra" class="restrict-oss-input only-medico-input"></div>
+                        </div>
+                        <div class="form-group"><label>Motivo Invio / Sintomi Acuti</label><textarea id="psMotivo" class="restrict-oss-input only-medico-input" rows="2" placeholder="Modifica i sintomi acuti..."></textarea></div>
+                        <div class="form-group"><label>Riassunto Cartella Clinica</label><textarea id="psRiassunto" class="restrict-oss-input only-medico-input" rows="4" placeholder="Modifica il riassunto clinico..."></textarea></div>
                         <p style="font-size:0.85em; color:var(--text-light);"><em>La Terapia in atto e le copie dei Documenti d'Identità verranno automaticamente allegati alla stampa.</em></p>
                         <div class="restrict-oss only-medico"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva Dati</button></div>
                     </div>
@@ -1004,17 +1013,41 @@
         window.processFileUpload = (e, type) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = (ev) => { const b = ev.target.result; if(type==='newPhoto') window.newGuestPhotoBase64 = b; else if(type==='newId') window.newGuestDocIdBase64 = b; else if(type==='newCf') window.newGuestDocCfBase64 = b; else if(type==='newUvm') window.newGuestDocUvmBase64 = b; else if(type==='editPhoto') window.editGuestPhotoBase64 = b; else if(type==='editId') window.editGuestDocIdBase64 = b; else if(type==='editCf') window.editGuestDocCfBase64 = b; else if(type==='editUvm') window.editGuestDocUvmBase64 = b; window.showToast("📎 File in memoria."); }; r.readAsDataURL(f); };
         window.encodeOpPhoto = (e) => { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=ev=>{ window.newOpPhotoBase64=ev.target.result; }; r.readAsDataURL(f); };
 
-        window.generatePrivacyQR = () => {
+        window.generatePrivacyQR = async () => {
             const cogInput = document.getElementById('newGuestCognome');
             const nomInput = document.getElementById('newGuestNome');
             if (!cogInput || !nomInput) return; 
             const name = (cogInput.value.trim() + " " + nomInput.value.trim()).trim();
             if (!name) return window.showToast("⚠️ Inserisci prima il Cognome e Nome dell'ospite.");
             
-            const baseUrl = window.location.href.split('?')[0]; const targetUrl = baseUrl + '?ospite=' + encodeURIComponent(name);
-            const qrContainer = document.getElementById('privacyQRCodeContainer'); qrContainer.innerHTML = '';
-            new QRCode(qrContainer, { text: targetUrl, width: 120, height: 120, colorDark : "#0f172a", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
-            window.showToast("📱 QR Code Generato!");
+            let existing = window.dbOspiti.find(x => x.name.toUpperCase() === name.toUpperCase());
+            if(!existing) {
+                let ing = document.getElementById('newGuestIngresso').value || window.getTodayString();
+                await addDoc(collection(db, "ospiti"), {
+                    name: name.toUpperCase(),
+                    cognome: cogInput.value.trim().toUpperCase(),
+                    nome: nomInput.value.trim().toUpperCase(),
+                    ingresso: ing,
+                    movimenti: [],
+                    consensi: { privacy: false, consensoInformato: false, foto: false, regolamento: false }
+                });
+                window.showToast("📝 Scheda preliminare creata per la firma QR.");
+            }
+
+            const baseUrl = window.location.href.split('?')[0]; 
+            const targetUrl = baseUrl + '?ospite=' + encodeURIComponent(name);
+            const qrContainer = document.getElementById('privacyQRCodeContainer'); 
+            qrContainer.innerHTML = '';
+            
+            new QRCode(qrContainer, { 
+                text: targetUrl, 
+                width: 120, 
+                height: 120, 
+                colorDark : "#0f172a", 
+                colorLight : "#ffffff", 
+                correctLevel : QRCode.CorrectLevel.H 
+            });
+            window.showToast("📱 QR Code Generato con successo!");
         };
 
         window.checkPrivacyForm = () => { 
@@ -1146,7 +1179,6 @@
             } 
         };
 
-        // GESTIONE STAFF CON INTEGRALITÀ FIREBASE AUTH
         window.addOperator = async () => { 
             const n = document.getElementById('newOpInput').value.trim(); 
             const p = document.getElementById('newOpPin').value.trim(); 
@@ -1158,11 +1190,9 @@
             const emailFittizia = n.toLowerCase().replace(/[^a-z0-9]/g, '.') + "@villasilvana.local";
 
             try {
-                // 1. Crea utente su Firebase Auth
                 const userCredential = await createUserWithEmailAndPassword(auth, emailFittizia, p);
                 const uid = userCredential.user.uid;
 
-                // 2. Salva record su Firestore
                 await setDoc(doc(db, "operatori", uid), {
                     uid: uid,
                     name: n,
@@ -1603,13 +1633,22 @@
 
         window.saveAnagrafica = async () => { 
             if(window.checkOssRestriction()) return; 
+            
+            const reqIds = ['newGuestCognome', 'newGuestNome', 'newGuestSesso', 'newGuestDob', 'newGuestPob', 'newGuestPobProv', 'newGuestPobCod', 'newGuestCittadinanza', 'newGuestIngresso', 'newGuestDocTipo', 'newGuestDocNum', 'newGuestDocRilascioNome', 'newGuestDocRilascioCod'];
+            for(let id of reqIds) {
+                let el = document.getElementById(id);
+                if(!el || !el.value.trim()) {
+                    if(el) el.focus();
+                    return window.showToast("⚠️ Compila tutti i campi obbligatori per il Portale Alloggiati (evidenziati in rosso)!");
+                }
+            }
+
             const v=id=>document.getElementById(id)?document.getElementById(id).value.trim():''; 
             const c=id=>document.getElementById(id)?document.getElementById(id).checked:false; 
             const cog=v('newGuestCognome').toUpperCase(); 
             const nom=v('newGuestNome').toUpperCase(); 
             const n=cog+(nom?' '+nom:''); 
             const ing=v('newGuestIngresso'); 
-            if(!cog||!nom||!ing) return window.showToast("⚠️ Cognome, Nome e Data Ingresso obbligatori"); 
             
             let cons={
                 privacy: c('newGuestConsensoPrivacy'), 
@@ -1618,97 +1657,60 @@
                 regolamento: c('newGuestConsensoReg')
             }; 
             
+            let payload = { 
+                name: n, 
+                cognome: cog, 
+                nome: nom, 
+                cittadinanza: v('newGuestCittadinanza'), 
+                sesso: v('newGuestSesso'), 
+                dob: v('newGuestDob'), 
+                cf: v('newGuestCF').toUpperCase(), 
+                pob: v('newGuestPob'), 
+                pobProv: v('newGuestPobProv'), 
+                pobCod: v('newGuestPobCod'), 
+                resIndirizzo: v('newGuestResInd'), 
+                resComune: v('newGuestResCom'), 
+                resProv: v('newGuestResProv'), 
+                resCod: v('newGuestResCod'), 
+                ingresso: ing, 
+                room: v('newGuestRoom'), 
+                uvmData: v('newGuestUVMData'), 
+                uvmPunteggio: v('newGuestUVMPunteggio'), 
+                ref: v('newGuestRef'), 
+                refParentela: v('newGuestRefParentela'), 
+                refTel: v('newGuestRefTel'), 
+                mmg: v('newGuestMMG'), 
+                mmgTel: v('newGuestMMGTel'), 
+                mmgEmail: v('newGuestMMGEmail'), 
+                tutore: v('newGuestTutore'), 
+                tutoreTel: v('newGuestTutoreTel'), 
+                tutoreScadenza: v('newGuestTutoreScadenza'), 
+                docTipo: v('newGuestDocTipo'), 
+                docNum: v('newGuestDocNum').toUpperCase(), 
+                docRilascioNome: v('newGuestDocRilascioNome'), 
+                docRilascioCod: v('newGuestDocRilascioCod'), 
+                docDataRil: v('newGuestDocDataRil'), 
+                docDataScad: v('newGuestDocDataScad'), 
+                consensi: cons 
+            };
+
             if(window.editingGuestId){ 
-                let cG=window.dbOspiti.find(x=>x.id===window.editingGuestId); 
-                if(cG&&cG.consensi&&cons.privacy&&cG.consensi.firmatoDa){ 
-                    cons.firmatoDa=cG.consensi.firmatoDa; 
-                    cons.dataFirma=cG.consensi.dataFirma; 
-                } 
-                let up={ 
-                    cognome:cog, 
-                    nome:nom, 
-                    cittadinanza:v('newGuestCittadinanza'), 
-                    sesso:v('newGuestSesso'), 
-                    dob:v('newGuestDob'), 
-                    cf:v('newGuestCF').toUpperCase(), 
-                    pob:v('newGuestPob'), 
-                    pobProv:v('newGuestPobProv'), 
-                    pobCod:v('newGuestPobCod'), 
-                    resIndirizzo:v('newGuestResInd'), 
-                    resComune:v('newGuestResCom'), 
-                    resProv:v('newGuestResProv'), 
-                    resCod:v('newGuestResCod'), 
-                    ingresso:ing, 
-                    room:v('newGuestRoom'), 
-                    uvmData:v('newGuestUVMData'), 
-                    uvmPunteggio:v('newGuestUVMPunteggio'), 
-                    ref:v('newGuestRef'), 
-                    refParentela:v('newGuestRefParentela'), 
-                    refTel:v('newGuestRefTel'), 
-                    mmg:v('newGuestMMG'), 
-                    mmgTel:v('newGuestMMGTel'), 
-                    mmgEmail:v('newGuestMMGEmail'), 
-                    tutore:v('newGuestTutore'), 
-                    tutoreTel:v('newGuestTutoreTel'), 
-                    tutoreScadenza:v('newGuestTutoreScadenza'), 
-                    docTipo:v('newGuestDocTipo'), 
-                    docNum:v('newGuestDocNum').toUpperCase(), 
-                    docRilascioNome:v('newGuestDocRilascioNome'), 
-                    docRilascioCod:v('newGuestDocRilascioCod'), 
-                    docDataRil:v('newGuestDocDataRil'), 
-                    docDataScad:v('newGuestDocDataScad'), 
-                    consensi:cons 
-                }; 
-                if(window.newGuestPhotoBase64){ up.photo=window.newGuestPhotoBase64; window.newGuestPhotoBase64=""; } 
-                if(window.newGuestDocIdBase64){ up.docId=window.newGuestDocIdBase64; window.newGuestDocIdBase64=""; } 
-                if(window.newGuestDocCfBase64){ up.docCf=window.newGuestDocCfBase64; window.newGuestDocCfBase64=""; } 
-                if(window.newGuestDocUvmBase64){ up.docUvm=window.newGuestDocUvmBase64; window.newGuestDocUvmBase64=""; } 
-                await updateDoc(doc(db,"ospiti",window.editingGuestId), up); 
+                if(window.newGuestPhotoBase64){ payload.photo=window.newGuestPhotoBase64; window.newGuestPhotoBase64=""; } 
+                if(window.newGuestDocIdBase64){ payload.docId=window.newGuestDocIdBase64; window.newGuestDocIdBase64=""; } 
+                if(window.newGuestDocCfBase64){ payload.docCf=window.newGuestDocCfBase64; window.newGuestDocCfBase64=""; } 
+                if(window.newGuestDocUvmBase64){ payload.docUvm=window.newGuestDocUvmBase64; window.newGuestDocUvmBase64=""; } 
+                await updateDoc(doc(db,"ospiti",window.editingGuestId), payload); 
                 window.showToast("✅ Anagrafica Aggiornata"); 
             } else { 
                 if(window.dbOspiti.find(x=>x.name===n)) return window.showToast("⚠️ Esiste già un ospite con questo nome"); 
-                await addDoc(collection(db,"ospiti"), { 
-                    name:n, 
-                    cognome:cog, 
-                    nome:nom, 
-                    cittadinanza:v('newGuestCittadinanza'), 
-                    sesso:v('newGuestSesso'), 
-                    dob:v('newGuestDob'), 
-                    cf:v('newGuestCF').toUpperCase(), 
-                    pob:v('newGuestPob'), 
-                    pobProv:v('newGuestPobProv'), 
-                    pobCod:v('newGuestPobCod'), 
-                    resIndirizzo:v('newGuestResInd'), 
-                    resComune:v('newGuestResCom'), 
-                    resProv:v('newGuestResProv'), 
-                    resCod:v('newGuestResCod'), 
-                    ingresso:ing, 
-                    room:v('newGuestRoom'), 
-                    uvmData:v('newGuestUVMData'), 
-                    uvmPunteggio:v('newGuestUVMPunteggio'), 
-                    movimenti:[], 
-                    ref:v('newGuestRef'), 
-                    refParentela:v('newGuestRefParentela'), 
-                    refTel:v('newGuestRefTel'), 
-                    mmg:v('newGuestMMG'), 
-                    mmgTel:v('newGuestMMGTel'), 
-                    mmgEmail:v('newGuestMMGEmail'), 
-                    tutore:v('newGuestTutore'), 
-                    tutoreTel:v('newGuestTutoreTel'), 
-                    tutoreScadenza:v('newGuestTutoreScadenza'), 
-                    docTipo:v('newGuestDocTipo'), 
-                    docNum:v('newGuestDocNum').toUpperCase(), 
-                    docRilascioNome:v('newGuestDocRilascioNome'), 
-                    docRilascioCod:v('newGuestDocRilascioCod'), 
-                    docDataRil:v('newGuestDocDataRil'), 
-                    docDataScad:v('newGuestDocDataScad'), 
-                    photo:window.newGuestPhotoBase64||"", 
-                    docId:window.newGuestDocIdBase64||"", 
-                    docCf:window.newGuestDocCfBase64||"", 
-                    docUvm:window.newGuestDocUvmBase64||"", 
-                    consensi:cons, 
-                    ts:window.getTimestamp() 
-                }); 
+                payload.movimenti = [];
+                payload.photo = window.newGuestPhotoBase64||""; 
+                payload.docId = window.newGuestDocIdBase64||""; 
+                payload.docCf = window.newGuestDocCfBase64||""; 
+                payload.docUvm = window.newGuestDocUvmBase64||""; 
+                payload.ts = window.getTimestamp();
+                
+                await addDoc(collection(db,"ospiti"), payload); 
                 window.newGuestPhotoBase64=""; window.newGuestDocIdBase64=""; window.newGuestDocCfBase64=""; window.newGuestDocUvmBase64=""; 
                 window.resetAnagraficaForm(); 
                 window.showToast("✅ Ospite Creato"); 
@@ -1779,8 +1781,12 @@
                 document.getElementById('viewGuestDocCf').innerHTML=g.docCf?`<a href="${g.docCf}" target="_blank" style="color:var(--primary-color);">📄 Apri</a>`:'-'; 
                 document.getElementById('viewGuestDocUvm').innerHTML=g.docUvm?`<a href="${g.docUvm}" target="_blank" style="color:var(--primary-color);">📄 Apri</a>`:'-'; 
             } 
-            ['fktValutazione','fktAusili','fktObiettivi','chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale','vmdADL','vmdIADL','vmdMMSE','vmdBraden','vmdMorse', 'decData','decOra','dimData','dimOra','dimMotivo','dimDecorso','psData','psOra','psMotivo','psRiassunto', 'binaAuto', 'binaSanita', 'binaPsiche', 'binaSociale'].forEach(fid=>{if(document.getElementById(fid)) document.getElementById(fid).value=d[fid]||"";}); 
+            ['fktValutazione','fktAusili','fktObiettivi','chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale','vmdADL','vmdIADL','vmdMMSE','vmdBraden','vmdMorse', 'decData','decOra','decTesto','dimData','dimOra','dimMotivo','dimDecorso','psData','psOra','psMotivo','psRiassunto', 'binaAuto', 'binaSanita', 'binaPsiche', 'binaSociale'].forEach(fid=>{if(document.getElementById(fid)) document.getElementById(fid).value=d[fid]||"";}); 
             
+            if(!d.decTesto && document.getElementById('decTesto')) {
+                document.getElementById('decTesto').value = `Si attesta il decesso dell'Ospite: ${n}, avvenuto in data ${d.decData || '-'} alle ore ${d.decOra || '-'}.`;
+            }
+
             ['Med', 'Inf', 'Oss'].forEach(ruolo => { 
                 let idPref = 'paiFirma' + ruolo; 
                 if (document.getElementById(idPref + 'Date')) { 
@@ -1933,31 +1939,38 @@
 
         window.saveClinicalData = async () => { 
             if(window.checkOssRestriction()) return; 
-            let n=document.getElementById('clinicalGuestSelect').value; 
-            if(document.getElementById('ws-lettere')&&document.getElementById('ws-lettere').classList.contains('active')) n=document.getElementById('lettereGuestSelect').value; 
+            let n = document.getElementById('clinicalGuestSelect').value; 
+            if(document.getElementById('ws-lettere') && document.getElementById('ws-lettere').classList.contains('active')) n = document.getElementById('lettereGuestSelect').value; 
             if(!n) return window.showToast("⚠️ Seleziona paziente."); 
             
-            let d = window.dbClinica[n]||{}; 
-            ['fktValutazione','fktAusili','fktObiettivi','chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale','vmdADL','vmdIADL','vmdMMSE','vmdBraden','vmdMorse', 'binaAuto', 'binaSanita', 'binaPsiche', 'binaSociale'].forEach(id=>{if(document.getElementById(id)) d[id]=document.getElementById(id).value;}); 
-            d.chkMarkers = window.currentBodyMarkers?[...window.currentBodyMarkers]:[]; 
+            let d = window.dbClinica[n] || {}; 
+            ['fktValutazione','fktAusili','fktObiettivi','chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale','vmdADL','vmdIADL','vmdMMSE','vmdBraden','vmdMorse', 'binaAuto', 'binaSanita', 'binaPsiche', 'binaSociale'].forEach(id=>{
+                if(document.getElementById(id)) d[id] = document.getElementById(id).value;
+            }); 
+            d.chkMarkers = window.currentBodyMarkers ? [...window.currentBodyMarkers] : []; 
             
             ['paiFirmaMedDate', 'paiFirmaInfDate', 'paiFirmaOssDate'].forEach(id => { 
                 if (document.getElementById(id)) d[id] = document.getElementById(id).value; 
             });
 
             if(window.isMedicoOrAdmin()) { 
-                ['dimMotivo','dimData','dimOra','dimDecorso','psData','psOra','psMotivo','psRiassunto','decData','decOra'].forEach(id => { let e=document.getElementById(id); if(e) d[id]=e.value; }); 
-                let g=window.dbOspiti.find(x=>x.name===n); 
+                ['dimMotivo','dimData','dimOra','dimDecorso','psData','psOra','psMotivo','psRiassunto','decData','decOra','decTesto'].forEach(id => { 
+                    let e = document.getElementById(id); 
+                    if(e) d[id] = e.value; 
+                }); 
+
+                let g = window.dbOspiti.find(x => x.name === n); 
                 if(g){ 
-                    let d1=document.getElementById('decData')?.value; 
-                    let d2=document.getElementById('dimData')?.value; 
-                    if(d1&&!g.decesso){ if(confirm("Archiviare per DECESSO?")) await updateDoc(doc(db,"ospiti",g.id), {decesso:d1}); } 
-                    else if(d2&&!g.dimissione){ if(confirm("Archiviare per DIMISSIONE?")) await updateDoc(doc(db,"ospiti",g.id), {dimissione:d2}); } 
+                    let d1 = document.getElementById('decData')?.value; 
+                    let d2 = document.getElementById('dimData')?.value; 
+                    if(d1 && !g.decesso){ if(confirm("Archiviare per DECESSO?")) await updateDoc(doc(db,"ospiti",g.id), {decesso:d1}); } 
+                    else if(d2 && !g.dimissione){ if(confirm("Archiviare per DIMISSIONE?")) await updateDoc(doc(db,"ospiti",g.id), {dimissione:d2}); } 
                 } 
             } 
             await setDoc(doc(db, "cartelle_cliniche", n), d); 
-            window.showToast("💾 Dati Salvati"); 
+            window.showToast("💾 Dati e Lettere Salvati"); 
         };
+
         window.handleBodyMapClick = (e) => { if(window.checkOssRestriction()) return; const w=document.getElementById('bodyMapWrapper'); if(!w) return; const r=w.getBoundingClientRect(); window.currentBodyMarkers.push({x:((e.clientX-r.left)/r.width)*100, y:((e.clientY-r.top)/r.height)*100}); window.renderBodyMarkers(); };
         window.renderBodyMarkers = () => { const l=document.getElementById('bodyMarkersLayer'); if(!l) return; l.innerHTML=''; window.currentBodyMarkers.forEach((m,i)=>{ const d=document.createElement('div'); d.className='body-marker'; d.style.left=m.x+'%'; d.style.top=m.y+'%'; d.onclick=(ev)=>{ev.stopPropagation(); window.currentBodyMarkers.splice(i,1); window.renderBodyMarkers();}; l.appendChild(d); }); };
         window.clearBodyMarkers = () => { if(window.checkOssRestriction()) return; if(confirm('Svuotare la mappa?')) { window.currentBodyMarkers=[]; window.renderBodyMarkers(); } };
@@ -2137,7 +2150,7 @@
             const x=document.getElementById(t==='inf'?'newConsegnaInfText':'newConsegnaOssText').value; 
             if(x) { await addDoc(collection(db,"consegne"), {text:x, type:t, op:window.activeOperator, date:window.getTimestamp()}); document.getElementById(t==='inf'?'newConsegnaInfText':'newConsegnaOssText').value=''; window.showToast("✅ Consegna salvata"); }
         };
-        window.loadConsegne = () => { ['inf','oss'].forEach(t=>{ const l=document.getElementById(`consegne${t.charAt(0).toUpperCase()+t.slice(1)}List`); if(l){ l.innerHTML=''; window.dbConsegne.filter(c=>c.type===t).forEach(c=>l.innerHTML+=`<div style="border:1px solid #ccc; padding:5px; margin-bottom:5px; border-radius:4px;"><small>${c.date} - ${c.op}</small><div>${c.text}</div></div>`); } }); };
+        window.loadConsegne = () => { ['inf','oss'].forEach(t=>{ const l=document.getElementById(`consegne${t.charAt(0).toUpperCase()+t.slice(1)}List`); if(l){ l.innerHTML=''; window.dbConsegne.filter(c=>c.type===t).forEach(c=>l.innerHTML+=`<div style="border:1px solid #ccc; padding:5px; margin-bottom:5px; border-radius:4px;"><small>${c.date} - ${c.op}</small></div><div>${c.text}</div>`); } }); };
         
         window.firmaContenzione = async (id, ruolo) => {
             if(window.checkOssRestriction()) return;
@@ -2266,10 +2279,40 @@
             const n = document.getElementById('clinicalGuestSelect').value; 
             if(!n) return window.showToast("⚠️ Seleziona un paziente dalla Cartella Clinica per stampare il fascicolo."); 
             let d = window.dbClinica[n] || {}; 
+            let g = window.dbOspiti.find(x => x.name === n) || {};
             let mk = `${curTerYear}-${String(curTerMonth+1).padStart(2,'0')}`;
             let fM = d.terapiaFirmeMensili ? d.terapiaFirmeMensili[mk] : null;
 
-            document.getElementById('printArea').innerHTML = window.getPrintHeader('FASCICOLO CLINICO: ' + n) + `<h3>1. Check-in</h3><p>${d.chkGen||'Nessun dato registrato.'}</p><h3>2. P.A.I.</h3><p>Med: ${d.paiMedico||'-'}</p><p>Inf: ${d.paiInfermieristico||'-'}</p><p>OSS: ${d.paiAssistenziale||'-'}</p><h3>3. Terapia</h3>` + window.getTerapiaListHtml(d.terapiaList, false, fM); 
+            let htmlContent = window.getPrintHeader('FASCICOLO SANITARIO INTEGRATO: ' + n) + `
+                <h3>1. Anagrafica & Riferimenti</h3>
+                <p><strong>Codice Fiscale:</strong> ${g.cf||'-'} | <strong>Data di Nascita:</strong> ${window.formatDateSafe(g.dob)} | <strong>Stanza:</strong> ${g.room||'-'}</p>
+                <p><strong>Familiare / Riferimento:</strong> ${g.ref||'-'} (${g.refParentela||'-'} - Tel: ${g.refTel||'-'}) | <strong>MMG:</strong> ${g.mmg||'-'}</p>
+                
+                <h3>2. Check-in Clinico & Lesioni</h3>
+                <p><strong>Condizioni Generali:</strong> ${d.chkGen||'Nessun dato registrato.'}</p>
+                <p><strong>Piaghe / Lesioni:</strong> ${d.chkPiaghe||'Nessuna lesione segnalata.'}</p>
+                
+                <h3>3. Scheda Fisioterapica (FKT)</h3>
+                <p><strong>Valutazione Motoria:</strong> ${d.fktValutazione||'-'}</p>
+                <p><strong>Ausili in Uso:</strong> ${d.fktAusili||'-'}</p>
+                <p><strong>Obiettivi:</strong> ${d.fktObiettivi||'-'}</p>
+
+                <h3>4. Valutazione B.I.N.A. & Scale VMD</h3>
+                <p><strong>Punteggio B.I.N.A. Totale:</strong> ${((parseFloat(d.binaAuto)||0)+(parseFloat(d.binaSanita)||0)+(parseFloat(d.binaPsiche)||0)+(parseFloat(d.binaSociale)||0))} / 40</p>
+                <p><strong>Scale VMD:</strong> ADL: ${d.vmdADL||'-'} | IADL: ${d.vmdIADL||'-'} | MMSE: ${d.vmdMMSE||'-'} | Braden: ${d.vmdBraden||'-'} | Morse: ${d.vmdMorse||'-'}</p>
+
+                <h3>5. P.A.I. Multidisciplinare</h3>
+                <p><strong>Area Medica:</strong> ${d.paiMedico||'-'}</p>
+                <p><strong>Area Infermieristica:</strong> ${d.paiInfermieristico||'-'}</p>
+                <p><strong>Area Assistenziale (OSS):</strong> ${d.paiAssistenziale||'-'}</p>
+                <p><strong>Validazioni PAI:</strong> Medico: ${d.paiFirmaMedDate||'Non firmato'} | Infermiere: ${d.paiFirmaInfDate||'Non firmato'} | OSS: ${d.paiFirmaOssDate||'Non firmato'}</p>
+
+                <h3>6. Parametri Vitali recenti</h3>
+                <p>Ultimi parametri registrati in cartella (PA, FC, SpO2, TC).</p>
+
+                <h3>7. Prospetto Terapia in Atto</h3>` + window.getTerapiaListHtml(d.terapiaList, true, fM);
+
+            document.getElementById('printArea').innerHTML = htmlContent; 
             window.print(); 
         };
 
@@ -2300,23 +2343,23 @@
             } else if(t==='terapia') { 
                 document.getElementById('printArea').innerHTML = window.getPrintHeader('TERAPIA IN ATTO - PAZIENTE: ' + n) + window.getTerapiaListHtml(d.terapiaList, true, fM); 
             } else if(t==='decesso') { 
-                document.getElementById('printArea').innerHTML = window.getPrintHeader('ATTESTAZIONE DI DECESSO') + `<div style="font-size:14pt; margin-top:20px;">Si attesta il decesso dell'Ospite: <strong>${n}</strong>, avvenuto in data <strong>${d.decData||'-'}</strong> alle ore <strong>${d.decOra||'-'}</strong>.</div>`; 
+                let testoDecesso = (document.getElementById('decTesto')?.value) || d.decTesto || `Si attesta il decesso dell'Ospite: <strong>${n}</strong>, avvenuto in data <strong>${d.decData||'-'}</strong> alle ore <strong>${d.decOra||'-'}</strong>.`;
+                document.getElementById('printArea').innerHTML = window.getPrintHeader('ATTESTAZIONE DI DECESSO') + `<div style="font-size:14pt; margin-top:20px; line-height:1.6;">${testoDecesso.replace(/\n/g, '<br>')}</div>`; 
             } else if(t==='dimissioni') { 
-                document.getElementById('printArea').innerHTML = window.getPrintHeader('LETTERA DI DIMISSIONE') + `<div style="margin-top:20px; font-size:12pt; line-height:1.6;"><strong>Data Dimissione:</strong> ${d.dimData||'-'} ore ${d.dimOra||'-'} <br> <strong>Paziente:</strong> ${n} <br><br> <strong>Motivo e Destinazione:</strong><br>${d.dimMotivo||'-'} <br><br> <strong>Decorso Clinico:</strong><br>${d.dimDecorso||'-'}</div> <h3 style="margin-top:20px; padding-top:20px; border-top:2px solid #000;">Terapia alla Dimissione</h3>` + window.getTerapiaListHtml(d.terapiaList, false, fM); 
+                let testoMotivo = (document.getElementById('dimMotivo')?.value) || d.dimMotivo || '-';
+                let testoDecorso = (document.getElementById('dimDecorso')?.value) || d.dimDecorso || '-';
+                document.getElementById('printArea').innerHTML = window.getPrintHeader('LETTERA DI DIMISSIONE') + `<div style="margin-top:20px; font-size:12pt; line-height:1.6;"><strong>Data Dimissione:</strong> ${d.dimData||'-'} ore ${d.dimOra||'-'} <br> <strong>Paziente:</strong> ${n} <br><br> <strong>Motivo e Destinazione:</strong><br>${testoMotivo.replace(/\n/g, '<br>')} <br><br> <strong>Decorso Clinico:</strong><br>${testoDecorso.replace(/\n/g, '<br>')}</div> <h3 style="margin-top:20px; padding-top:20px; border-top:2px solid #000;">Terapia alla Dimissione</h3>` + window.getTerapiaListHtml(d.terapiaList, false, fM); 
             } else if(t==='prontosoccorso') { 
-                let htmlStr = window.getPrintHeader('LETTERA DI TRASFERIMENTO (PRONTO SOCCORSO / 118)') + `<div style="margin-top:20px; font-size:12pt; line-height:1.6;"><strong>Data Invio:</strong> ${d.psData||'-'} ore ${d.psOra||'-'} <br> <strong>Paziente:</strong> ${n} <br><br> <strong>Sintomatologia / Motivo Invio:</strong><br>${d.psMotivo||'-'} <br><br> <strong>Riassunto Clinico:</strong><br>${d.psRiassunto||'-'}</div> <h3 style="margin-top:20px; padding-top:20px; border-top:2px solid #000;">Terapia in Atto</h3>` + window.getTerapiaListHtml(d.terapiaList, false, fM); 
+                let testoPsMotivo = (document.getElementById('psMotivo')?.value) || d.psMotivo || '-';
+                let testoPsRiassunto = (document.getElementById('psRiassunto')?.value) || d.psRiassunto || '-';
+                let htmlStr = window.getPrintHeader('LETTERA DI TRASFERIMENTO (PRONTO SOCCORSO / 118)') + `<div style="margin-top:20px; font-size:12pt; line-height:1.6;"><strong>Data Invio:</strong> ${d.psData||'-'} ore ${d.psOra||'-'} <br> <strong>Paziente:</strong> ${n} <br><br> <strong>Sintomatologia / Motivo Invio:</strong><br>${testoPsMotivo.replace(/\n/g, '<br>')} <br><br> <strong>Riassunto Clinico:</strong><br>${testoPsRiassunto.replace(/\n/g, '<br>')}</div> <h3 style="margin-top:20px; padding-top:20px; border-top:2px solid #000;">Terapia in Atto</h3>` + window.getTerapiaListHtml(d.terapiaList, false, fM); 
                 
                 let docHtml = '';
                 if (g.docId && g.docId.startsWith('data:image')) {
                     docHtml += `<div style="page-break-before: always; text-align: center;"><h3 style="margin-top:20px; text-transform:uppercase;">Documento di Identità</h3><img src="${g.docId}" style="max-width:100%; max-height:900px; border:1px solid #ccc; margin-top:20px;"></div>`;
-                } else if (g.docId && g.docId.startsWith('data:application/pdf')) {
-                    docHtml += `<div style="page-break-before: always; text-align: center;"><h3 style="margin-top:20px; text-transform:uppercase;">Documento di Identità</h3><p><em>(Il documento è in formato PDF. Stampalo manualmente dall'anagrafica.)</em></p></div>`;
                 }
-
                 if (g.docCf && g.docCf.startsWith('data:image')) {
                     docHtml += `<div style="page-break-before: always; text-align: center;"><h3 style="margin-top:20px; text-transform:uppercase;">Tessera Sanitaria / Codice Fiscale</h3><img src="${g.docCf}" style="max-width:100%; max-height:900px; border:1px solid #ccc; margin-top:20px;"></div>`;
-                } else if (g.docCf && g.docCf.startsWith('data:application/pdf')) {
-                    docHtml += `<div style="page-break-before: always; text-align: center;"><h3 style="margin-top:20px; text-transform:uppercase;">Tessera Sanitaria / Codice Fiscale</h3><p><em>(Il documento è in formato PDF. Stampalo manualmente dall'anagrafica.)</em></p></div>`;
                 }
                 
                 document.getElementById('printArea').innerHTML = htmlStr + docHtml;

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NVS Masterpiece - Qualità ISO 9001 e Accreditamento Umbria LIST 05</title>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <style>
         :root {
             --bg-color: #f1f5f9;         
@@ -96,7 +98,7 @@
 
         @media print {
             body, html { background: white !important; overflow: visible !important; height: auto !important; color: black !important; font-size: 12px !important; }
-            #top-nav-container, .app-menu, button, .btn-iso, .btn-acc, .btn-doc, .btn-print, #toast-container, input[type="file"], select { display: none !important; }
+            #top-nav-container, .app-menu, button, .btn-iso, .btn-acc, .btn-doc, .btn-print, #toast-container, input[type="file"], select, #csQrModal { display: none !important; }
             #appScreen, .main-content { display: block !important; height: auto !important; overflow: visible !important; padding: 0 !important; }
             .card { box-shadow: none !important; border: 1px solid #000 !important; margin-bottom: 30px !important; page-break-inside: avoid !important; border-top-width: 1px !important; }
             textarea { border: none !important; resize: none !important; background: transparent !important; }
@@ -163,11 +165,37 @@
                         <button class="btn-acc" style="width:100%; margin-top:15px;" onclick="document.getElementById('tabAccreditamento').click()">Vai al Manuale Completo ➡️</button>
                     </div>
 
-                    <div class="card" style="border-top: 4px solid #059669; display:flex; flex-direction:column;">
-                        <div class="card-header"><h3 style="color:#059669;">⭐ Customer Satisfaction</h3></div>
-                        <button class="btn-success" style="width:100%; margin-bottom:15px; font-size: 1em; padding: 8px;" onclick="alert('Questa funzione aprirebbe un modale con il QR Code.')">📱 Mostra QR Code Sondaggio</button>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; text-align: center; margin-top: auto;" id="csMedieContainer">
-                            <span style="color: var(--text-light); font-size:0.85em;">Caricamento medie in corso...</span>
+                    <!-- SEZIONE CUSTOMER SATISFACTION (GOOGLE MODULI) -->
+                    <div class="card" style="border-top: 4px solid #059669; display:flex; flex-direction:column; grid-column: 1 / -1;">
+                        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="color:#059669;">⭐ Customer Satisfaction (Google Moduli in Tempo Reale)</h3>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn-success" style="padding:6px 12px; font-size:0.85em;" onclick="window.fetchGoogleSheetResponses()">🔄 Aggiorna Risposte</button>
+                                <button class="btn-doc" style="padding:6px 12px; font-size:0.85em;" onclick="window.showCustomerSatisfactionQR()">📱 Mostra & Stampa QR Code</button>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; text-align: center; margin-bottom: 15px;" id="csMedieContainer">
+                            <span style="color: var(--text-light); font-size:0.85em;">Caricamento medie dal Foglio Google in corso...</span>
+                        </div>
+
+                        <div style="border-top:1px dashed var(--border-color); padding-top:12px; margin-top:5px;">
+                            <strong style="font-size:0.9em; color:var(--text-main); display:block; margin-bottom:8px;">📋 Ultime 3 Valutazioni Ricevute:</strong>
+                            <div style="overflow-x:auto;">
+                                <table class="data-table" id="csUltimeValutazioniTable">
+                                    <thead style="background:#059669;">
+                                        <tr>
+                                            <th style="width:140px;">Data / Ora</th>
+                                            <th style="text-align:center; width:90px;">Media</th>
+                                            <th>Valutazioni Dettagliate</th>
+                                            <th>Commenti / Note Ospite-Familiare</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td colspan="4" style="text-align:center; color:#64748b; padding:12px;">Connessione a Google Moduli in corso...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
@@ -217,6 +245,29 @@
         </div>
     </div>
 
+    <!-- MODALE QR CODE CUSTOMER SATISFACTION (GOOGLE MODULI) -->
+    <div id="csQrModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.7); z-index:10000; justify-content:center; align-items:center;">
+        <div style="background:#ffffff; padding:25px; border-radius:8px; max-width:420px; width:90%; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.3); border-top:5px solid #059669;">
+            <h3 style="margin-top:0; color:#059669; text-transform:uppercase;">Questionario di Gradimento</h3>
+            <p style="font-size:0.85em; color:var(--text-light); margin-bottom:12px;">Link collegato al <b>Google Modulo</b> ufficiale della struttura per la Customer Satisfaction.</p>
+            
+            <div style="margin-bottom:15px; text-align:left;">
+                <label style="font-size:0.8em; font-weight:bold; color:var(--text-main); display:block; margin-bottom:4px;">Link Google Modulo:</label>
+                <div style="display:flex; gap:6px;">
+                    <input type="text" id="googleFormUrlInput" value="https://forms.gle/rkDvvEmpupSpnxof6" style="font-size:0.85em; padding:6px; flex:1;">
+                    <button class="btn-success" style="padding:6px 12px; font-size:0.85em;" onclick="window.saveAndGenerateGoogleFormQR()">Salva</button>
+                </div>
+            </div>
+
+            <div id="csQrContainer" style="width:180px; height:180px; margin:0 auto 15px auto; display:flex; justify-content:center; align-items:center; border:1px solid #cbd5e1; border-radius:4px; padding:10px; background:#fff;"></div>
+
+            <div style="display:flex; gap:10px;">
+                <button class="btn-print" style="flex:1; padding:8px;" onclick="window.printCSQrCode()">🖨️ Stampa Avviso</button>
+                <button class="btn-doc" style="flex:1; padding:8px;" onclick="document.getElementById('csQrModal').style.display='none'">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
     <!-- SCRIPT FIREBASE E LOGICHE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -232,6 +283,11 @@
         const appCheck = initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), isTokenAutoRefreshEnabled: true });
         const db = getFirestore(app);
 
+        // LINK DI BASE (CON E SENZA GID) PER MASSIMA COMPATIBILITA
+        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQXlj_-C7qIApaHNIGR_tWw1AmH8PhVB6kCi8To1te7mi18FNenm2JSVtfDevpIs4Krr51RueUCLUHh/pub?gid=1077587815&single=true&output=csv";
+        const GOOGLE_SHEET_CSV_URL_ALT = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQXlj_-C7qIApaHNIGR_tWw1AmH8PhVB6kCi8To1te7mi18FNenm2JSVtfDevpIs4Krr51RueUCLUHh/pub?output=csv";
+        const DEFAULT_GOOGLE_FORM_URL = "https://forms.gle/rkDvvEmpupSpnxof6";
+
         window.getTodayString = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
         window.formatDateSafe = (d) => { if (!d) return '-'; if (d.includes('-')) return d.split('-').reverse().join('/'); return d; };
         window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
@@ -241,8 +297,239 @@
         window.activeOperator = "";
         window.selectedOpData = null;
 
-        window.dbOspiti = []; window.dbClinica = {}; window.dbRischio = []; window.dbContenzioni = []; window.dbCup = []; window.dbSurveys = [];
+        window.dbOspiti = []; window.dbClinica = {}; window.dbRischio = []; window.dbContenzioni = []; window.dbCup = [];
         window.countEvidenzeGlobale = {};
+
+        // PARSER ROBUSTO PER CSV CON SUPPORTO VIRGOLETTE E CAMPI MULTI-LINEA
+        function parseCSV(text) {
+            let lines = text.trim().split(/\r?\n/);
+            return lines.map(line => {
+                let row = [];
+                let inQuotes = false;
+                let entry = '';
+                for (let i = 0; i < line.length; i++) {
+                    let char = line[i];
+                    if (char === '"') {
+                        if (inQuotes && line[i+1] === '"') {
+                            entry += '"';
+                            i++;
+                        } else {
+                            inQuotes = !inQuotes;
+                        }
+                    } else if (char === ',' && !inQuotes) {
+                        row.push(entry.trim());
+                        entry = '';
+                    } else {
+                        entry += char;
+                    }
+                }
+                row.push(entry.trim());
+                return row;
+            });
+        }
+
+        // CARICAMENTO RISPOSTE DA GOOGLE MODULI CON FALLBACK MULTIPLO E PROXY CORS
+        window.fetchGoogleSheetResponses = async () => {
+            const tableBody = document.querySelector('#csUltimeValutazioniTable tbody');
+            const mCont = document.getElementById('csMedieContainer');
+            
+            try {
+                window.showToast("⏳ Connessione a Google Moduli...");
+                
+                // Sequenza di fallback per aggirare blocchi CORS o errori di formato Google Sheet
+                const targets = [
+                    GOOGLE_SHEET_CSV_URL,
+                    GOOGLE_SHEET_CSV_URL_ALT,
+                    "https://api.allorigins.win/raw?url=" + encodeURIComponent(GOOGLE_SHEET_CSV_URL),
+                    "https://api.allorigins.win/raw?url=" + encodeURIComponent(GOOGLE_SHEET_CSV_URL_ALT)
+                ];
+
+                let csvData = "";
+                let successful = false;
+
+                for (let target of targets) {
+                    try {
+                        const res = await fetch(target);
+                        if (res.ok) {
+                            const text = await res.text();
+                            // Verifica che il testo non sia una pagina di errore HTML di Google
+                            if (text && text.trim().length > 0 && !text.trim().startsWith("<!DOCTYPE html>")) {
+                                csvData = text;
+                                successful = true;
+                                break;
+                            }
+                        }
+                    } catch (e) {
+                        // Prova il target successivo
+                    }
+                }
+
+                if (!successful || !csvData) {
+                    throw new Error("Tutti i tentativi di connessione al CSV (inclusi proxy) sono falliti.");
+                }
+
+                const rows = parseCSV(csvData);
+
+                if (!rows || rows.length <= 1) {
+                    if(tableBody) tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#64748b; padding:12px;">Nessuna compilazione presente nel Google Modulo.</td></tr>';
+                    if(mCont) mCont.innerHTML = '<span style="color:var(--text-light); font-size:0.85em;">Nessun dato ancora disponibile.</span>';
+                    return;
+                }
+
+                const headers = rows[0];
+                const dataRows = rows.slice(1);
+
+                let sumScores = {};
+                let countScores = {};
+                let parsedSurveys = [];
+
+                dataRows.forEach(row => {
+                    let timestamp = row[0] || "-";
+                    let numericVals = [];
+                    let detailsArr = [];
+                    let commentsArr = [];
+
+                    for (let colIdx = 1; colIdx < row.length; colIdx++) {
+                        let headerName = headers[colIdx] || `Domanda ${colIdx}`;
+                        let cellVal = (row[colIdx] || "").trim();
+                        let num = parseFloat(cellVal);
+
+                        if (!isNaN(num) && num > 0 && num <= 10) {
+                            numericVals.push(num);
+                            detailsArr.push(`<b>${headerName.substring(0, 15)}:</b> ${num}`);
+                            sumScores[headerName] = (sumScores[headerName] || 0) + num;
+                            countScores[headerName] = (countScores[headerName] || 0) + 1;
+                        } else if (cellVal.length > 1) {
+                            commentsArr.push(cellVal);
+                        }
+                    }
+
+                    let avgScore = numericVals.length > 0 ? (numericVals.reduce((a, b) => a + b, 0) / numericVals.length).toFixed(1) : "-";
+
+                    parsedSurveys.push({
+                        timestamp: timestamp,
+                        media: avgScore,
+                        dettaglio: detailsArr.length > 0 ? detailsArr.join(" | ") : "Risposte registrate",
+                        commento: commentsArr.length > 0 ? commentsArr.join("; ") : "-"
+                    });
+                });
+
+                // Calcolo e render box medie generali
+                if (mCont) {
+                    const bStyle = "padding:6px 10px; border:1px solid #cbd5e1; border-radius:4px; background:#fff; font-size:0.8em; flex:1; min-width:90px;";
+                    let summaryCardsHtml = "";
+                    let totalSum = 0;
+                    let totalCount = 0;
+
+                    Object.keys(sumScores).forEach(qName => {
+                        let qAvg = (sumScores[qName] / countScores[qName]).toFixed(1);
+                        totalSum += sumScores[qName];
+                        totalCount += countScores[qName];
+                        let shortTitle = qName.length > 16 ? qName.substring(0, 16) + '...' : qName;
+                        summaryCardsHtml += `<div style="${bStyle}" title="${qName}"><strong>${shortTitle}</strong><br><span style="font-size:1.2em; font-weight:bold; color:var(--text-main);">${qAvg}</span></div>`;
+                    });
+
+                    let globalAvg = totalCount > 0 ? (totalSum / totalCount).toFixed(1) : "-";
+                    summaryCardsHtml += `<div style="${bStyle} background:#ecfdf5; color:#059669; border-color:#059669;"><strong>MEDIA GLOBALE</strong><br><span style="font-size:1.3em; font-weight:bold;">⭐ ${globalAvg}</span></div>`;
+                    
+                    mCont.innerHTML = summaryCardsHtml || '<span style="color:var(--text-light);">Dati aggregati completati.</span>';
+                }
+
+                // Render delle ultime 3 valutazioni ricevute
+                if (tableBody) {
+                    tableBody.innerHTML = "";
+                    const ultime3 = parsedSurveys.slice(-3).reverse();
+
+                    ultime3.forEach(item => {
+                        tableBody.innerHTML += `
+                            <tr>
+                                <td><strong>${item.timestamp}</strong></td>
+                                <td style="text-align:center;"><span style="background:#ccfbf1; color:#0f766e; padding:3px 8px; border-radius:4px; font-weight:bold;">⭐ ${item.media}</span></td>
+                                <td style="font-size:0.85em; color:#334155; line-height:1.4;">${item.dettaglio}</td>
+                                <td style="font-style:italic; font-size:0.85em; color:#475569;">${item.commento !== '-' ? '"' + item.commento + '"' : '-'}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                window.showToast(`✅ ${parsedSurveys.length} risposte caricate da Google Moduli!`);
+            } catch (err) {
+                console.error("Errore recupero Google Modulo:", err);
+                if(tableBody) tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#e11d48; padding:12px;">Errore durante la lettura del foglio Google. Verifica la pubblicazione CSV e la connessione.</td></tr>';
+            }
+        };
+
+        // GESTIONE POPUP E STAMPA QR CODE
+        window.showCustomerSatisfactionQR = () => {
+            const modal = document.getElementById('csQrModal');
+            const input = document.getElementById('googleFormUrlInput');
+            
+            const currentUrl = localStorage.getItem('nvs_google_form_url') || DEFAULT_GOOGLE_FORM_URL;
+            if(input) input.value = currentUrl;
+            
+            window.renderQR(currentUrl);
+            modal.style.display = 'flex';
+        };
+
+        window.saveAndGenerateGoogleFormQR = () => {
+            const url = document.getElementById('googleFormUrlInput').value.trim();
+            if(!url || !url.startsWith('http')) {
+                return window.showToast("⚠️ Inserisci un link valido (es. https://forms.gle/...)");
+            }
+            
+            localStorage.setItem('nvs_google_form_url', url);
+            window.renderQR(url);
+            window.showToast("✅ Link salvato e QR Code generato!");
+        };
+
+        window.renderQR = (url) => {
+            const container = document.getElementById('csQrContainer');
+            container.innerHTML = '';
+            new QRCode(container, {
+                text: url,
+                width: 180,
+                height: 180,
+                colorDark: "#0f172a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        };
+
+        window.printCSQrCode = () => {
+            const qrCanvas = document.querySelector('#csQrContainer canvas');
+            if(!qrCanvas) return window.showToast("⚠️ Genera prima il QR Code inserendo il link.");
+            
+            const qrImg = qrCanvas.toDataURL("image/png");
+            const printWin = window.open('', '_blank');
+            
+            printWin.document.write(`
+                <html>
+                <head>
+                    <title>Questionario di Gradimento - Nuova Villa Silvana</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Tahoma, sans-serif; text-align: center; padding: 40px; color: #0f172a; }
+                        h1 { color: #0d9488; font-size: 26pt; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+                        h2 { color: #334155; font-size: 16pt; margin-top: 0; font-weight: normal; }
+                        p { font-size: 13pt; color: #475569; max-width: 600px; margin: 25px auto; line-height: 1.5; }
+                        .qr-box { margin: 30px auto; width: 260px; height: 260px; border: 3px solid #0d9488; padding: 15px; border-radius: 12px; }
+                        .qr-box img { width: 100%; height: 100%; }
+                        .badge { display: inline-block; background: #ccfbf1; color: #0f766e; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 11pt; }
+                        .footer { margin-top: 50px; font-size: 9pt; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+                    </style>
+                </head>
+                <body onload="window.print(); window.close();">
+                    <span class="badge">SISTEMA QUALITÀ ISO 9001 & ACCREDITAMENTO</span>
+                    <h1>NUOVA VILLA SILVANA</h1>
+                    <h2>Questionario di Valutazione del Servizio</h2>
+                    <p><strong>Gentile Familiare / Ospite,</strong><br>la sua opinione ci aiuta a migliorare costantemente la qualità dell'assistenza.<br>Inquadri il codice sottostante con lo smartphone per compilare il questionario online in forma anonima.</p>
+                    <div class="qr-box"><img src="${qrImg}"></div>
+                    <p style="font-size:11pt; color:#64748b;">La compilazione richiede meno di 2 minuti.</p>
+                    <div class="footer">Residenza Protetta per Anziani Nuova Villa Silvana — Sistema di Gestione Qualità</div>
+                </body>
+                </html>
+            `);
+            printWin.document.close();
+        };
 
         window.getTerapiaListHtml = (terapiaList) => {
             if (!terapiaList || terapiaList.length === 0) return '<p style="color:#64748b; font-style:italic;">Nessuna terapia farmacologica attiva registrata.</p>';
@@ -273,6 +560,7 @@
                 document.getElementById('loginScreen').style.display = 'none'; 
                 document.getElementById('appScreen').style.display = 'flex';
                 window.renderAccreditamentoList(); 
+                window.fetchGoogleSheetResponses();
             } else {
                 window.showToast("❌ PIN errato!");
             }
@@ -349,19 +637,6 @@
                     tb.innerHTML += `<tr><td>${window.formatDateSafe(n.data)}</td><td>${n.tipo}</td><td>${n.desc}</td><td>${n.ac||'-'}</td><td>${st}</td><td>${btn}</td></tr>`;
                 });
             }
-        });
-
-        onSnapshot(collection(db, "customer_satisfaction"), snap => { 
-            window.dbSurveys = snap.docs.map(d=>d.data());
-            const mCont = document.getElementById('csMedieContainer');
-            if(!mCont) return;
-            if(window.dbSurveys.length > 0) {
-                let tM=0, tO=0, tC=0, tP=0, tCo=0, tA=0, tG=0;
-                window.dbSurveys.forEach(s => { tM += (s.assistenza_medica || 0); tO += (s.assistenza_base || 0); tC += (s.ristorazione || 0); tP += (s.pulizia || 0); tCo += (s.cortesia || 0); tA += (s.animazione || 0); tG += (s.media || 0); });
-                let len = window.dbSurveys.length;
-                const bStyle = "padding:6px; border:1px solid #cbd5e1; border-radius:4px; background:#fff; font-size:0.8em; flex:1; min-width:80px;";
-                mCont.innerHTML = `<div style="${bStyle}"><strong>Medica</strong><br><span style="font-size:1.2em;">${(tM/len).toFixed(1)}</span></div><div style="${bStyle}"><strong>OSS</strong><br><span style="font-size:1.2em;">${(tO/len).toFixed(1)}</span></div><div style="${bStyle}"><strong>Pasti</strong><br><span style="font-size:1.2em;">${(tC/len).toFixed(1)}</span></div><div style="${bStyle}"><strong>Pulizia</strong><br><span style="font-size:1.2em;">${(tP/len).toFixed(1)}</span></div><div style="${bStyle}"><strong>Cortesia</strong><br><span style="font-size:1.2em;">${(tCo/len).toFixed(1)}</span></div><div style="${bStyle}"><strong>Animaz.</strong><br><span style="font-size:1.2em;">${(tA/len).toFixed(1)}</span></div><div style="${bStyle} background:#ecfdf5; color:#059669; border-color:#059669;"><strong>GLOBALE</strong><br><span style="font-size:1.4em; font-weight:bold;">${(tG/len).toFixed(1)}</span></div>`;
-            } else { mCont.innerHTML = '<span style="color:var(--text-light);">Dati non sufficienti per calcolare la media.</span>'; }
         });
 
         const requisitiAccreditamento = [
