@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NVS Masterpiece - UI Istituzionale (Regione Umbria) & Clinica</title>
+    <title>NVS Masterpiece - UI Istituzionale & Clinica Integrata</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -24,7 +24,6 @@
             --dir-color: #4f46e5;
             --terapia-color: #0284c7; 
             --app-color: #db2777;
-            --iso-color: #d97706;
             --base-font-size: 14px;      
             --radius: 6px;               
             --transition: all 0.2s ease;
@@ -43,15 +42,7 @@
         body[data-qualifica="Infermiere"] .inf-edit-area, body[data-qualifica="Infermiere"] .inf-delete-btn { display: block !important; }
         body[data-qualifica="OSS"] .oss-edit-area, body[data-qualifica="OSS"] .oss-delete-btn { display: block !important; }
 
-        .body-marker { 
-            position: absolute; width: 22px; height: 22px; 
-            background-color: var(--error-color); 
-            border: 2px solid white; border-radius: 50%; 
-            transform: translate(-50%, -50%); cursor: pointer; z-index: 10; 
-            box-shadow: 0 2px 6px rgba(225,29,72,0.6);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 11px; font-weight: bold; user-select: none;
-        }
+        .body-marker { position: absolute; width: 22px; height: 22px; background-color: var(--error-color); border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; box-shadow: 0 2px 6px rgba(225,29,72,0.6); display:flex; align-items:center; justify-content:center; color:white; font-size:11px; font-weight:bold; user-select: none;}
         
         #signature-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.85); z-index: 30000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .signature-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 520px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; display:flex; flex-direction:column; gap: 15px;}
@@ -155,12 +146,6 @@
         .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .toast.show { opacity: 1; }
 
-        #privacyScreen { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100%; position: fixed; top: 0; left: 0; z-index: 10000; background-color: var(--bg-color); padding: 20px; box-sizing: border-box; }
-        .privacy-container { background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 580px; width: 100%; border-top: 6px solid var(--primary-color); }
-        .privacy-policy-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 6px; height: 230px; overflow-y: auto; font-size: 0.85em; line-height: 1.5; margin-bottom: 20px; color: var(--text-main); }
-        .btn-submit-privacy { background-color: var(--primary-color); color: white; border: none; width: 100%; padding: 15px; border-radius: 6px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
-        .btn-submit-privacy:disabled { background-color: #94a3b8; cursor: not-allowed; }
-
         .diary-entry { background: #ffffff; border: 1px solid var(--border-color); border-left: 4px solid var(--primary-color); padding: 12px; border-radius: 4px; margin-bottom: 10px; font-size: 0.9em; }
         .diary-entry.medico { border-left-color: #15803d; }
         .diary-entry.infermiere { border-left-color: var(--terapia-color); }
@@ -202,7 +187,7 @@
             <h2>Residenza Protetta per Anziani</h2>
         </div>
         <div class="login-box">
-            <h2 class="dynamic-greeting" id="loginGreeting" style="color:var(--primary-color); margin-top:0;">Benvenuto</h2>
+            <h2 id="loginGreeting" style="color:var(--primary-color); margin-top:0;">Benvenuto</h2>
             <p class="login-subtitle">Sistema Informativo Clinico</p>
             <label style="display:block; text-align:center; font-size:0.95em; margin-bottom:15px; font-weight:bold; color:var(--text-main);">Seleziona il tuo Profilo</label>
             <div id="loginProfilesContainer" class="profiles-grid">
@@ -440,9 +425,8 @@
     <!-- SCRIPT E LOGICA FIREBASE CON DOPPIO LIVELLO DI FALLBACK PROFILI -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", authDomain: "gestione-visite-b445b.firebaseapp.com", projectId: "gestione-visite-b445b", 
@@ -451,21 +435,12 @@
         
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-
-        self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-        let appCheck = null;
-        if (window.location.protocol !== 'file:') {
-            try {
-                appCheck = initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), isTokenAutoRefreshEnabled: true });
-            } catch (err) { console.warn("App Check:", err); }
-        }
-
         const db = getFirestore(app);
 
         window.dbOperatori=[]; window.dbOspiti=[]; window.dbRischio=[]; window.dbCup=[]; window.dbStupefacentiInv=[]; window.dbStupefacentiLog=[]; window.dbConsegne=[]; window.dbClinica={}; window.dbStruttura = {}; window.dbContenzioni = [];
         window.currentBodyMarkers = []; window.currentLesioniPhotos = []; 
         window.activeOperator = ""; window.activeOperatorRole = "user"; window.activeOperatorQualifica = ""; window.selectedLoginOperator = ""; 
-        window.newGuestPhotoBase64 = ""; window.editGuestPhotoBase64 = ""; window.globalSelectedPatient = "";
+        window.globalSelectedPatient = "";
 
         const prontuario = ["Abilify", "Amiodarone", "Amoxicillina", "Cardicor", "Cardioaspirin", "Coumadin", "Eparina", "Furosemide", "Lasix", "Metformina", "Paracetamolo", "Tachipirina"];
 
@@ -608,10 +583,10 @@
         window.goToNuovoOspite = () => { document.querySelectorAll('.menu-tab')[1].click(); setTimeout(()=>document.getElementById('newGuestCognome')?.focus(), 200); };
         
         window.loadGuests = () => { 
-            let att = window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione); let arc = window.dbOspiti.filter(g=>g.decesso||g.dimissione); 
-            ['clinicalGuestSelect','diariGuestSelect','terapiaGuestSelect','appGuestSelect','newRischioOspite','lettereGuestSelect','editAnagraficaSelect','contOspite'].forEach(id=>{ 
+            let att = window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione); 
+            ['clinicalGuestSelect','diariGuestSelect','terapiaGuestSelect','appGuestSelect','editAnagraficaSelect','contOspite'].forEach(id=>{ 
                 const s=document.getElementById(id); if(s){ let cv=s.value; s.innerHTML = id==='editAnagraficaSelect'?'<option value="">-- Crea Nuovo --</option>':'<option value="" disabled selected>Scegli...</option>'; 
-                let o1=document.createElement('optgroup'); o1.label="Attivi"; att.forEach(g=>o1.innerHTML+=`<option value="${g.name}">${g.name}</option>`); s.appendChild(o1); 
+                att.forEach(g=>s.innerHTML+=`<option value="${g.name}">${g.name}</option>`); 
                 if(cv) s.value=cv; } 
             }); 
             if(document.getElementById('dash-guests-count')){ document.getElementById('dash-guests-count').innerText=att.length; document.getElementById('dash-guests-detail').innerText=`${att.length} Presenti | 0 Assenti`; window.renderCharts(); window.loadAlerts(); } 
@@ -622,9 +597,92 @@
             window.renderSidebarPatients(); 
         };
 
+        window.loadOperators = () => { 
+            const lc = document.getElementById('loginProfilesContainer'); if(!lc) return; 
+            let vOps = window.dbOperatori.filter(o => o && (o.name || o.nome)); 
+            if(!vOps.some(o => (o.name || o.nome) === "Admin")) {
+                vOps.push({id:"admin-fallback", name:"Admin", nome:"Admin", pin:"12345", role:"admin", qualifica:"Direttore Sanitario"}); 
+            } 
+            lc.innerHTML = ''; 
+            vOps.forEach(op => { 
+                let opName = op.name || op.nome; let i = opName[0] ? opName[0].toUpperCase() : '👤'; 
+                let b = document.createElement('div'); b.className = 'profile-btn'; 
+                b.innerHTML = `<div class="profile-avatar">${i}</div><span class="profile-name">${opName.split(' ')[0]}</span><span class="profile-qual">${op.qualifica||''}</span>`; 
+                b.onclick = () => window.selectLoginProfile(opName); lc.appendChild(b); 
+            }); 
+        };
+
+        window.selectLoginProfile = (n) => { 
+            window.selectedLoginOperator = n; document.getElementById('loginProfilesContainer').style.display = 'none'; 
+            document.getElementById('loginPinArea').style.display = 'block'; document.getElementById('selectedProfileLabel').innerText = "🔑 Ciao " + n.split(' ')[0] + ", PIN:"; 
+            setTimeout(() => document.getElementById('loginPinInput').focus(), 100); 
+        };
+
+        window.resetLoginSelection = () => { 
+            window.selectedLoginOperator = ""; document.getElementById('loginPinArea').style.display = 'none'; 
+            document.getElementById('loginProfilesContainer').style.display = 'flex'; document.getElementById('loginPinInput').value = ''; 
+        };
+
+        window.performLogin = async () => { 
+            const p = document.getElementById('loginPinInput').value; 
+            const op = window.dbOperatori.find(o => (o.name === window.selectedLoginOperator || o.nome === window.selectedLoginOperator)); 
+            
+            if(window.selectedLoginOperator === 'Admin' && p === '12345') {
+                window.activeOperator = "Admin"; window.activeOperatorRole = "admin"; window.activeOperatorQualifica = "Direttore Sanitario";
+                window.finalizeLogin(); return;
+            }
+
+            if (!op) return window.showToast("❌ Profilo non trovato");
+
+            const emailFittizia = op.email || (op.name || op.nome).toLowerCase().replace(/[^a-z0-9]/g, '.') + "@villasilvana.local";
+            try {
+                await signInWithEmailAndPassword(auth, emailFittizia, p);
+                window.activeOperator = op.name || op.nome; window.activeOperatorRole = op.role || 'user'; window.activeOperatorQualifica = op.qualifica || 'OSS'; 
+                window.finalizeLogin();
+            } catch (e) {
+                console.error(e); window.showToast("❌ PIN Errato o credenziali non valide"); document.getElementById('loginPinInput').value = ''; 
+            }
+        };
+
+        window.finalizeLogin = () => {
+            sessionStorage.setItem("activeOperator", window.activeOperator);
+            sessionStorage.setItem("activeRole", window.activeOperatorRole);
+            sessionStorage.setItem("activeQualifica", window.activeOperatorQualifica);
+            document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`; 
+            document.getElementById('loginScreen').style.display = 'none'; 
+            document.getElementById('appScreen').style.display = 'flex'; 
+            window.applyRolePermissions(); window.resetLoginSelection(); setTimeout(window.renderCharts, 500);
+        };
+
+        window.isMedicoOrAdmin = () => ['Medico','Direttore Sanitario'].includes(window.activeOperatorQualifica) || window.activeOperatorRole==='admin';
+        window.checkOssRestriction = () => { if(window.activeOperatorQualifica==='OSS'){ window.showToast("⚠️ Sola Lettura"); return true; } return false; };
+        window.applyRolePermissions = () => { 
+            document.body.setAttribute('data-qualifica', window.activeOperatorQualifica); 
+            if(window.isMedicoOrAdmin()) document.body.setAttribute('data-med-access','true'); else document.body.removeAttribute('data-med-access'); 
+            if(['Direttore Sanitario','Infermiere','Amministrazione'].includes(window.activeOperatorQualifica) || window.activeOperatorRole==='admin') document.body.setAttribute('data-sign-access','true'); else document.body.removeAttribute('data-sign-access'); 
+        };
+
+        window.logout = () => { sessionStorage.clear(); window.location.reload(); };
+        window.switchTab = (ws, btn) => { 
+            document.querySelectorAll('.workspace, .menu-tab').forEach(e=>e.classList.remove('active')); 
+            document.getElementById('ws-'+ws).classList.add('active'); if(btn) btn.classList.add('active'); if(ws==='dashboard') window.renderCharts(); 
+        };
+
+        window.renderCharts = () => { 
+            const ctxGuest = document.getElementById('guestChart'); const ctxGender = document.getElementById('genderChart'); if(!ctxGuest) return; 
+            let att = window.dbOspiti.filter(g => !g.decesso && !g.dimissione); let pr=0, as=0, uo=0, don=0; 
+            att.forEach(g => { if(g.movimenti&&g.movimenti.length>0&&(g.movimenti[0].tipo==='RICOVERO'||g.movimenti[0].tipo==='FAMIGLIA')) as++; else pr++; if((g.sesso||'').toUpperCase() === 'F') don++; else uo++; }); 
+            if(window.guestChartInstance) window.guestChartInstance.destroy(); 
+            window.guestChartInstance = new Chart(ctxGuest, { type:'doughnut', data:{labels:['Presenti','Assenti'], datasets:[{data:[pr,as], backgroundColor:['#0d9488','#f59e0b'], borderWidth:0}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}} });
+            if(ctxGender) {
+                if(window.genderChartInstance) window.genderChartInstance.destroy();
+                window.genderChartInstance = new Chart(ctxGender, { type:'doughnut', data:{labels:['Uomini','Donne'], datasets:[{data:[uo,don], backgroundColor:['#0284c7','#db2777'], borderWidth:0}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}} });
+            }
+        };
+
         window.resetAnagraficaForm = () => { 
             window.editingGuestId=null; document.getElementById('anagraficaFormTitle').innerText='Nuovo Ingresso'; document.getElementById('anagraficaSaveBtn').innerText='💾 Registra Ospite'; 
-            ['newGuestCognome','newGuestNome','newGuestCF','newGuestPob','newGuestPobProv','newGuestPobCod','newGuestResInd','newGuestResCom','newGuestResProv','newGuestResCod','newGuestRoom','newGuestRef','newGuestRefTel','newGuestMMG','newGuestIngresso'].forEach(id=>{if(document.getElementById(id))document.getElementById(id).value='';}); 
+            ['newGuestCognome','newGuestNome','newGuestCF','newGuestRoom','newGuestIngresso'].forEach(id=>{if(document.getElementById(id))document.getElementById(id).value='';}); 
             window.renderTabletPrivacyUI(null);
         };
 
@@ -663,7 +721,6 @@
             if(document.getElementById('clinicalHeader')) document.getElementById('clinicalHeader').innerHTML=h; 
             if(document.getElementById('diariHeader')) document.getElementById('diariHeader').innerHTML=h; 
             if(document.getElementById('terapiaHeader')) document.getElementById('terapiaHeader').innerHTML=h; 
-            if(document.getElementById('lettereHeader')) document.getElementById('lettereHeader').innerHTML=h; 
             
             if(document.getElementById('editGuestName')){ 
                 document.getElementById('editGuestName').value=n; document.getElementById('editGuestCF').value=g.cf||''; document.getElementById('editGuestRoom').value=g.room||''; 
@@ -673,7 +730,7 @@
             window.renderTabletPrivacyUI(g.consensi);
             window.currentBodyMarkers = d.chkMarkers?[...d.chkMarkers]:[]; window.renderBodyMarkers(); 
             window.currentLesioniPhotos = d.lesioniPhotos?[...d.lesioniPhotos]:[]; window.renderLesioniPhotos();
-            window.calcolaBINA(); window.renderTerapiaTable(n,d); window.renderVitals(n,d); window.renderPatientDocs(n,d); window.renderDiari(n,d); window.renderSidebarPatients(); 
+            window.calcolaBINA(); window.renderVitals(n,d); window.renderDiari(n,d); window.renderSidebarPatients(); 
         };
 
         window.addDiarioEntry = async (tipo) => {
@@ -682,12 +739,13 @@
             if(!txt) return window.showToast("⚠️ Inserisci il testo.");
             
             let d = window.dbClinica[n] || {};
+            let entry = { date: window.getTimestamp(), op: window.activeOperator, qualifica: window.activeOperatorQualifica, text: txt };
             if(tipo==='medico') {
                 if(!d.diarioMedico) d.diarioMedico = [];
-                d.diarioMedico.unshift({ date: window.getTimestamp(), op: window.activeOperator, qualifica: window.activeOperatorQualifica, text: txt });
+                d.diarioMedico.unshift(entry);
             } else {
                 if(!d.diarioInfermieristico) d.diarioInfermieristico = [];
-                d.diarioInfermieristico.unshift({ date: window.getTimestamp(), op: window.activeOperator, qualifica: window.activeOperatorQualifica, text: txt });
+                d.diarioInfermieristico.unshift(entry);
             }
             await setDoc(doc(db, "cartelle_cliniche", n), d);
             document.getElementById(tipo==='medico'?'newDiarioMedicoText':'newDiarioInfText').value = '';
@@ -739,19 +797,6 @@
         };
         window.renderVitals = (n,d) => { const tb=document.querySelector('#vitalsTable tbody'); if(tb){ tb.innerHTML=''; if(d.vitals) d.vitals.forEach(v=>tb.innerHTML+=`<tr><td>${v.date}</td><td>${window.getInitials(v.op)}</td><td>${v.pa}</td><td>${v.fc}</td><td>${v.spo2}</td><td>${v.tc}</td><td>X</td></tr>`); } };
 
-        window.handlePatientDocUpload = (e) => {
-            const n=document.getElementById('clinicalGuestSelect').value; if(!n) return; const f=e.target.files[0]; if(!f) return;
-            const r=new FileReader(); r.onload=async ev=>{
-                let d=window.dbClinica[n]||{}; if(!d.docs) d.docs=[];
-                d.docs.unshift({name:f.name, base64:ev.target.result, date:window.getTimestamp()});
-                await setDoc(doc(db,"cartelle_cliniche",n),d); window.renderPatientDocs(n,d); window.showToast("📎 Doc allegato");
-            }; r.readAsDataURL(f);
-        };
-        window.renderPatientDocs = (n,d) => {
-            const l=document.getElementById('patientDocsList'); if(!l) return; l.innerHTML='';
-            if(d.docs) d.docs.forEach((x,i)=>l.innerHTML+=`<div style="border:1px solid #ccc; padding:8px; width:130px; text-align:center;"><a href="${x.base64}" target="_blank">📄 ${x.name}</a></div>`);
-        };
-
         window.handleLesionePhotoUpload = (e) => {
             const file = e.target.files[0]; if (!file) return;
             const reader = new FileReader();
@@ -768,42 +813,42 @@
             });
         };
 
-        /* SNAPSHOTS OPERATORI CON DOPPIO LIVELLO DI FALLBACK */
+        /* SNAPSHOTS OPERATORI CON FALLBACK */
         let profilesLoaded = false;
         onSnapshot(collection(db, "operatori"), snap => { 
             profilesLoaded = true;
             let ops = snap.docs.map(d => ({id: d.id, ...d.data()})); 
             ops = ops.filter(o => o && (o.name || o.nome) && (o.name || o.nome).trim() !== ""); 
             ops.forEach(o => { if(!o.name && o.nome) o.name = o.nome; });
-            
             if(!ops.some(o => o.name === "Admin")) { 
                 ops.push({id:"admin-fallback", name:"Admin", pin:"12345", role:"admin", qualifica:"Direttore Sanitario"}); 
             } 
             window.dbOperatori = ops.sort((a,b) => a.name.localeCompare(b.name)); 
             window.loadOperators(); 
         }, err => {
-            console.warn("Rete rallentata per operatori, fallback locale attivo:", err);
+            console.warn("Fallback operatori attivo:", err);
             window.dbOperatori = [{id:"admin-fallback", name:"Admin", pin:"12345", role:"admin", qualifica:"Direttore Sanitario"}];
             window.loadOperators();
         });
 
-        setTimeout(() => {
-            if(!profilesLoaded) {
-                console.warn("Timeout Firebase operatori: forzatura sblocco locale.");
-                window.loadOperators();
-            }
-        }, 1500);
+        setTimeout(() => { if(!profilesLoaded) window.loadOperators(); }, 1500);
 
         onSnapshot(collection(db, "ospiti"), snap => { window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadGuests(); });
         onSnapshot(collection(db, "cartelle_cliniche"), snap => { window.dbClinica = {}; snap.forEach(d => { window.dbClinica[d.id] = d.data(); }); if(window.dbOspiti.length > 0) window.loadAlerts(); });
-        onSnapshot(collection(db, "rischio"), snap => { window.dbRischio = snap.docs.map(d=>({id:d.id, ...d.data()})); });
-        onSnapshot(collection(db, "cup"), snap => { window.dbCup = snap.docs.map(d=>({id:d.id, ...d.data()})); });
-        onSnapshot(collection(db, "consegne"), snap => { window.dbConsegne = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadConsegne(); });
-        onSnapshot(collection(db, "contenzioni"), snap => { window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadContenzioni(); });
 
         window.onload = () => { 
-            const dl = document.getElementById('listaFarmaciAifa'); if(dl) prontuario.forEach(f => { let opt = document.createElement('option'); opt.value = f; dl.appendChild(opt); }); 
-            window.loadComuni(); window.loadOperators(); 
+            let savedOp = sessionStorage.getItem("activeOperator");
+            if(savedOp) {
+                window.activeOperator = savedOp;
+                window.activeOperatorRole = sessionStorage.getItem("activeRole");
+                window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica");
+                document.getElementById('currentOpBadge').innerText = `👤 ${savedOp}`; 
+                document.getElementById('loginScreen').style.display = 'none'; 
+                document.getElementById('appScreen').style.display = 'flex'; 
+                window.applyRolePermissions(); 
+            } else { 
+                window.loadOperators(); 
+            } 
         };
     </script>
 </body>
