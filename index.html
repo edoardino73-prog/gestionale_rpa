@@ -529,7 +529,22 @@
                             <button class="btn-success" onclick="window.updateGuestData()">💾 Aggiorna Dati</button>
                         </div>
                     </details>
-                    <div class="card"><div class="card-header"><h3>Check-in e Mappatura Lesioni</h3></div><div class="form-group"><label>Condizioni Generali all'Arrivo</label><textarea id="chkGen" class="restrict-oss-input" rows="2"></textarea></div><div class="form-group"><label>Piaghe/Lesioni</label><textarea id="chkPiaghe" class="restrict-oss-input" rows="2"></textarea></div><div class="form-group restrict-oss"><label>Mappa Anatomica (Clicca per segnare)</label><div id="bodyMapWrapper" style="position:relative; width: 100%; max-width: 350px; margin: 10px 0; border: 1px solid var(--border-color); background: #fff;" onclick="window.handleBodyMapClick(event)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 250" id="bodyMapSvg" style="width:100%; height:auto; display:block; cursor:crosshair; pointer-events:none;"><g transform="translate(40, 30)"><text x="35" y="-10" text-anchor="middle" font-size="12" font-weight="bold" fill="#64748b">FRONTE</text><circle cx="35" cy="15" r="18" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="10" y="38" width="50" height="75" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="-8" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(10, -2, 42)"/><rect x="66" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(-10, 72, 42)"/><rect x="14" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="38" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/></g><g transform="translate(190, 30)"><text x="35" y="-10" text-anchor="middle" font-size="12" font-weight="bold" fill="#64748b">RETRO</text><circle cx="35" cy="15" r="18" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="10" y="38" width="50" height="75" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="-8" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(10, -2, 42)"/><rect x="66" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(-10, 72, 42)"/><rect x="14" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="38" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/></g></svg><div id="bodyMarkersLayer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div></div><button class="btn-doc" onclick="window.clearBodyMarkers()">Cancella Punti</button></div><div class="restrict-oss" style="display:flex; gap:10px; margin-top:10px;"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva Check-in</button></div></div>
+                    
+                    <div class="card">
+                        <div class="card-header"><h3>Check-in e Mappatura Lesioni</h3></div>
+                        <div class="form-group"><label>Condizioni Generali all'Arrivo</label><textarea id="chkGen" class="restrict-oss-input" rows="2"></textarea></div>
+                        <div class="form-group"><label>Piaghe/Lesioni</label><textarea id="chkPiaghe" class="restrict-oss-input" rows="2"></textarea></div>
+                        <div class="form-group restrict-oss"><label>Mappa Anatomica (Clicca per segnare)</label><div id="bodyMapWrapper" style="position:relative; width: 100%; max-width: 350px; margin: 10px 0; border: 1px solid var(--border-color); background: #fff;" onclick="window.handleBodyMapClick(event)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 250" id="bodyMapSvg" style="width:100%; height:auto; display:block; cursor:crosshair; pointer-events:none;"><g transform="translate(40, 30)"><text x="35" y="-10" text-anchor="middle" font-size="12" font-weight="bold" fill="#64748b">FRONTE</text><circle cx="35" cy="15" r="18" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="10" y="38" width="50" height="75" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="-8" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(10, -2, 42)"/><rect x="66" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(-10, 72, 42)"/><rect x="14" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="38" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/></g><g transform="translate(190, 30)"><text x="35" y="-10" text-anchor="middle" font-size="12" font-weight="bold" fill="#64748b">RETRO</text><circle cx="35" cy="15" r="18" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="10" y="38" width="50" height="75" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="-8" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(10, -2, 42)"/><rect x="66" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(-10, 72, 42)"/><rect x="14" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="38" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/></g></svg><div id="bodyMarkersLayer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div></div><button class="btn-doc" onclick="window.clearBodyMarkers()">Cancella Punti</button></div>
+                        
+                        <!-- SEZIONE FOTO LESIONI SINCRONIZZATE CON IL TABLET -->
+                        <div style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 12px;">
+                            <h4 style="color:var(--primary-color); margin-top:0; font-size:0.95em;">📸 Documentazione Fotografica Lesioni (Acquisite da Tablet)</h4>
+                            <div id="desktopLesioniPhotoGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:12px; margin-top:10px;"></div>
+                        </div>
+
+                        <div class="restrict-oss" style="display:flex; gap:10px; margin-top:15px;"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva Check-in</button></div>
+                    </div>
+
                     <div class="card" style="border-top: 4px solid var(--primary-color);"><div class="card-header"><h3>🏃‍♂️ Scheda Fisioterapica (FKT)</h3></div><div class="form-group"><label>Valutazione Motoria Iniziale / Attuale</label><textarea id="fktValutazione" class="restrict-oss-input" rows="3"></textarea></div><div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;"><div class="form-group" style="flex:1;"><label>Ausili in Uso</label><input type="text" id="fktAusili" class="restrict-oss-input"></div></div><div class="form-group"><label>Piano di Trattamento / Obiettivi</label><textarea id="fktObiettivi" class="restrict-oss-input" rows="2"></textarea></div><div class="restrict-oss" style="display:flex; gap:10px; margin-top:10px;"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva Scheda FKT</button></div></div>
                     
                     <div class="card" style="border-top: 4px solid var(--primary-color);">
@@ -796,7 +811,6 @@
                         <div class="restrict-oss only-medico"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva Modifiche al Testo</button></div>
                     </div>
 
-                    <!-- SEZIONE 118 SBLOCCATA PER INFERMIERI -->
                     <div class="card" style="border-top: 4px solid var(--error-color);">
                         <div class="card-header"><h3 style="color:var(--error-color);">Lettera di Trasferimento in Pronto Soccorso (118)</h3><button class="btn-primary" onclick="window.printModule('prontosoccorso')">🖨️ Stampa Lettera 118 + Documenti</button></div>
                         <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
@@ -1577,17 +1591,14 @@
             const v=id=>document.getElementById(id)?document.getElementById(id).value.trim():''; 
             const c=id=>document.getElementById(id)?document.getElementById(id).checked:false; 
             
-            /* --- INIZIO VALIDAZIONE LEGALE E FORMALE --- */
             const cfVal = v('newGuestCF').toUpperCase();
             if (cfVal) {
-                // Validazione formale CF Italiano (inclusa omocodia base sui numeri)
                 const cfRegex = /^[A-Z]{6}[0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{3}[A-Z]$/;
                 if (!cfRegex.test(cfVal)) {
                     if(document.getElementById('newGuestCF')) document.getElementById('newGuestCF').focus();
                     return window.showToast("⚠️ Blocco di Sicurezza: Il Codice Fiscale non è formalmente valido!");
                 }
             }
-            /* --- FINE VALIDAZIONE --- */
 
             const cog=v('newGuestCognome').toUpperCase(); 
             const nom=v('newGuestNome').toUpperCase(); 
@@ -1711,7 +1722,7 @@
             window.globalSelectedPatient=n; 
             ['clinicalGuestSelect','diariGuestSelect','terapiaGuestSelect','lettereGuestSelect'].forEach(i=>{if(document.getElementById(i))document.getElementById(i).value=n;}); 
             ['clinicalContent','diariContent','terapiaContent','lettereContent'].forEach(i=>{if(document.getElementById(i))document.getElementById(i).style.display='block';}); 
-            let d = window.dbClinica[n] || {terapiaList:[], vitals:[], docs:[], chkMarkers:[], diarioMedico:[], diarioInfermieristico:[]}; 
+            let d = window.dbClinica[n] || {terapiaList:[], vitals:[], docs:[], chkMarkers:[], lesioniPhotos:[], diarioMedico:[], diarioInfermieristico:[]}; 
             const g = window.dbOspiti.find(x=>x.name===n)||{}; 
             let av = g.photo ? `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">`:`👤`; 
             let h = `<div style="width:50px;height:50px;border-radius:4px;overflow:hidden;font-size:1.5em;display:flex;align-items:center;justify-content:center;background:#e2e8f0;">${av}</div><h2>${n}</h2>`; 
@@ -1749,6 +1760,10 @@
             
             window.currentBodyMarkers = d.chkMarkers?[...d.chkMarkers]:[]; 
             window.renderBodyMarkers(); 
+            
+            // INTEGRAZIONE CHIRURGICA: Render foto lesioni acquisite dal tablet
+            window.renderLesioniPhotos(n, d);
+
             window.renderTerapiaTable(n,d); 
             window.renderVitals(n,d); 
             window.renderPatientDocs(n,d); 
@@ -1757,44 +1772,56 @@
             window.renderSidebarPatients(); 
         };
 
+        // FUNZIONE AGGIUNTA PER VISUALIZZARE LE FOTO DEL TABLET SU DESKTOP
+        window.renderLesioniPhotos = (n, d) => {
+            const grid = document.getElementById('desktopLesioniPhotoGrid');
+            if(!grid) return;
+            grid.innerHTML = '';
+
+            if(!d.lesioniPhotos || d.lesioniPhotos.length === 0) {
+                grid.innerHTML = '<div style="grid-column:1/-1; color:var(--text-light); font-size:0.85em; text-align:center; padding:8px;">Nessuna foto lesione acquisita da tablet.</div>';
+                return;
+            }
+
+            d.lesioniPhotos.forEach(item => {
+                const card = document.createElement('div');
+                card.style.cssText = 'background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:6px; display:flex; flex-direction:column; gap:4px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.05);';
+                let imgSrc = item.url || item.b64; 
+                card.innerHTML = `
+                    <a href="${imgSrc}" target="_blank" title="Clicca per ingrandire">
+                        <img src="${imgSrc}" style="width:100%; height:90px; object-fit:cover; border-radius:4px; border:1px solid #cbd5e1;">
+                    </a>
+                    <div style="font-size:0.8em; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.desc}">${item.desc}</div>
+                    <div style="font-size:0.7em; color:var(--text-light);">${item.data.split(' alle ')[0]} (${window.getInitials(item.op)})</div>
+                `;
+                grid.appendChild(card);
+            });
+        };
+
         window.addDiarioEntry = async (tipo) => {
             const n = document.getElementById('diariGuestSelect').value;
             if(!n) return window.showToast("⚠️ Seleziona prima un paziente.");
 
             if(tipo === 'medico') {
-                if(!window.isMedicoOrAdmin()) {
-                    return window.showToast("🚫 Solo il Medico o Direttore Sanitario possono scrivere nel Diario Medico.");
-                }
+                if(!window.isMedicoOrAdmin()) return window.showToast("🚫 Solo il Medico o Direttore Sanitario possono scrivere nel Diario Medico.");
                 const txt = document.getElementById('newDiarioMedicoText').value.trim();
                 if(!txt) return window.showToast("⚠️ Inserisci il testo della visita medica.");
                 
                 let d = window.dbClinica[n] || {};
                 if(!d.diarioMedico) d.diarioMedico = [];
-                d.diarioMedico.unshift({
-                    date: window.getTimestamp(),
-                    op: window.activeOperator,
-                    qualifica: window.activeOperatorQualifica,
-                    text: txt
-                });
+                d.diarioMedico.unshift({ date: window.getTimestamp(), op: window.activeOperator, qualifica: window.activeOperatorQualifica, text: txt });
                 await setDoc(doc(db, "cartelle_cliniche", n), d);
                 document.getElementById('newDiarioMedicoText').value = '';
                 window.renderDiari(n, d);
                 window.showToast("✅ Nota Medica registrata.");
             } else if(tipo === 'infermieristico') {
-                if(!window.isInfermiereOrAdmin()) {
-                    return window.showToast("🚫 Solo gli Infermieri o Direttore Sanitario possono scrivere nel Diario Infermieristico.");
-                }
+                if(!window.isInfermiereOrAdmin()) return window.showToast("🚫 Solo gli Infermieri o Direttore Sanitario possono scrivere nel Diario Infermieristico.");
                 const txt = document.getElementById('newDiarioInfText').value.trim();
                 if(!txt) return window.showToast("⚠️ Inserisci il testo dell'annotazione infermieristica.");
                 
                 let d = window.dbClinica[n] || {};
                 if(!d.diarioInfermieristico) d.diarioInfermieristico = [];
-                d.diarioInfermieristico.unshift({
-                    date: window.getTimestamp(),
-                    op: window.activeOperator,
-                    qualifica: window.activeOperatorQualifica,
-                    text: txt
-                });
+                d.diarioInfermieristico.unshift({ date: window.getTimestamp(), op: window.activeOperator, qualifica: window.activeOperatorQualifica, text: txt });
                 await setDoc(doc(db, "cartelle_cliniche", n), d);
                 document.getElementById('newDiarioInfText').value = '';
                 window.renderDiari(n, d);
@@ -1807,40 +1834,21 @@
             const il = document.getElementById('diarioInfList');
             if(!ml || !il) return;
 
-            ml.innerHTML = '';
-            il.innerHTML = '';
+            ml.innerHTML = ''; il.innerHTML = '';
 
             const mEntries = d.diarioMedico || [];
-            if(mEntries.length === 0) {
-                ml.innerHTML = '<p style="color:var(--text-light); text-align:center; padding:15px;">Nessuna visita o nota medica registrata.</p>';
-            } else {
+            if(mEntries.length === 0) { ml.innerHTML = '<p style="color:var(--text-light); text-align:center; padding:15px;">Nessuna visita o nota medica registrata.</p>'; } 
+            else {
                 mEntries.forEach(item => {
-                    ml.innerHTML += `
-                        <div class="diary-entry medico">
-                            <div class="diary-meta">
-                                <span>📅 <strong>${item.date}</strong></span>
-                                <span>👨‍⚕️ <strong>${item.op}</strong> (${item.qualifica})</span>
-                            </div>
-                            <div style="white-space:pre-wrap; line-height:1.4;">${item.text}</div>
-                        </div>
-                    `;
+                    ml.innerHTML += `<div class="diary-entry medico"><div class="diary-meta"><span>📅 <strong>${item.date}</strong></span><span>👨‍⚕️ <strong>${item.op}</strong> (${item.qualifica})</span></div><div style="white-space:pre-wrap; line-height:1.4;">${item.text}</div></div>`;
                 });
             }
 
             const iEntries = d.diarioInfermieristico || [];
-            if(iEntries.length === 0) {
-                il.innerHTML = '<p style="color:var(--text-light); text-align:center; padding:15px;">Nessuna annotazione infermieristica registrata.</p>';
-            } else {
+            if(iEntries.length === 0) { il.innerHTML = '<p style="color:var(--text-light); text-align:center; padding:15px;">Nessuna annotazione infermieristica registrata.</p>'; } 
+            else {
                 iEntries.forEach(item => {
-                    il.innerHTML += `
-                        <div class="diary-entry infermiere">
-                            <div class="diary-meta">
-                                <span>📅 <strong>${item.date}</strong></span>
-                                <span>💉 <strong>${item.op}</strong> (${item.qualifica})</span>
-                            </div>
-                            <div style="white-space:pre-wrap; line-height:1.4;">${item.text}</div>
-                        </div>
-                    `;
+                    il.innerHTML += `<div class="diary-entry infermiere"><div class="diary-meta"><span>📅 <strong>${item.date}</strong></span><span>💉 <strong>${item.op}</strong> (${item.qualifica})</span></div><div style="white-space:pre-wrap; line-height:1.4;">${item.text}</div></div>`;
                 });
             }
             window.applyRolePermissions();
@@ -1849,24 +1857,12 @@
         window.updateGuestData = async () => { if(window.checkOssRestriction()) return; const n=document.getElementById('editGuestName').value; let g=window.dbOspiti.find(x=>x.name===n); if(g){ let up={ room:document.getElementById('editGuestRoom').value, cf:document.getElementById('editGuestCF').value.toUpperCase(), tutoreScadenza: document.getElementById('editGuestTutoreScadenza').value, uvmData: document.getElementById('editGuestUVMData').value, uvmPunteggio: document.getElementById('editGuestUVMPunteggio').value }; if(window.editGuestPhotoBase64!==""){ up.photo=window.editGuestPhotoBase64; window.editGuestPhotoBase64=""; } if(window.editGuestDocIdBase64!==""){ up.docId=window.editGuestDocIdBase64; window.editGuestDocIdBase64=""; } if(window.editGuestDocCfBase64!==""){ up.docCf=window.editGuestDocCfBase64; window.editGuestDocCfBase64=""; } if(window.editGuestDocUvmBase64!==""){ up.docUvm=window.editGuestDocUvmBase64; window.editGuestDocUvmBase64=""; } await updateDoc(doc(db,"ospiti",g.id), up); window.showToast("✅ Dati Rapidi Aggiornati"); window.globalSelectedPatient = n; } };
         
         window.firmaPAI = async (ruoloTarget) => {
-            let qualifica = window.activeOperatorQualifica;
-            let roleOk = false;
-            let idPrefix = '';
+            let qualifica = window.activeOperatorQualifica; let roleOk = false; let idPrefix = '';
+            if (ruoloTarget === 'Medico') { if (qualifica === 'Medico' || qualifica === 'Direttore Sanitario') roleOk = true; idPrefix = 'paiFirmaMed'; } 
+            else if (ruoloTarget === 'Infermiere') { if (qualifica === 'Infermiere') roleOk = true; idPrefix = 'paiFirmaInf'; } 
+            else if (ruoloTarget === 'OSS') { if (qualifica === 'OSS') roleOk = true; idPrefix = 'paiFirmaOss'; }
 
-            if (ruoloTarget === 'Medico') {
-                if (qualifica === 'Medico' || qualifica === 'Direttore Sanitario') roleOk = true;
-                idPrefix = 'paiFirmaMed';
-            } else if (ruoloTarget === 'Infermiere') {
-                if (qualifica === 'Infermiere') roleOk = true;
-                idPrefix = 'paiFirmaInf';
-            } else if (ruoloTarget === 'OSS') {
-                if (qualifica === 'OSS') roleOk = true;
-                idPrefix = 'paiFirmaOss';
-            }
-
-            if (!roleOk && window.activeOperatorRole !== 'admin') {
-                return window.showToast("🚫 Puoi firmare solo per la tua qualifica (" + qualifica + ")");
-            }
+            if (!roleOk && window.activeOperatorRole !== 'admin') return window.showToast("🚫 Puoi firmare solo per la tua qualifica (" + qualifica + ")");
 
             let firmaStr = `${window.activeOperator} il ${window.getTimestamp()}`;
             document.getElementById(idPrefix + 'Date').value = firmaStr;
@@ -1875,11 +1871,7 @@
             let n = document.getElementById('clinicalGuestSelect').value;
             if(n) {
                 let d = window.dbClinica[n] || {};
-                
-                ['fktValutazione','fktAusili','fktObiettivi','chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale','vmdADL','vmdIADL','vmdMMSE','vmdBraden','vmdMorse', 'binaAuto', 'binaSanita', 'binaPsiche', 'binaSociale'].forEach(id=>{
-                    if(document.getElementById(id)) d[id]=document.getElementById(id).value;
-                });
-                
+                ['fktValutazione','fktAusili','fktObiettivi','chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale','vmdADL','vmdIADL','vmdMMSE','vmdBraden','vmdMorse', 'binaAuto', 'binaSanita', 'binaPsiche', 'binaSociale'].forEach(id=>{if(document.getElementById(id)) d[id]=document.getElementById(id).value;});
                 d[idPrefix + 'Date'] = firmaStr;
                 await setDoc(doc(db, "cartelle_cliniche", n), d);
             }
@@ -1892,34 +1884,22 @@
             if(document.getElementById('ws-lettere') && document.getElementById('ws-lettere').classList.contains('active')) n = document.getElementById('lettereGuestSelect').value; 
             if(!n) return window.showToast("⚠️ Seleziona paziente."); 
             
-            /* --- INIZIO VALIDAZIONE B.I.N.A E U.V.M. (COMPLIANCE REGIONALE) --- */
             const getVal = (id) => parseFloat(document.getElementById(id)?.value) || 0;
             const totBina = getVal('binaAuto') + getVal('binaSanita') + getVal('binaPsiche') + getVal('binaSociale');
             
             if (totBina >= 25) {
                 let g = window.dbOspiti.find(x => x.name === n);
-                if (g && (!g.docUvm || g.docUvm.trim() === "")) {
-                    return window.showToast("🚫 Blocco Normativo: Punteggio B.I.N.A. da R1. È obbligatorio allegare prima il Verbale U.V.M. nell'anagrafica!");
-                }
+                if (g && (!g.docUvm || g.docUvm.trim() === "")) return window.showToast("🚫 Blocco Normativo: Punteggio B.I.N.A. da R1. È obbligatorio allegare prima il Verbale U.V.M. nell'anagrafica!");
             }
-            /* --- FINE VALIDAZIONE --- */
 
             let d = window.dbClinica[n] || {}; 
-            ['fktValutazione','fktAusili','fktObiettivi','chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale','vmdADL','vmdIADL','vmdMMSE','vmdBraden','vmdMorse', 'binaAuto', 'binaSanita', 'binaPsiche', 'binaSociale'].forEach(id=>{
-                if(document.getElementById(id)) d[id] = document.getElementById(id).value;
-            }); 
+            ['fktValutazione','fktAusili','fktObiettivi','chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale','vmdADL','vmdIADL','vmdMMSE','vmdBraden','vmdMorse', 'binaAuto', 'binaSanita', 'binaPsiche', 'binaSociale'].forEach(id=>{if(document.getElementById(id)) d[id] = document.getElementById(id).value;}); 
             d.chkMarkers = window.currentBodyMarkers ? [...window.currentBodyMarkers] : []; 
             
-            ['paiFirmaMedDate', 'paiFirmaInfDate', 'paiFirmaOssDate'].forEach(id => { 
-                if (document.getElementById(id)) d[id] = document.getElementById(id).value; 
-            });
+            ['paiFirmaMedDate', 'paiFirmaInfDate', 'paiFirmaOssDate'].forEach(id => { if (document.getElementById(id)) d[id] = document.getElementById(id).value; });
 
             if(window.isMedicoOrAdmin()) { 
-                ['dimMotivo','dimData','dimOra','dimDecorso','psData','psOra','psMotivo','psRiassunto','decData','decOra','decTesto'].forEach(id => { 
-                    let e = document.getElementById(id); 
-                    if(e) d[id] = e.value; 
-                }); 
-
+                ['dimMotivo','dimData','dimOra','dimDecorso','psData','psOra','psMotivo','psRiassunto','decData','decOra','decTesto'].forEach(id => { let e = document.getElementById(id); if(e) d[id] = e.value; }); 
                 let g = window.dbOspiti.find(x => x.name === n); 
                 if(g){ 
                     let d1 = document.getElementById('decData')?.value; 
@@ -1938,51 +1918,20 @@
         
         window.archiviaNuovoPAI = async () => { 
             if(window.checkOssRestriction()) return; 
-            const n=document.getElementById('clinicalGuestSelect').value; 
-            if(!n) return; 
-            let st=document.getElementById('paiDataStesura').value; 
-            if(!st) return window.showToast("Manca data stesura"); 
+            const n=document.getElementById('clinicalGuestSelect').value; if(!n) return; 
+            let st=document.getElementById('paiDataStesura').value; if(!st) return window.showToast("Manca data stesura"); 
             if(!confirm("Archiviare PAI nello storico?")) return; 
-            
             let d=window.dbClinica[n]||{}; 
-            
             ['fktValutazione','fktAusili','fktObiettivi','chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale','vmdADL','vmdIADL','vmdMMSE','vmdBraden','vmdMorse', 'binaAuto', 'binaSanita', 'binaPsiche', 'binaSociale'].forEach(id=>{if(document.getElementById(id)) d[id]=document.getElementById(id).value;}); 
             d.chkMarkers = window.currentBodyMarkers?[...window.currentBodyMarkers]:[]; 
-            
-            ['paiFirmaMedDate', 'paiFirmaInfDate', 'paiFirmaOssDate'].forEach(id => { 
-                if (document.getElementById(id)) d[id] = document.getElementById(id).value; 
-            });
-
+            ['paiFirmaMedDate', 'paiFirmaInfDate', 'paiFirmaOssDate'].forEach(id => { if (document.getElementById(id)) d[id] = document.getElementById(id).value; });
             if(!d.paiStorico) d.paiStorico=[]; 
             d.paiStorico.unshift({dataStesura:st, medico:document.getElementById('paiMedico').value, fkt:document.getElementById('fktValutazione').value}); 
-            
-            await setDoc(doc(db,"cartelle_cliniche",n),d); 
-            window.showToast("✅ Archiviato e dati correnti salvati"); 
+            await setDoc(doc(db,"cartelle_cliniche",n),d); window.showToast("✅ Archiviato e dati correnti salvati"); 
         };
 
-        window.calcProssimaRevisione = () => { 
-            let s=document.getElementById('paiDataStesura').value; 
-            if(s){ 
-                let [y,m,d] = s.split('-');
-                let dt = new Date(y, m-1, d);
-                dt.setMonth(dt.getMonth()+3); 
-                document.getElementById('paiDataRevisione').value=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; 
-                window.aggiornaBannerPAI(); 
-            } 
-        };
-        window.aggiornaBannerPAI = () => { 
-            let r=document.getElementById('paiDataRevisione')?.value; 
-            let b=document.getElementById('paiStatusBanner'); 
-            if(b && r && r.trim() !== ""){ 
-                let [y,m,d] = r.split('-');
-                let rDate = new Date(y, m-1, d);
-                let diff=Math.ceil((rDate - new Date().setHours(0,0,0,0))/86400000); 
-                if(diff<0) b.innerHTML=`<div style="background:#fef2f2;color:#b91c1c;padding:10px;margin-bottom:15px;">🚨 PAI SCADUTO</div>`; 
-                else b.innerHTML=`<div style="background:#f0fdf4;color:#15803d;padding:10px;margin-bottom:15px;">✅ PAI Valido</div>`; 
-            } else if (b) {
-                b.innerHTML = '';
-            }
-        };
+        window.calcProssimaRevisione = () => { let s=document.getElementById('paiDataStesura').value; if(s){ let [y,m,d] = s.split('-'); let dt = new Date(y, m-1, d); dt.setMonth(dt.getMonth()+3); document.getElementById('paiDataRevisione').value=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; window.aggiornaBannerPAI(); } };
+        window.aggiornaBannerPAI = () => { let r=document.getElementById('paiDataRevisione')?.value; let b=document.getElementById('paiStatusBanner'); if(b && r && r.trim() !== ""){ let [y,m,d] = r.split('-'); let rDate = new Date(y, m-1, d); let diff=Math.ceil((rDate - new Date().setHours(0,0,0,0))/86400000); if(diff<0) b.innerHTML=`<div style="background:#fef2f2;color:#b91c1c;padding:10px;margin-bottom:15px;">🚨 PAI SCADUTO</div>`; else b.innerHTML=`<div style="background:#f0fdf4;color:#15803d;padding:10px;margin-bottom:15px;">✅ PAI Valido</div>`; } else if (b) { b.innerHTML = ''; } };
 
         window.handlePatientDocUpload = (e) => { if(window.checkOssRestriction()) return; const n=document.getElementById('clinicalGuestSelect').value; if(!n) return; const f=e.target.files[0]; if(!f) return; let processB64 = async (b64) => { let d=window.dbClinica[n]||{}; if(!d.docs) d.docs=[]; d.docs.unshift({name:f.name, base64:b64, date:window.getTimestamp(), op:window.activeOperator}); await setDoc(doc(db,"cartelle_cliniche",n),d); window.renderPatientDocs(n,d); window.showToast("📎 Doc allegato!"); }; if(f.type.startsWith('image/')){ const r=new FileReader(); r.onload=ev=>{ const img=new Image(); img.onload=()=>{ const cv=document.createElement('canvas'); const MAX=1200; let w=img.width, h=img.height; if(w>h){if(w>MAX){h*=MAX/w;w=MAX;}}else{if(h>MAX){w*=MAX/h;h=MAX;}} cv.width=w; cv.height=h; cv.getContext('2d').drawImage(img,0,0,w,h); processB64(cv.toDataURL('image/jpeg',0.7)); }; img.src=ev.target.result; }; r.readAsDataURL(f); } else if(f.type==='application/pdf'){ if(f.size>800*1024) return window.showToast("❌ PDF max 800KB"); const r=new FileReader(); r.onload=ev=>processB64(ev.target.result); r.readAsDataURL(f); } };
         window.renderPatientDocs = (n,d) => { const l=document.getElementById('patientDocsList'); if(!l) return; l.innerHTML=''; if(!d.docs||d.docs.length===0){ l.innerHTML='<p>Nessun allegato.</p>'; return; } d.docs.forEach((x,i)=>{ let isPdf=x.base64.startsWith('data:application/pdf'); let h=isPdf?`<div style="height:100px;display:flex;align-items:center;justify-content:center;background:#e2e8f0;font-size:30px;">📄</div>`:`<img src="${x.base64}" style="height:100px;width:100%;object-fit:cover;">`; l.innerHTML+=`<div style="border:1px solid #ccc;padding:10px;width:150px;text-align:center;"><a href="${x.base64}" target="_blank">${h}</a><div style="font-size:0.75em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x.name}</div><button class="btn-danger restrict-oss" style="padding:4px;" onclick="window.deletePatientDoc(${i})">🗑️</button></div>`; }); };
@@ -1996,31 +1945,18 @@
         window.deleteTerapiaItem = async (i) => { if(!window.isMedicoOrAdmin()) return window.showToast("⚠️ Solo Medico"); if(!confirm("Cancellare?")) return; const n=document.getElementById('terapiaGuestSelect').value; let d=window.dbClinica[n]; d.terapiaList.splice(i,1); await setDoc(doc(db,"cartelle_cliniche",n),d); window.renderTerapiaTable(n,d); };
         
         window.firmaTerapiaPiano = async () => {
-            if(window.activeOperatorQualifica !== 'Medico' && window.activeOperatorQualifica !== 'Direttore Sanitario') {
-                return window.showToast("🚫 Azione riservata a Medico o Direttore Sanitario.");
-            }
-            const n = document.getElementById('terapiaGuestSelect').value;
-            if(!n) return window.showToast("⚠️ Seleziona prima un paziente.");
-            
-            let d = window.dbClinica[n] || {};
-            if(!d.terapiaFirmeMensili) d.terapiaFirmeMensili = {};
-            
+            if(window.activeOperatorQualifica !== 'Medico' && window.activeOperatorQualifica !== 'Direttore Sanitario') return window.showToast("🚫 Azione riservata a Medico o Direttore Sanitario.");
+            const n = document.getElementById('terapiaGuestSelect').value; if(!n) return window.showToast("⚠️ Seleziona prima un paziente.");
+            let d = window.dbClinica[n] || {}; if(!d.terapiaFirmeMensili) d.terapiaFirmeMensili = {};
             let monthKey = `${curTerYear}-${String(curTerMonth+1).padStart(2,'0')}`;
-
             if (d.terapiaFirmeMensili[monthKey] && d.terapiaFirmeMensili[monthKey].op) {
                 if(confirm(`Il piano per ${monthNames[curTerMonth]} ${curTerYear} è già validato. Vuoi REVOCARE la validazione?`)) {
-                    delete d.terapiaFirmeMensili[monthKey];
-                    await setDoc(doc(db, "cartelle_cliniche", n), d);
-                    window.renderTerapiaTable(n, d);
-                    window.showToast("Validazione revocata.");
+                    delete d.terapiaFirmeMensili[monthKey]; await setDoc(doc(db, "cartelle_cliniche", n), d); window.renderTerapiaTable(n, d); window.showToast("Validazione revocata.");
                 }
                 return;
             }
-
             d.terapiaFirmeMensili[monthKey] = { op: window.activeOperator, data: window.getTimestamp() };
-            await setDoc(doc(db, "cartelle_cliniche", n), d);
-            window.renderTerapiaTable(n, d);
-            window.showToast(`✅ Piano Terapeutico Validato per ${monthNames[curTerMonth]}!`);
+            await setDoc(doc(db, "cartelle_cliniche", n), d); window.renderTerapiaTable(n, d); window.showToast(`✅ Piano Terapeutico Validato per ${monthNames[curTerMonth]}!`);
         };
 
         window.getTerapiaListHtml = (tL, isP=false, firmaMese=null) => { 
@@ -2055,9 +1991,7 @@
                 } 
             } else r="<p>Nessuna terapia.</p>"; 
             
-            if(firmaMese && firmaMese.op) {
-                r += `<div style="margin-top: 20px; text-align: right; font-size: 10pt; border-top: 1px dashed #ccc; padding-top: 10px;">Piano Terapeutico Validato da:<br><span style="color:var(--primary-color); font-weight:bold;">${firmaMese.op}</span><br><span style="font-size:8pt;">il ${firmaMese.data}</span></div>`;
-            }
+            if(firmaMese && firmaMese.op) r += `<div style="margin-top: 20px; text-align: right; font-size: 10pt; border-top: 1px dashed #ccc; padding-top: 10px;">Piano Terapeutico Validato da:<br><span style="color:var(--primary-color); font-weight:bold;">${firmaMese.op}</span><br><span style="font-size:8pt;">il ${firmaMese.data}</span></div>`;
             return r; 
         };
         
@@ -2069,12 +2003,8 @@
             if(document.getElementById('terapiaFirmaGlobaleStatus')) {
                 let monthKey = `${curTerYear}-${String(curTerMonth+1).padStart(2,'0')}`;
                 let firmaMese = d.terapiaFirmeMensili ? d.terapiaFirmeMensili[monthKey] : null;
-
-                if(firmaMese && firmaMese.op) {
-                    document.getElementById('terapiaFirmaGlobaleStatus').innerHTML = `✅ Validato per ${monthNames[curTerMonth]} ${curTerYear} da: <strong>${firmaMese.op}</strong> il ${firmaMese.data}`;
-                } else {
-                    document.getElementById('terapiaFirmaGlobaleStatus').innerHTML = `⏳ In attesa di validazione medica per ${monthNames[curTerMonth]} ${curTerYear}`;
-                }
+                if(firmaMese && firmaMese.op) document.getElementById('terapiaFirmaGlobaleStatus').innerHTML = `✅ Validato per ${monthNames[curTerMonth]} ${curTerYear} da: <strong>${firmaMese.op}</strong> il ${firmaMese.data}`;
+                else document.getElementById('terapiaFirmaGlobaleStatus').innerHTML = `⏳ In attesa di validazione medica per ${monthNames[curTerMonth]} ${curTerYear}`;
             }
 
             if(!d.terapiaList||d.terapiaList.length===0){ tb.innerHTML=`<tr><td colspan="${dIM+2}">Vuoto.</td></tr>`; return; } 
@@ -2116,30 +2046,16 @@
         window.firmaContenzione = async (id, ruolo) => {
             if(window.checkOssRestriction()) return;
             let qualifica = window.activeOperatorQualifica;
-            if(ruolo === 'Medico' && !['Medico', 'Direttore Sanitario'].includes(qualifica) && window.activeOperatorRole !== 'admin') {
-                return window.showToast("🚫 Solo il Direttore Sanitario / Medico può firmare.");
-            }
-            if(ruolo === 'Infermiere' && qualifica !== 'Infermiere' && window.activeOperatorRole !== 'admin') {
-                return window.showToast("🚫 Solo l'Infermiere può firmare.");
-            }
-            let cont = window.dbContenzioni.find(c => c.id === id);
-            if(!cont) return;
-            
-            let sigs = cont.firme || {};
-            sigs[ruolo] = window.activeOperator + ' il ' + window.getTimestamp(); 
-            
-            await updateDoc(doc(db, "contenzioni", id), { firme: sigs });
-            window.showToast("✅ Firma " + ruolo + " salvata.");
+            if(ruolo === 'Medico' && !['Medico', 'Direttore Sanitario'].includes(qualifica) && window.activeOperatorRole !== 'admin') return window.showToast("🚫 Solo il Direttore Sanitario / Medico può firmare.");
+            if(ruolo === 'Infermiere' && qualifica !== 'Infermiere' && window.activeOperatorRole !== 'admin') return window.showToast("🚫 Solo l'Infermiere può firmare.");
+            let cont = window.dbContenzioni.find(c => c.id === id); if(!cont) return;
+            let sigs = cont.firme || {}; sigs[ruolo] = window.activeOperator + ' il ' + window.getTimestamp(); 
+            await updateDoc(doc(db, "contenzioni", id), { firme: sigs }); window.showToast("✅ Firma " + ruolo + " salvata.");
         };
 
         window.addContenzione = async () => {
             if(window.checkOssRestriction()) return;
-            const o = document.getElementById('contOspite').value;
-            const t = document.getElementById('contTipo').value;
-            const d = document.getElementById('contDataInizio').value;
-            const h = document.getElementById('contOraInizio').value;
-            const m = document.getElementById('contMotivo').value;
-            const c = document.getElementById('contConsenso').value;
+            const o = document.getElementById('contOspite').value; const t = document.getElementById('contTipo').value; const d = document.getElementById('contDataInizio').value; const h = document.getElementById('contOraInizio').value; const m = document.getElementById('contMotivo').value; const c = document.getElementById('contConsenso').value;
             if(!o || !d || !m) return window.showToast("⚠️ Compila ospite, data e motivazione");
             await addDoc(collection(db, "contenzioni"), { ospite: o, tipo: t, dataInizio: d, oraInizio: h, motivo: m, consenso: c, stato: "ATTIVA", op: window.activeOperator, datePrescrizione: window.getTimestamp(), firme: {} });
             window.showToast("🔒 Contenzione registrata, in attesa di firme.");
@@ -2164,7 +2080,6 @@
                 let firme = c.firme || {};
                 let fm = firme['Medico'] ? `<div style="color:#15803d;font-size:0.8em;font-weight:bold;">✅ Dir. San.: ${firme['Medico'].split(' ')[0]}</div>` : `<button class="btn-primary" style="font-size:0.7em;padding:4px;margin-bottom:4px;background:#15803d;" onclick="window.firmaContenzione('${c.id}','Medico')">✍️ Firma Dir. San.</button>`;
                 let fi = firme['Infermiere'] ? `<div style="color:#0369a1;font-size:0.8em;font-weight:bold;">✅ Inf: ${firme['Infermiere'].split(' ')[0]}</div>` : `<button class="btn-primary" style="font-size:0.7em;padding:4px;background:#0284c7;" onclick="window.firmaContenzione('${c.id}','Infermiere')">✍️ Firma Inf</button>`;
-                
                 let sigDiv = `<div style="display:flex;flex-direction:column;gap:4px;">${fm}${fi}</div>`;
 
                 tb.innerHTML += `<tr><td><strong>${c.ospite}</strong></td><td>${c.tipo}</td><td>${window.formatDateSafe(c.dataInizio)} ${c.oraInizio||''}</td><td>${c.motivo}</td><td>${sigDiv}</td><td>${st}<br>${btn}</td></tr>`;
@@ -2174,13 +2089,9 @@
 
         window.exportAlloggiati = (tipoExport = 'nuovi') => { 
             if(window.checkOssRestriction()) return; 
-            const dS=document.getElementById('alloggiatiStart').value; 
-            const dE=document.getElementById('alloggiatiEnd').value; 
+            const dS=document.getElementById('alloggiatiStart').value; const dE=document.getElementById('alloggiatiEnd').value; 
             if(!dS||!dE) return window.showToast("⚠️ Inserisci le date di riferimento per l'esportazione!"); 
-            
-            let osp = [];
-            let dataArrivoForzata = "";
-
+            let osp = []; let dataArrivoForzata = "";
             if (tipoExport === 'rinnovo') {
                 osp = window.dbOspiti.filter(g => !g.decesso && !g.dimissione);
                 if(osp.length === 0) return window.showToast("⚠️ Nessun ospite presente in struttura.");
@@ -2189,246 +2100,92 @@
                 osp = window.dbOspiti.filter(g => g.ingresso >= dS && g.ingresso <= dE && !g.decesso && !g.dimissione); 
                 if(osp.length === 0) return window.showToast("⚠️ Nessun nuovo ingresso nel range selezionato."); 
             }
-
-            let txt = ""; 
-            const p = (s, l) => (s || '').toString().trim().toUpperCase().substring(0, l).padEnd(l, ' '); 
-
+            let txt = ""; const p = (s, l) => (s || '').toString().trim().toUpperCase().substring(0, l).padEnd(l, ' '); 
             let erroriValidazione = [];
-
             osp.forEach(g => { 
-                let tipoAlloggiato = "16"; 
-                let dataArrivo = dataArrivoForzata !== "" ? dataArrivoForzata : (g.ingresso ? g.ingresso.split('-').reverse().join('/') : ""); 
-                let permanenza = "30"; 
-                let cognome = g.cognome || (g.name ? g.name.split(' ')[0] : "");
-                let nome = g.nome || (g.name ? g.name.split(' ').slice(1).join(' ') : "");
-                let sesso = (g.sesso === 'F' || g.sesso === 'f') ? "2" : "1";
-                let dataNascita = g.dob ? g.dob.split('-').reverse().join('/') : "";
-                
-                let luogoNascita = g.pobCod || "";
-                let provNascita = g.pobProv || "  "; 
-                let statoCittadinanza = g.cittadinanza || "100000100"; 
-                
-                let tipoDocumento = g.docTipo || "";
-                let numDocumento = g.docNum || "";
-                let luogoRilascio = g.docRilascioCod || "";
-
-                if (!cognome || !nome || !dataNascita || !luogoNascita || !statoCittadinanza || !tipoDocumento || !numDocumento || !luogoRilascio) {
-                    erroriValidazione.push(`- ${g.name}: Manca Doc. Identità, Data Nascita o Comuni codificati.`);
-                }
-
-                let record = p(tipoAlloggiato, 2) + 
-                             p(dataArrivo, 10) + 
-                             p(permanenza, 2) + 
-                             p(cognome, 50) + 
-                             p(nome, 50) + 
-                             p(sesso, 1) + 
-                             p(dataNascita, 10) + 
-                             p(luogoNascita, 9) + 
-                             p(provNascita, 2) + 
-                             p(statoCittadinanza, 9) + 
-                             p(tipoDocumento, 5) + 
-                             p(numDocumento, 20) + 
-                             p(luogoRilascio, 9);
-                
-                if (record.length !== 179) {
-                    erroriValidazione.push(`- ${g.name}: Errore di formattazione record (lunghezza ${record.length} invece di 179).`);
-                }
-
+                let tipoAlloggiato = "16"; let dataArrivo = dataArrivoForzata !== "" ? dataArrivoForzata : (g.ingresso ? g.ingresso.split('-').reverse().join('/') : ""); let permanenza = "30"; 
+                let cognome = g.cognome || (g.name ? g.name.split(' ')[0] : ""); let nome = g.nome || (g.name ? g.name.split(' ').slice(1).join(' ') : "");
+                let sesso = (g.sesso === 'F' || g.sesso === 'f') ? "2" : "1"; let dataNascita = g.dob ? g.dob.split('-').reverse().join('/') : "";
+                let luogoNascita = g.pobCod || ""; let provNascita = g.pobProv || "  "; let statoCittadinanza = g.cittadinanza || "100000100"; 
+                let tipoDocumento = g.docTipo || ""; let numDocumento = g.docNum || ""; let luogoRilascio = g.docRilascioCod || "";
+                if (!cognome || !nome || !dataNascita || !luogoNascita || !statoCittadinanza || !tipoDocumento || !numDocumento || !luogoRilascio) erroriValidazione.push(`- ${g.name}: Manca Doc. Identità, Data Nascita o Comuni codificati.`);
+                let record = p(tipoAlloggiato, 2) + p(dataArrivo, 10) + p(permanenza, 2) + p(cognome, 50) + p(nome, 50) + p(sesso, 1) + p(dataNascita, 10) + p(luogoNascita, 9) + p(provNascita, 2) + p(statoCittadinanza, 9) + p(tipoDocumento, 5) + p(numDocumento, 20) + p(luogoRilascio, 9);
+                if (record.length !== 179) erroriValidazione.push(`- ${g.name}: Errore formattazione record (lunghezza ${record.length}).`);
                 txt += record + "\r\n"; 
             }); 
-
-            if (erroriValidazione.length > 0) {
-                alert("🛑 ESPORTAZIONE BLOCCATA DAL SISTEMA!\n\nPer evitare lo scarto del file da parte del Portale Polizia di Stato, è necessario correggere l'anagrafica dei seguenti ospiti:\n\n" + erroriValidazione.join("\n") + "\n\nTorna in anagrafica, assicurati di aver compilato i campi col bordo rosso (Codice Alloggiati) e gli estremi del documento, poi riprova.");
-                return; 
-            }
-
-            const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' }); 
-            const link = document.createElement("a"); 
-            link.href = URL.createObjectURL(blob); 
-            let fileN = tipoExport === 'rinnovo' ? `Alloggiati_Rinnovo_${dS}.txt` : `Alloggiati_Nuovi_${dS}_${dE}.txt`;
-            link.download = fileN; 
-            link.click(); 
-            
-            window.showToast("👮‍♂️ File TXT Alloggiati Web generato e Validato con successo!"); 
+            if (erroriValidazione.length > 0) { alert("🛑 ESPORTAZIONE ALLOGGIATI BLOCCATA:\n\n" + erroriValidazione.join("\n")); return; }
+            const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); 
+            link.download = tipoExport === 'rinnovo' ? `Alloggiati_Rinnovo_${dS}.txt` : `Alloggiati_Nuovi_${dS}_${dE}.txt`; link.click(); window.showToast("👮‍♂️ File TXT Alloggiati Web generato con successo!"); 
         };
         
         window.setAlloggiatiDates = (mode) => {
             let t = new Date();
-            if(mode === 'oggi') {
-                let td = window.getTodayString();
-                document.getElementById('alloggiatiStart').value = td;
-                document.getElementById('alloggiatiEnd').value = td;
-            } else if(mode === 'mese') {
+            if(mode === 'oggi') { let td = window.getTodayString(); document.getElementById('alloggiatiStart').value = td; document.getElementById('alloggiatiEnd').value = td; } 
+            else if(mode === 'mese') {
                 let start = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-01`;
-                let endD = new Date(t.getFullYear(), t.getMonth(), 30);
-                if (endD.getMonth() !== t.getMonth()) endD = new Date(t.getFullYear(), t.getMonth() + 1, 0);
+                let endD = new Date(t.getFullYear(), t.getMonth() + 1, 0);
                 let end = `${endD.getFullYear()}-${String(endD.getMonth()+1).padStart(2,'0')}-${String(endD.getDate()).padStart(2,'0')}`;
-                document.getElementById('alloggiatiStart').value = start;
-                document.getElementById('alloggiatiEnd').value = end;
+                document.getElementById('alloggiatiStart').value = start; document.getElementById('alloggiatiEnd').value = end;
             }
         };
 
         window.exportFARUmbria = () => { if(window.checkOssRestriction()) return; let c="data:text/csv;charset=utf-8,NOME;CF;INGRESSO;USCITA;STATO;MOV\n"; window.dbOspiti.forEach(g=>c+=`${g.name};${g.cf||''};${g.ingresso||''};${g.decesso||g.dimissione||''};${g.decesso?'DEC':(g.dimissione?'DIM':'IN')};${(g.movimenti&&g.movimenti.length>0)?g.movimenti[0].tipo:'Nessuno'}\n`); const l=document.createElement("a"); l.href=encodeURI(c); l.download=`FAR_${window.getTodayString()}.csv`; l.click(); };
         window.exportSIAR = () => { if(window.checkOssRestriction()) return; let c="data:text/csv;charset=utf-8,NOME;CF;FKT_VAL;FKT_OB\n"; window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione).forEach(g=>{ let d=window.dbClinica[g.name]||{}; c+=`${g.name};${g.cf||''};${(d.fktValutazione||'').replace(/\n/g,' ')};${(d.fktObiettivi||'').replace(/\n/g,' ')}\n`; }); const l=document.createElement("a"); l.href=encodeURI(c); l.download=`SIAR_${window.getTodayString()}.csv`; l.click(); };
-        window.exportFSE = () => { window.showToast("Tracciato FHIR FSE in fase di generazione..."); setTimeout(()=>{ const l=document.createElement("a"); l.href="data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({resourceType:"Bundle",type:"collection",timestamp:new Date().toISOString()})); l.download=`FSE_${window.getTodayString()}.json`; l.click(); },1000); };
+        window.exportFSE = () => { window.showToast("Tracciato FHIR FSE in generazione..."); setTimeout(()=>{ const l=document.createElement("a"); l.href="data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({resourceType:"Bundle",type:"collection",timestamp:new Date().toISOString()})); l.download=`FSE_${window.getTodayString()}.json`; l.click(); },1000); };
 
         window.printMasterFascicolo = () => { 
-            const n = document.getElementById('clinicalGuestSelect').value; 
-            if(!n) return window.showToast("⚠️ Seleziona un paziente dalla Cartella Clinica per stampare il fascicolo."); 
-            let d = window.dbClinica[n] || {}; 
-            let g = window.dbOspiti.find(x => x.name === n) || {};
-            let mk = `${curTerYear}-${String(curTerMonth+1).padStart(2,'0')}`;
-            let fM = d.terapiaFirmeMensili ? d.terapiaFirmeMensili[mk] : null;
-
+            const n = document.getElementById('clinicalGuestSelect').value; if(!n) return window.showToast("⚠️ Seleziona un paziente."); 
+            let d = window.dbClinica[n] || {}; let g = window.dbOspiti.find(x => x.name === n) || {};
+            let mk = `${curTerYear}-${String(curTerMonth+1).padStart(2,'0')}`; let fM = d.terapiaFirmeMensili ? d.terapiaFirmeMensili[mk] : null;
             let htmlContent = window.getPrintHeader('FASCICOLO SANITARIO INTEGRATO: ' + n) + `
                 <h3>1. Anagrafica & Riferimenti</h3>
                 <p><strong>Codice Fiscale:</strong> ${g.cf||'-'} | <strong>Data di Nascita:</strong> ${window.formatDateSafe(g.dob)} | <strong>Stanza:</strong> ${g.room||'-'}</p>
                 <p><strong>Familiare / Riferimento:</strong> ${g.ref||'-'} (${g.refParentela||'-'} - Tel: ${g.refTel||'-'}) | <strong>MMG:</strong> ${g.mmg||'-'}</p>
-                
-                <h3>2. Check-in Clinico & Lesioni</h3>
-                <p><strong>Condizioni Generali:</strong> ${d.chkGen||'Nessun dato registrato.'}</p>
-                <p><strong>Piaghe / Lesioni:</strong> ${d.chkPiaghe||'Nessuna lesione segnalata.'}</p>
-                
-                <h3>3. Scheda Fisioterapica (FKT)</h3>
-                <p><strong>Valutazione Motoria:</strong> ${d.fktValutazione||'-'}</p>
-                <p><strong>Ausili in Uso:</strong> ${d.fktAusili||'-'}</p>
-                <p><strong>Obiettivi:</strong> ${d.fktObiettivi||'-'}</p>
-
-                <h3>4. Valutazione B.I.N.A. & Scale VMD</h3>
-                <p><strong>Punteggio B.I.N.A. Totale:</strong> ${((parseFloat(d.binaAuto)||0)+(parseFloat(d.binaSanita)||0)+(parseFloat(d.binaPsiche)||0)+(parseFloat(d.binaSociale)||0))} / 40</p>
-                <p><strong>Scale VMD:</strong> ADL: ${d.vmdADL||'-'} | IADL: ${d.vmdIADL||'-'} | MMSE: ${d.vmdMMSE||'-'} | Braden: ${d.vmdBraden||'-'} | Morse: ${d.vmdMorse||'-'}</p>
-
-                <h3>5. P.A.I. Multidisciplinare</h3>
-                <p><strong>Area Medica:</strong> ${d.paiMedico||'-'}</p>
-                <p><strong>Area Infermieristica:</strong> ${d.paiInfermieristico||'-'}</p>
-                <p><strong>Area Assistenziale (OSS):</strong> ${d.paiAssistenziale||'-'}</p>
-                <p><strong>Validazioni PAI:</strong> Medico: ${d.paiFirmaMedDate||'Non firmato'} | Infermiere: ${d.paiFirmaInfDate||'Non firmato'} | OSS: ${d.paiFirmaOssDate||'Non firmato'}</p>
-
-                <h3>6. Parametri Vitali recenti</h3>
-                <p>Ultimi parametri registrati in cartella (PA, FC, SpO2, TC).</p>
-
-                <h3>7. Prospetto Terapia in Atto</h3>` + window.getTerapiaListHtml(d.terapiaList, true, fM);
-
-            document.getElementById('printArea').innerHTML = htmlContent; 
-            window.print(); 
+                <h3>2. Check-in Clinico & Lesioni</h3><p><strong>Condizioni Generali:</strong> ${d.chkGen||'-'}</p><p><strong>Piaghe / Lesioni:</strong> ${d.chkPiaghe||'-'}</p>
+                <h3>3. Scheda Fisioterapica (FKT)</h3><p><strong>Valutazione Motoria:</strong> ${d.fktValutazione||'-'}</p><p><strong>Ausili in Uso:</strong> ${d.fktAusili||'-'}</p>
+                <h3>4. Valutazione B.I.N.A. & Scale VMD</h3><p><strong>Punteggio B.I.N.A. Totale:</strong> ${((parseFloat(d.binaAuto)||0)+(parseFloat(d.binaSanita)||0)+(parseFloat(d.binaPsiche)||0)+(parseFloat(d.binaSociale)||0))} / 40</p>
+                <h3>5. P.A.I. Multidisciplinare</h3><p><strong>Medico:</strong> ${d.paiMedico||'-'}</p><p><strong>Infermiere:</strong> ${d.paiInfermieristico||'-'}</p>
+                <h3>6. Prospetto Terapia in Atto</h3>` + window.getTerapiaListHtml(d.terapiaList, true, fM);
+            document.getElementById('printArea').innerHTML = htmlContent; window.print(); 
         };
 
         window.printModule = (t) => { 
             let selId = (t==='terapia') ? 'terapiaGuestSelect' : ((t==='diari') ? 'diariGuestSelect' : 'lettereGuestSelect');
-            let n = document.getElementById(selId).value; 
-            if(!n) return window.showToast("⚠️ Seleziona un paziente dal menu a tendina prima di stampare."); 
-            
-            let d = window.dbClinica[n] || {}; 
-            let g = window.dbOspiti.find(x => x.name === n) || {};
-            let mk = `${curTerYear}-${String(curTerMonth+1).padStart(2,'0')}`;
-            let fM = d.terapiaFirmeMensili ? d.terapiaFirmeMensili[mk] : null;
+            let n = document.getElementById(selId).value; if(!n) return window.showToast("⚠️ Seleziona un paziente prima di stampare."); 
+            let d = window.dbClinica[n] || {}; let g = window.dbOspiti.find(x => x.name === n) || {};
+            let mk = `${curTerYear}-${String(curTerMonth+1).padStart(2,'0')}`; let fM = d.terapiaFirmeMensili ? d.terapiaFirmeMensili[mk] : null;
             
             if(t==='diari') {
-                let mH = '';
-                (d.diarioMedico || []).forEach(item => {
-                    mH += `<div style="border-bottom:1px solid #ccc; padding:6px 0;"><strong>${item.date}</strong> - Dott. ${item.op} (${item.qualifica})<br><p style="margin:4px 0; white-space:pre-wrap;">${item.text}</p></div>`;
-                });
-                let iH = '';
-                (d.diarioInfermieristico || []).forEach(item => {
-                    iH += `<div style="border-bottom:1px solid #ccc; padding:6px 0;"><strong>${item.date}</strong> - Inf. ${item.op} (${item.qualifica})<br><p style="margin:4px 0; white-space:pre-wrap;">${item.text}</p></div>`;
-                });
-                document.getElementById('printArea').innerHTML = window.getPrintHeader('DIARIO CLINICO INTEGRATO - OSPITE: ' + n) + 
-                    `<div style="display:flex; gap:20px; margin-top:20px;">
-                        <div style="flex:1;"><h3 style="border-bottom:2px solid #000; padding-bottom:4px;">DIARIO MEDICO</h3>${mH || '<p>Nessuna annotazione medica.</p>'}</div>
-                        <div style="flex:1;"><h3 style="border-bottom:2px solid #000; padding-bottom:4px;">DIARIO INFERMIERISTICO</h3>${iH || '<p>Nessuna annotazione infermieristica.</p>'}</div>
-                    </div>`;
-            } else if(t==='terapia') { 
-                document.getElementById('printArea').innerHTML = window.getPrintHeader('TERAPIA IN ATTO - PAZIENTE: ' + n) + window.getTerapiaListHtml(d.terapiaList, true, fM); 
-            } else if(t==='decesso') { 
-                let testoDecesso = (document.getElementById('decTesto')?.value) || d.decTesto || `Si attesta il decesso dell'Ospite: <strong>${n}</strong>, avvenuto in data <strong>${d.decData||'-'}</strong> alle ore <strong>${d.decOra||'-'}</strong>.`;
-                document.getElementById('printArea').innerHTML = window.getPrintHeader('ATTESTAZIONE DI DECESSO') + `<div style="font-size:14pt; margin-top:20px; line-height:1.6;">${testoDecesso.replace(/\n/g, '<br>')}</div>`; 
-            } else if(t==='dimissioni') { 
-                let testoMotivo = (document.getElementById('dimMotivo')?.value) || d.dimMotivo || '-';
-                let testoDecorso = (document.getElementById('dimDecorso')?.value) || d.dimDecorso || '-';
-                document.getElementById('printArea').innerHTML = window.getPrintHeader('LETTERA DI DIMISSIONE') + `<div style="margin-top:20px; font-size:12pt; line-height:1.6;"><strong>Data Dimissione:</strong> ${d.dimData||'-'} ore ${d.dimOra||'-'} <br> <strong>Paziente:</strong> ${n} <br><br> <strong>Motivo e Destinazione:</strong><br>${testoMotivo.replace(/\n/g, '<br>')} <br><br> <strong>Decorso Clinico:</strong><br>${testoDecorso.replace(/\n/g, '<br>')}</div> <h3 style="margin-top:20px; padding-top:20px; border-top:2px solid #000;">Terapia alla Dimissione</h3>` + window.getTerapiaListHtml(d.terapiaList, false, fM); 
-            } else if(t==='prontosoccorso') { 
-                let testoPsMotivo = (document.getElementById('psMotivo')?.value) || d.psMotivo || '-';
-                let testoPsRiassunto = (document.getElementById('psRiassunto')?.value) || d.psRiassunto || '-';
-                
-                let htmlStr = window.getPrintHeader('LETTERA DI TRASFERIMENTO (PRONTO SOCCORSO / 118)') + `<div style="margin-top:20px; font-size:12pt; line-height:1.6;"><strong>Data Invio:</strong> ${d.psData||'-'} ore ${d.psOra||'-'} <br> <strong>Paziente:</strong> ${n} <br><br> <strong>Sintomatologia / Motivo Invio:</strong><br>${testoPsMotivo.replace(/\n/g, '<br>')} <br><br> <strong>Riassunto Clinico:</strong><br>${testoPsRiassunto.replace(/\n/g, '<br>')}</div> <h3 style="margin-top:20px; padding-top:20px; border-top:2px solid #000;">Terapia in Atto</h3>` + window.getTerapiaListHtml(d.terapiaList, false, fM); 
-                
-                let docHtml = '';
-                if (g.docId && g.docId.startsWith('data:image')) {
-                    docHtml += `<div style="page-break-before: always; text-align: center; padding-top:20px;"><h3 style="margin-top:0; text-transform:uppercase; border-bottom:2px solid #000; padding-bottom:10px;">Copia Documento di Identità</h3><img src="${g.docId}" style="max-width:100%; max-height:850px; border:2px solid #ccc; margin-top:20px;"></div>`;
-                } else if (g.docId && g.docId.startsWith('data:application/pdf')) {
-                    docHtml += `<div style="page-break-before: always; text-align: center; padding-top:40px;"><h3 style="color:#e11d48;">[ATTENZIONE: Documento Identità in formato PDF]</h3><p>Il sistema non può stampare direttamente i PDF embedded. Apri l'anagrafica del paziente e stampa il PDF del documento manualmente.</p></div>`;
-                }
-
-                if (g.docCf && g.docCf.startsWith('data:image')) {
-                    docHtml += `<div style="page-break-before: always; text-align: center; padding-top:20px;"><h3 style="margin-top:0; text-transform:uppercase; border-bottom:2px solid #000; padding-bottom:10px;">Copia Tessera Sanitaria / Codice Fiscale</h3><img src="${g.docCf}" style="max-width:100%; max-height:850px; border:2px solid #ccc; margin-top:20px;"></div>`;
-                }
-                
-                document.getElementById('printArea').innerHTML = htmlStr + docHtml;
-            } 
+                let mH = ''; (d.diarioMedico || []).forEach(item => { mH += `<div style="border-bottom:1px solid #ccc; padding:6px 0;"><strong>${item.date}</strong> - Dott. ${item.op} (${item.qualifica})<br><p style="margin:4px 0; white-space:pre-wrap;">${item.text}</p></div>`; });
+                let iH = ''; (d.diarioInfermieristico || []).forEach(item => { iH += `<div style="border-bottom:1px solid #ccc; padding:6px 0;"><strong>${item.date}</strong> - Inf. ${item.op} (${item.qualifica})<br><p style="margin:4px 0; white-space:pre-wrap;">${item.text}</p></div>`; });
+                document.getElementById('printArea').innerHTML = window.getPrintHeader('DIARIO CLINICO INTEGRATO - OSPITE: ' + n) + `<div style="display:flex; gap:20px; margin-top:20px;"><div style="flex:1;"><h3 style="border-bottom:2px solid #000;">DIARIO MEDICO</h3>${mH || '<p>Nessuna nota.</p>'}</div><div style="flex:1;"><h3 style="border-bottom:2px solid #000;">DIARIO INFERMIERISTICO</h3>${iH || '<p>Nessuna nota.</p>'}</div></div>`;
+            } else if(t==='terapia') { document.getElementById('printArea').innerHTML = window.getPrintHeader('TERAPIA - ' + n) + window.getTerapiaListHtml(d.terapiaList, true, fM); } 
+            else if(t==='decesso') { let txt = (document.getElementById('decTesto')?.value) || d.decTesto; document.getElementById('printArea').innerHTML = window.getPrintHeader('ATTESTAZIONE DI DECESSO') + `<div style="font-size:14pt; margin-top:20px; line-height:1.6;">${txt.replace(/\n/g, '<br>')}</div>`; } 
+            else if(t==='dimissioni') { document.getElementById('printArea').innerHTML = window.getPrintHeader('LETTERA DI DIMISSIONE') + `<div style="margin-top:20px; font-size:12pt; line-height:1.6;"><strong>Paziente:</strong> ${n}<br><br><strong>Motivo:</strong><br>${(document.getElementById('dimMotivo')?.value||'').replace(/\n/g, '<br>')}<br><br><strong>Decorso:</strong><br>${(document.getElementById('dimDecorso')?.value||'').replace(/\n/g, '<br>')}</div>` + window.getTerapiaListHtml(d.terapiaList, false, fM); } 
+            else if(t==='prontosoccorso') { document.getElementById('printArea').innerHTML = window.getPrintHeader('TRASFERIMENTO PRONTO SOCCORSO (118)') + `<div style="margin-top:20px; font-size:12pt; line-height:1.6;"><strong>Paziente:</strong> ${n}<br><br><strong>Sintomi Acuti:</strong><br>${(document.getElementById('psMotivo')?.value||'').replace(/\n/g, '<br>')}</div>` + window.getTerapiaListHtml(d.terapiaList, false, fM); }
             window.print(); 
         };
         
-        window.printStupefacentiInv = () => { 
-            let h=""; window.dbStupefacentiInv.forEach(i=>h+=`<tr><td>${i.nome}</td><td>${i.qta}</td></tr>`); 
-            document.getElementById('printArea').innerHTML = window.getPrintHeader('INVENTARIO ARMADIO STUPEFACENTI') + `<table class="print-table"><tr><th>Farmaco</th><th>Qta</th></tr>${h}</table>`; 
-            window.print(); 
-        };
-        
-        window.printStupefacentiRegistry = () => { 
-            let h=""; window.dbStupefacentiLog.forEach(i=>h+=`<tr><td>${i.date}</td><td>${i.nome}</td><td>${i.tipo}</td><td>${i.qta}</td></tr>`); 
-            document.getElementById('printArea').innerHTML = window.getPrintHeader('REGISTRO CARICO/SCARICO STUPEFACENTI (D.P.R. 309/90)') + `<table class="print-table"><tr><th>Data</th><th>Farmaco</th><th>Tipo</th><th>Qta</th></tr>${h}</table>`; 
-            window.print(); 
-        };
+        window.printStupefacentiInv = () => { let h=""; window.dbStupefacentiInv.forEach(i=>h+=`<tr><td>${i.nome}</td><td>${i.qta}</td></tr>`); document.getElementById('printArea').innerHTML = window.getPrintHeader('INVENTARIO STUPEFACENTI') + `<table class="print-table"><tr><th>Farmaco</th><th>Qta</th></tr>${h}</table>`; window.print(); };
+        window.printStupefacentiRegistry = () => { let h=""; window.dbStupefacentiLog.forEach(i=>h+=`<tr><td>${i.date}</td><td>${i.nome}</td><td>${i.tipo}</td><td>${i.qta}</td></tr>`); document.getElementById('printArea').innerHTML = window.getPrintHeader('REGISTRO STUPEFACENTI') + `<table class="print-table"><tr><th>Data</th><th>Farmaco</th><th>Tipo</th><th>Qta</th></tr>${h}</table>`; window.print(); };
 
-        /* --- INIZIO MODULO AUTO-LOGOUT GDPR --- */
         window.inactivityTimer = null;
-        window.resetInactivityTimer = () => {
-            if(window.inactivityTimer) clearTimeout(window.inactivityTimer);
-            window.inactivityTimer = setTimeout(() => {
-                if(sessionStorage.getItem("activeOperator")) {
-                    alert("⚠️ Sicurezza GDPR: Sessione scaduta per inattività. Esegui nuovamente l'accesso.");
-                    window.logout();
-                }
-            }, 900000); 
-        };
-        ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
-            document.addEventListener(evt, window.resetInactivityTimer, true);
-        });
-        /* --- FINE MODULO AUTO-LOGOUT GDPR --- */
+        window.resetInactivityTimer = () => { if(window.inactivityTimer) clearTimeout(window.inactivityTimer); window.inactivityTimer = setTimeout(() => { if(sessionStorage.getItem("activeOperator")) { alert("⚠️ Sessione scaduta per inattività."); window.logout(); } }, 900000); };
+        ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => document.addEventListener(evt, window.resetInactivityTimer, true));
 
         onSnapshot(doc(db, "struttura", "info"), snap => {
             if(snap.exists()) {
                 window.dbStruttura = snap.data();
                 const sV=(id,v)=>{if(document.getElementById(id))document.getElementById(id).value=v||'';};
-                sV('strutDenominazione', window.dbStruttura.denominazione);
-                sV('strutTipo', window.dbStruttura.tipo);
-                sV('strutIndirizzo', window.dbStruttura.indirizzo);
-                sV('strutRagioneSociale', window.dbStruttura.ragioneSociale);
-                sV('strutPiva', window.dbStruttura.piva);
-                sV('strutTelefono', window.dbStruttura.telefono);
-                sV('strutEmail', window.dbStruttura.email);
-                
+                sV('strutDenominazione', window.dbStruttura.denominazione); sV('strutTipo', window.dbStruttura.tipo); sV('strutIndirizzo', window.dbStruttura.indirizzo); sV('strutRagioneSociale', window.dbStruttura.ragioneSociale); sV('strutPiva', window.dbStruttura.piva); sV('strutTelefono', window.dbStruttura.telefono); sV('strutEmail', window.dbStruttura.email);
                 const navBrand = document.getElementById('navbarStructureBrand');
-                if(navBrand) {
-                    let dName = window.dbStruttura.denominazione || 'NUOVA VILLA SILVANA';
-                    let dTipo = window.dbStruttura.tipo ? ` - ${window.dbStruttura.tipo}` : '';
-                    navBrand.innerText = `🏥 ${dName}${dTipo}`;
-                }
+                if(navBrand) navBrand.innerText = `🏥 ${window.dbStruttura.denominazione || 'NUOVA VILLA SILVANA'}${window.dbStruttura.tipo ? ' - ' + window.dbStruttura.tipo : ''}`;
             }
         });
 
         onSnapshot(collection(db, "operatori"), snap => { window.dbOperatori = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadOperators(); });
         onSnapshot(collection(db, "ospiti"), snap => { window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadGuests(); if(window.editingGuestId) window.loadAnagraficaForEdit(true); });
-        
-        onSnapshot(collection(db, "cartelle_cliniche"), snap => { 
-            window.dbClinica = {}; 
-            snap.forEach(d => { window.dbClinica[d.id] = d.data(); }); 
-            if(window.dbOspiti.length > 0) window.loadAlerts(); 
-            if(window.globalSelectedPatient && window.dbClinica[window.globalSelectedPatient]) {
-                window.renderDiari(window.globalSelectedPatient, window.dbClinica[window.globalSelectedPatient]);
-            }
-        });
-
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => { window.dbClinica = {}; snap.forEach(d => { window.dbClinica[d.id] = d.data(); }); if(window.dbOspiti.length > 0) window.loadAlerts(); if(window.globalSelectedPatient && window.dbClinica[window.globalSelectedPatient]) { window.renderDiari(window.globalSelectedPatient, window.dbClinica[window.globalSelectedPatient]); } });
         onSnapshot(collection(db, "rischio"), snap => { window.dbRischio = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadRischio(); });
         onSnapshot(collection(db, "cup"), snap => { window.dbCup = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadAppointments(); });
         onSnapshot(collection(db, "stupefacenti_inv"), snap => { window.dbStupefacentiInv = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadNarcoticsTable(); });
@@ -2437,47 +2194,18 @@
         onSnapshot(collection(db, "contenzioni"), snap => { window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadContenzioni(); });
 
         window.onload = () => { 
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('ospite')) {
-                document.getElementById('loginScreen').style.display = 'none'; 
-                document.getElementById('appScreen').style.display = 'none'; 
-                document.getElementById('privacyScreen').style.display = 'flex';
-                let nomeFormattato = urlParams.get('ospite'); 
-                document.getElementById('ospiteNameDisplay').innerText = nomeFormattato; 
-                window.ospiteTargetPrivacy = nomeFormattato; 
-                window.ospiteTargetId = urlParams.get('id') || null; 
-                return; 
-            }
-
-            let pi = document.getElementById('loginPinInput'); 
-            if(pi) pi.addEventListener('keypress', (e)=>{if(e.key==='Enter') window.performLogin();});
-            
-            let todayStr = window.getTodayString();
-            ['alloggiatiStart','alloggiatiEnd'].forEach(id=>{
-                let inputDate = document.getElementById(id);
-                if(inputDate) { inputDate.value = todayStr; }
-            });
-
+            let pi = document.getElementById('loginPinInput'); if(pi) pi.addEventListener('keypress', (e)=>{if(e.key==='Enter') window.performLogin();});
+            let todayStr = window.getTodayString(); ['alloggiatiStart','alloggiatiEnd'].forEach(id=>{ let inputDate = document.getElementById(id); if(inputDate) inputDate.value = todayStr; });
             const dl = document.getElementById('listaFarmaciAifa'); if(dl) prontuario.forEach(f => { let opt = document.createElement('option'); opt.value = f; dl.appendChild(opt); });
             window.loadComuni(); 
 
             let savedOp = sessionStorage.getItem("activeOperator");
             if(savedOp) {
-                window.activeOperator = savedOp;
-                window.activeOperatorRole = sessionStorage.getItem("activeRole");
-                window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica");
-                
-                document.getElementById('currentOpBadge').innerText = `👤 ${savedOp}`; 
-                document.getElementById('loginScreen').style.display = 'none'; 
-                document.getElementById('appScreen').style.display = 'flex'; 
-                
-                window.applyRolePermissions(); 
-                window.resetInactivityTimer();
-                
+                window.activeOperator = savedOp; window.activeOperatorRole = sessionStorage.getItem("activeRole"); window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica");
+                document.getElementById('currentOpBadge').innerText = `👤 ${savedOp}`; document.getElementById('loginScreen').style.display = 'none'; document.getElementById('appScreen').style.display = 'flex'; 
+                window.applyRolePermissions(); window.resetInactivityTimer();
                 if(window.renderCharts) setTimeout(window.renderCharts, 500);
-            } else { 
-                window.loadOperators(); 
-            } 
+            } else { window.loadOperators(); } 
         };
     </script>
 </body>
