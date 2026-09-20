@@ -683,43 +683,31 @@
             try { await setDoc(doc(db, "struttura", "info"), payload, { merge: true }); window.showToast("✅ Dati struttura aggiornati per la stampa PDF!"); } catch(e) { window.showToast("❌ Errore salvataggio."); }
         });
 
-        // LETTURA OPERATORI APERTA E ROBUSTA (Senza filtri bloccanti)
-        onSnapshot(query(collection(db, "operatori")), (snapshot) => {
-            const lContainer = document.getElementById('loginProfilesContainer'); 
-            const container = document.getElementById('op-list-container');
+        // LETTURA OPERATORI RIPRISTINATA (Sicura, infallibile tramite ordinamento lato client)
+        onSnapshot(collection(db, "operatori"), (snapshot) => {
+            const lContainer = document.getElementById('loginProfilesContainer'); const container = document.getElementById('op-list-container');
             if(lContainer) lContainer.innerHTML = ''; 
             if(container) container.innerHTML = '';
             
-            let operatoriTrovati = 0;
-
-            snapshot.forEach((docSnap) => { 
-                const op = docSnap.data(); 
-                const nome = op.nome || op.name || 'Operatore'; 
-                const qual = op.qualifica || op.role || 'Staff'; 
-                const pin = op.pin || '1234';
-                operatoriTrovati++;
-
-                let b = document.createElement('div'); 
-                b.className = 'flex flex-col items-center justify-center p-3 border border-slate-300 rounded-xl bg-slate-50 cursor-pointer hover:border-teal-500 hover:bg-teal-50 transition-all w-28 hover:-translate-y-1';
+            let ops = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            ops.sort((a, b) => (a.nome || a.name || '').localeCompare(b.nome || b.name || ''));
+            
+            let containerHtml = '';
+            ops.forEach((op) => { 
+                const nome = op.nome || op.name || 'Operatore'; const qual = op.qualifica || op.role || 'Staff'; const pin = op.pin || '****';
+                
+                let b = document.createElement('div'); b.className = 'flex flex-col items-center justify-center p-3 border border-slate-300 rounded-xl bg-slate-50 cursor-pointer hover:border-teal-500 hover:bg-teal-50 transition-all w-28 hover:-translate-y-1';
                 b.innerHTML = `<div class="w-12 h-12 rounded-full bg-teal-600 text-white flex items-center justify-center text-xl font-bold border-2 border-white shadow-sm mb-2"><i class="fa-solid fa-user"></i></div><span class="text-xs font-bold text-slate-700 text-center leading-tight">${nome}</span>`;
                 b.onclick = () => window.selectLoginProfile(nome, pin);
                 if(lContainer) lContainer.appendChild(b);
-
-                if(container) {
-                    let btnDel = window.isAdmin ? `<button class="bg-red-100 text-red-600 hover:bg-red-600 hover:text-white px-3 py-1 rounded text-xs font-bold transition-colors" onclick="window.deleteOp('${docSnap.id}')">Rimuovi</button>` : '';
-                    container.innerHTML += `<div class="flex justify-between items-center bg-slate-50 border border-slate-200 p-3 rounded-lg"><div><strong class="text-slate-700 text-sm block">${nome}</strong><span class="text-xs text-slate-500">${qual} | PIN: ${pin}</span></div>${btnDel}</div>`; 
-                }
+                
+                let btnDel = window.isAdmin ? `<button class="bg-red-100 text-red-600 hover:bg-red-600 hover:text-white px-3 py-1 rounded text-xs font-bold transition-colors" onclick="window.deleteOp('${op.id}')">Rimuovi</button>` : '';
+                containerHtml += `<div class="flex justify-between items-center bg-slate-50 border border-slate-200 p-3 rounded-lg"><div><strong class="text-slate-700 text-sm block">${nome}</strong><span class="text-xs text-slate-500">${qual} | PIN: ${pin}</span></div>${btnDel}</div>`; 
             });
-
-            if(operatoriTrovati === 0 && lContainer) {
-                lContainer.innerHTML = `<div class="flex flex-col items-center justify-center p-3 border border-slate-300 rounded-xl bg-slate-50 cursor-pointer hover:border-teal-500 hover:bg-teal-50 transition-all w-28 hover:-translate-y-1" onclick="window.selectLoginProfile('Admin', '12345')"><div class="w-12 h-12 rounded-full bg-teal-600 text-white flex items-center justify-center text-xl font-bold border-2 border-white shadow-sm mb-2"><i class="fa-solid fa-user-shield"></i></div><span class="text-xs font-bold text-slate-700 text-center leading-tight">Admin</span></div>`;
-            }
+            if(container) container.innerHTML = containerHtml;
         }, (error) => {
-            console.warn("Errore caricamento operatori:", error);
-            const lContainer = document.getElementById('loginProfilesContainer');
-            if(lContainer) {
-                lContainer.innerHTML = `<div class="flex flex-col items-center justify-center p-3 border border-slate-300 rounded-xl bg-slate-50 cursor-pointer hover:border-teal-500 hover:bg-teal-50 transition-all w-28 hover:-translate-y-1" onclick="window.selectLoginProfile('Admin', '12345')"><div class="w-12 h-12 rounded-full bg-teal-600 text-white flex items-center justify-center text-xl font-bold border-2 border-white shadow-sm mb-2"><i class="fa-solid fa-user-shield"></i></div><span class="text-xs font-bold text-slate-700 text-center leading-tight">Admin</span></div>`;
-            }
+            console.error("Errore irreversibile nel caricamento operatori:", error);
+            window.showToast("❌ Impossibile caricare i profili.");
         });
         
         window.deleteOp = (id) => { window.showModal('confirm', 'Rimuovi Operatore', 'Cancellare definitivamente questo profilo?', async () => { await deleteDoc(doc(db, "operatori", id)); window.showToast("✅ Rimosso."); }); };
