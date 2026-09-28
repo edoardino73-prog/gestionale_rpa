@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - Torre di Controllo: Qualità ISO 9001 e Accreditamento Umbria</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #f8fafc; --box-bg: #ffffff; --primary-color: #0d9488; --secondary-color: #0f766e;  
+            --text-main: #0f172a; --text-light: #475569; --border-color: #cbd5e1; --error-color: #e11d48; 
+            --warning-color: #d97706; --success-color: #059669; --acc-color: #7c3aed; --base-font-size: 14px;      
+        }
+        body { font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg-color); color: var(--text-main); font-size: var(--base-font-size); user-select: none; }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .slide-up { animation: slideUpFade 0.6s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUpFade { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 30000; display: flex; flex-direction: column; gap: 10px; pointer-events: none;}
+        .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 0.95rem; opacity: 0; transform: translateY(20px); transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; pointer-events: auto;}
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        canvas#signaturePad { border: 2px dashed #cbd5e1; border-radius: 8px; width: 100%; max-width: 400px; height: 180px; background-color: #f8fafc; touch-action: none; cursor: crosshair;}
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        @media print {
+            body, html { background: white !important; overflow: visible !important; height: auto !important; color: black !important; font-size: 12pt !important; }
+            #top-nav-container, .app-menu, button, #toast-container, input[type="file"], select, #csQrModal, #customModal, #signatureModal, #docEditorModal, .no-print { display: none !important; }
+            #appScreen, .main-content { display: block !important; height: auto !important; overflow: visible !important; padding: 0 !important; }
+            .card { box-shadow: none !important; border: 1px solid #000 !important; margin-bottom: 30px !important; page-break-inside: avoid !important; }
+            textarea { border: none !important; resize: none !important; background: transparent !important; color: black !important; padding: 0 !important; }
+            canvas.chartjs-render-monitor { display: none !important; }
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <div id="toast-container"></div>
+
+    <!-- SCHERMATA LOGIN -->
+    <div id="loginScreen" class="fixed inset-0 z-[9999] bg-teal-600 flex flex-col items-center justify-center p-4">
+        <div class="text-center text-white mb-8 slide-up">
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-widest drop-shadow-md">NUOVA VILLA SILVANA</h1>
+            <h2 class="text-xl md:text-2xl mt-2 text-teal-100 font-medium">Residenza Protetta per Anziani</h2>
+        </div>
+        <div class="bg-white p-8 rounded-xl shadow-2xl text-center w-full max-w-md border-t-4 border-amber-600 slide-up" style="animation-delay: 0.1s;">
+            <div class="flex justify-center mb-3"><i class="fa-solid fa-shield-halved text-4xl text-amber-600"></i></div>
+            <h2 class="text-xl font-bold text-amber-600">Direzione Aziendale</h2>
+            <p class="text-sm text-slate-500 mb-6">Torre di Controllo: Qualità ISO 9001 e Dati Reparto</p>
+            <label class="block text-center text-sm font-bold text-slate-700 mb-4">Seleziona il tuo Profilo Direzionale</label>
+            <div id="loginProfilesContainer" class="flex flex-wrap justify-center gap-4 mb-2 max-h-72 overflow-y-auto p-2 custom-scrollbar"></div>
+            <div id="loginPinArea" class="hidden fade-in">
+                <label id="selectedProfileLabel" class="block text-center text-sm font-bold text-amber-600 mb-3"></label>
+                <div class="relative">
+                    <i class="fa-solid fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                    <input type="password" id="loginPinInput" class="w-full pl-10 pr-4 py-3 text-2xl tracking-[0.5em] text-center border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" placeholder="****">
+                </div>
+                <button class="w-full mt-4 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2" onclick="window.performLogin()">
+                    <i class="fa-solid fa-right-to-bracket"></i> Accedi al Sistema
+                </button>
+                <button class="w-full mt-4 text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center justify-center gap-2 transition-colors" onclick="window.resetLoginSelection()">
+                    <i class="fa-solid fa-arrow-left"></i> Cambia Profilo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVBAR E TAB MENU -->
+    <div id="top-nav-container" class="sticky top-0 z-50 w-full flex-shrink-0 flex flex-col">
+        <div class="bg-teal-600 text-white px-6 py-3 flex justify-between items-center border-b-4 border-amber-600 shadow-md">
+            <div class="flex items-center gap-3 font-bold text-lg tracking-wide">
+                <i class="fa-solid fa-satellite-dish text-2xl text-amber-300"></i> Torre di Controllo NVS | Qualità & Dati Live
+            </div>
+            <div class="flex items-center gap-4">
+                <span id="currentOpBadge" class="bg-white text-teal-700 px-3 py-1 rounded-full text-sm font-bold shadow-sm">👤 Op</span>
+                <button class="bg-teal-700 hover:bg-teal-800 border border-teal-500 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm" onclick="window.logout()">
+                    <i class="fa-solid fa-lock"></i> Blocca
+                </button>
+            </div>
+        </div>
+        <div class="flex bg-slate-300 px-6 pt-3 gap-1 overflow-x-auto border-b border-slate-400 custom-scrollbar">
+            <button class="menu-tab active px-5 py-2.5 bg-white text-amber-600 border-t-4 border-amber-600 rounded-t-lg font-bold text-sm shadow-sm z-10 transition-colors flex items-center gap-2 whitespace-nowrap" onclick="window.switchView('view-iso', this)">
+                <i class="fa-solid fa-chart-pie"></i> Cruscotto Direzionale (KPI & Reparti)
+            </button>
+            <button id="tabAccreditamento" class="menu-tab px-5 py-2.5 bg-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 border-t-4 border-transparent rounded-t-lg font-semibold text-sm transition-colors flex items-center gap-2 whitespace-nowrap" onclick="window.switchView('view-accreditamento', this, 'text-violet-600', 'border-violet-600')">
+                <i class="fa-solid fa-book-bookmark"></i> Requisiti Accreditamento Regionale (Tutti)
+            </button>
+        </div>
+    </div>
+
+    <!-- SCHERMATA PRINCIPALE -->
+    <div id="appScreen" class="hidden flex-1 overflow-hidden bg-slate-50 relative">
+        <div class="w-full h-full p-6 overflow-y-auto custom-scrollbar" id="scrollArea">
+
+            <!-- VISTA 1: CRUSCOTTO DIREZIONALE -->
+            <div id="view-iso" class="view-section block fade-in">
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Accreditamento -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-violet-600 flex flex-col">
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                            <h3 class="text-lg font-bold text-violet-700 uppercase flex items-center gap-2"><i class="fa-solid fa-list-check"></i> Avanzamento Accreditamento</h3>
+                        </div>
+                        <div class="text-center text-sm text-slate-500 mb-2">Requisiti con evidenze documentali o digitali prodotte:</div>
+                        <div id="accProgressText" class="text-center text-3xl font-extrabold text-slate-800 mb-4">0 / 0 (0%)</div>
+                        <div class="w-full bg-slate-200 rounded-full h-4 mb-6 overflow-hidden shadow-inner border border-slate-300">
+                            <div id="accProgressBar" class="bg-violet-600 h-4 rounded-full transition-all duration-500 w-0"></div>
+                        </div>
+                        <div class="flex-1">
+                            <strong class="text-sm text-slate-700 block mb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Requisiti Scoperti:</strong>
+                            <div id="accAlertsList" class="max-h-48 overflow-y-auto custom-scrollbar pr-2 space-y-2"></div>
+                        </div>
+                        <button class="mt-6 w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 px-4 rounded-lg shadow transition-colors flex justify-center items-center gap-2" onclick="document.getElementById('tabAccreditamento').click()">
+                            Apri Registro Audit Completo <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Customer Satisfaction -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-emerald-600 flex flex-col">
+                        <div class="flex flex-wrap justify-between items-center gap-4 mb-4 border-b border-slate-100 pb-3">
+                            <h3 class="text-lg font-bold text-emerald-700 flex items-center gap-2"><i class="fa-solid fa-star"></i> Customer Satisfaction</h3>
+                            <div class="flex gap-2">
+                                <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-3 rounded-md shadow-sm transition-colors flex items-center gap-1" onclick="window.fetchGoogleSheetResponses()">
+                                    <i class="fa-solid fa-rotate"></i> Sync
+                                </button>
+                                <button class="bg-slate-600 hover:bg-slate-700 text-white text-xs font-bold py-2 px-3 rounded-md shadow-sm transition-colors flex items-center gap-1" onclick="window.showCustomerSatisfactionQR()">
+                                    <i class="fa-solid fa-qrcode"></i> QR
+                                </button>
+                            </div>
+                        </div>
+                        <div id="csMedieContainer" class="flex flex-wrap gap-3 justify-center text-center mb-6 min-h-[60px] items-center">
+                            <span class="text-sm text-slate-500 italic"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Connessione a Google Moduli...</span>
+                        </div>
+                        <div class="h-48 w-full mb-4"><canvas id="csChartCanvas"></canvas></div>
+                        <div class="border-t border-dashed border-slate-200 pt-4 mt-auto">
+                            <strong class="text-sm text-slate-700 block mb-3 flex items-center gap-2"><i class="fa-solid fa-comment-dots"></i> Ultime Valutazioni:</strong>
+                            <div class="overflow-x-auto rounded-lg border border-slate-200 custom-scrollbar">
+                                <table id="csUltimeValutazioniTable" class="w-full text-left text-sm whitespace-nowrap">
+                                    <thead class="bg-emerald-600 text-white uppercase text-xs font-semibold">
+                                        <tr><th class="p-3">Data</th><th class="p-3 text-center">Media</th><th class="p-3 w-full">Note Utente</th></tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-200 bg-white">
+                                        <tr><td colspan="3" class="p-4 text-center text-slate-500 italic">In attesa di dati...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REGISTRO NC -->
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-amber-600 flex flex-col mb-6">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                        <h3 class="text-lg font-bold text-amber-700 uppercase flex items-center gap-2"><i class="fa-solid fa-clipboard-list"></i> Registro Non Conformità & Reclami</h3>
+                        <button class="bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-bold py-2 px-3 rounded-md shadow-sm transition-colors flex items-center gap-1" onclick="window.exportNCToCSV()">
+                            <i class="fa-solid fa-file-csv"></i> Esporta Registro
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="md:col-span-2 bg-amber-50 border border-amber-200 p-4 rounded-lg shadow-inner">
+                            <h4 class="text-sm font-bold text-amber-800 mb-3"><i class="fa-solid fa-plus-circle"></i> Inserimento Azione Direzionale</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end mb-3">
+                                <div class="flex flex-col"><label class="text-xs font-bold text-slate-700 mb-1">Tipologia Rilievo</label><select id="ncTipo" class="p-2 border border-slate-300 rounded outline-none text-sm bg-white"><option value="Reclamo Familiare">Reclamo Familiare</option><option value="NC Interna Assistenziale">NC Interna Assistenziale</option><option value="NC Fornitore Esterno">NC Fornitore Esterno</option><option value="Guasto Strutturale">Guasto Strutturale</option></select></div>
+                                <div class="flex flex-col"><label class="text-xs font-bold text-slate-700 mb-1">Data Rilevamento</label><input type="date" id="ncData" class="p-2 border border-slate-300 rounded outline-none text-sm"></div>
+                            </div>
+                            <div class="flex flex-col mb-3"><label class="text-xs font-bold text-slate-700 mb-1">Descrizione Dettagliata</label><input type="text" id="ncDesc" class="p-2 border border-slate-300 rounded outline-none text-sm" placeholder="Es. Ritardo consegna farmaci..."></div>
+                            <div class="flex flex-col mb-4"><label class="text-xs font-bold text-slate-700 mb-1">Azione Correttiva Prevista / Eseguita</label><input type="text" id="ncAzione" class="p-2 border border-slate-300 rounded outline-none text-sm" placeholder="Come si intende risolvere?"></div>
+                            <button class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 px-4 rounded shadow transition-colors flex justify-center items-center gap-2" onclick="window.addNC()"><i class="fa-solid fa-check"></i> Registra Azione nel Sistema</button>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center h-full min-h-[200px]">
+                            <h4 class="text-xs font-bold text-slate-500 uppercase mb-2 text-center">Incidenza Categorie</h4>
+                            <canvas id="ncPieCanvas" class="w-full h-full max-h-[220px]"></canvas>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto rounded-lg border border-slate-200 custom-scrollbar">
+                        <table id="ncTable" class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-amber-600 text-white uppercase text-xs font-semibold">
+                                <tr><th class="p-3">Data</th><th class="p-3">Tipo</th><th class="p-3 w-full">Descrizione</th><th class="p-3 text-center">Stato</th><th class="p-3 text-center">Firma Resp.</th><th class="p-3 text-center">Azioni</th></tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200 bg-white"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- MONITORAGGIO DATI LIVE DAI REPARTI -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <!-- Rischio Clinico -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-rose-600 flex flex-col">
+                        <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
+                            <h3 class="text-base font-bold text-rose-700 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Rischio Clinico (Eventi)</h3>
+                            <button class="bg-rose-100 hover:bg-rose-200 text-rose-700 text-[10px] font-bold py-1 px-2 rounded transition-colors" onclick="window.exportRischioToCSV()">Esporta CSV</button>
+                        </div>
+                        <div id="liveRischioList" class="flex-1 overflow-y-auto custom-scrollbar max-h-60 space-y-2">
+                            <div class="text-center text-slate-400 text-sm py-4 italic">In attesa di dati dai reparti...</div>
+                        </div>
+                    </div>
+                    <!-- Contenzioni -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-orange-600 flex flex-col">
+                        <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
+                            <h3 class="text-base font-bold text-orange-700 flex items-center gap-2"><i class="fa-solid fa-lock"></i> Contenzioni Attive</h3>
+                            <span id="badgeContenzioni" class="bg-orange-100 text-orange-800 text-xs font-bold px-2 py-1 rounded-full">0</span>
+                        </div>
+                        <div id="liveContenzioniList" class="flex-1 overflow-y-auto custom-scrollbar max-h-60 space-y-2">
+                            <div class="text-center text-slate-400 text-sm py-4 italic">In attesa di dati dai reparti...</div>
+                        </div>
+                    </div>
+                    <!-- HACCP -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-cyan-600 flex flex-col">
+                        <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
+                            <h3 class="text-base font-bold text-cyan-700 flex items-center gap-2"><i class="fa-solid fa-snowflake"></i> HACCP Termometria</h3>
+                            <button class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 text-[10px] font-bold py-1 px-2 rounded transition-colors" onclick="window.exportHaccpToCSV()">Esporta CSV</button>
+                        </div>
+                        <div id="liveHaccpList" class="flex-1 overflow-y-auto custom-scrollbar max-h-60 space-y-2">
+                            <div class="text-center text-slate-400 text-sm py-4 italic">In attesa di dati dalla cucina...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA 2: MANUALE ACCREDITAMENTO COMPLETO (UMBRIA) -->
+            <div id="view-accreditamento" class="view-section hidden fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-violet-700 flex items-center gap-2"><i class="fa-solid fa-book-open"></i> Manuale Autovalutazione e Accreditamento</h2>
+                        <p class="text-sm text-slate-500 mt-1 font-medium">Integrazione D.G.R. Umbria: Requisiti Generali e Specifici LIST 05 (Residenziale Anziani)</p>
+                    </div>
+                    <button class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-2.5 px-5 rounded-lg shadow transition-colors flex items-center gap-2" onclick="window.print()"><i class="fa-solid fa-print"></i> Stampa Intero Manuale</button>
+                </div>
+                
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6 flex flex-wrap gap-4 items-center">
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="font-bold text-slate-700 text-sm flex items-center gap-2 mb-1"><i class="fa-solid fa-filter text-violet-500"></i> Filtra per Area Normativa:</label>
+                        <select id="filtroAreaAccreditamento" class="w-full p-2.5 border border-slate-300 rounded-lg outline-none text-sm font-medium bg-slate-50" onchange="window.renderAccreditamentoList()">
+                            <option value="TUTTE">Tutte le Aree (Generali + Specifici LIST 05)</option>
+                            <option value="Generale">Requisiti Generali (Sistema, Risorse, Infrastrutture)</option>
+                            <option value="Specifico LIST 05">Requisiti Specifici LIST 05 (Socio-Sanitario Residenziale)</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="font-bold text-slate-700 text-sm flex items-center gap-2 mb-1"><i class="fa-solid fa-magnifying-glass text-violet-500"></i> Ricerca Testuale Requisito:</label>
+                        <input type="text" id="searchAccreditamento" class="w-full p-2.5 border border-slate-300 rounded-lg outline-none text-sm bg-white" placeholder="Es. PAI, Formazione, Fornitori, Sicurezza..." oninput="window.renderAccreditamentoList()">
+                    </div>
+                </div>
+                
+                <div id="accreditamentoListContainer" class="space-y-6"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODALI DI SISTEMA -->
+    
+    <!-- QR Customer Satisfaction -->
+    <div id="csQrModal" class="fixed inset-0 bg-slate-900/80 z-[10000] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white p-8 rounded-xl max-w-md w-full text-center shadow-2xl border-t-4 border-emerald-600 fade-in">
+            <h3 class="text-xl font-bold text-emerald-700 uppercase mb-2"><i class="fa-solid fa-qrcode mr-2"></i> Questionario Gradimento</h3>
+            <p class="text-sm text-slate-500 mb-6">Link collegato al <b>Google Modulo</b> ufficiale.</p>
+            <div class="mb-6 text-left bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <label class="block text-xs font-bold text-slate-700 mb-2">URL Google Form:</label>
+                <div class="flex gap-2">
+                    <input type="text" id="googleFormUrlInput" value="https://forms.gle/rkDvvEmpupSpnxof6" class="flex-1 p-2 text-sm border border-slate-300 rounded outline-none focus:border-emerald-500">
+                    <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors" onclick="window.saveAndGenerateGoogleFormQR()">Salva</button>
+                </div>
+            </div>
+            <div id="csQrContainer" class="w-48 h-48 mx-auto mb-6 flex justify-center items-center border border-slate-200 rounded-lg p-2 bg-white shadow-sm"></div>
+            <div class="flex gap-3">
+                <button class="flex-1 bg-slate-700 hover:bg-slate-800 text-white font-bold py-2.5 px-4 rounded-lg transition-colors flex justify-center items-center gap-2" onclick="window.printCSQrCode()"><i class="fa-solid fa-print"></i> Stampa</button>
+                <button class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 px-4 rounded-lg transition-colors" onclick="document.getElementById('csQrModal').classList.add('hidden'); document.getElementById('csQrModal').classList.remove('flex');">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firma Chiusura NC -->
+    <div id="signatureModal" class="fixed inset-0 bg-slate-900/80 z-[10040] hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-xl max-w-md w-full text-center shadow-2xl border-t-4 border-emerald-600 fade-in">
+            <h3 class="text-xl font-extrabold text-slate-800 mb-2"><i class="fa-solid fa-signature text-emerald-500 mr-2"></i> Firma Chiusura NC</h3>
+            <p class="text-sm text-slate-600 mb-4">Traccia la firma del Responsabile per validare e archiviare il caso.</p>
+            <div class="mb-4 flex justify-center"><canvas id="signaturePad"></canvas></div>
+            <div class="flex gap-3 mt-4">
+                <button class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg transition-colors" onclick="window.closeSignatureModal()">Annulla</button>
+                <button class="flex-1 bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold py-2 px-4 rounded-lg transition-colors" onclick="window.clearSignature()">Pulisci</button>
+                <button class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow transition-colors" onclick="window.confirmChiudiNC()">Firma e Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Editor Documentale Avanzato -->
+    <div id="docEditorModal" class="fixed inset-0 bg-slate-900/90 z-[10050] hidden flex-col items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl w-full max-w-5xl h-[95vh] flex flex-col shadow-2xl overflow-hidden fade-in">
+            
+            <div class="bg-blue-600 text-white p-4 flex justify-between items-center flex-shrink-0">
+                <h3 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-file-signature"></i> Editor Documento Qualità</h3>
+                <button class="text-white hover:text-blue-200" onclick="window.chiudiEditorDocumento()"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            </div>
+            
+            <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap gap-4 items-center flex-shrink-0">
+                <div class="flex-1 min-w-[250px]">
+                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Titolo Documento / Procedura</label>
+                    <input type="text" id="docEditorTitle" class="w-full p-2 border border-slate-300 rounded font-bold text-slate-800" placeholder="Nome documento...">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Data Creazione</label>
+                    <input type="date" id="docEditorDate" class="p-2 border border-slate-300 rounded text-slate-800 bg-white">
+                </div>
+                <div class="hidden"><input type="hidden" id="docEditorReqId"><input type="hidden" id="docEditorDocId"></div>
+            </div>
+            
+            <div class="flex-1 p-6 bg-slate-200 overflow-y-auto custom-scrollbar flex flex-col">
+                <!-- Simulazione foglio A4 -->
+                <textarea id="docEditorContent" class="flex-1 w-full max-w-4xl mx-auto p-10 border border-slate-300 shadow-lg bg-white resize-none outline-none leading-relaxed text-slate-800 custom-scrollbar" style="min-height: 800px; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11pt;" placeholder="Redigi qui il contenuto della procedura operativa, l'organigramma o la relazione. Questo testo verrà formattato su carta intestata durante la stampa."></textarea>
+            </div>
+            
+            <div class="bg-slate-100 p-4 border-t border-slate-300 flex justify-between items-center flex-shrink-0">
+                <button class="bg-slate-300 hover:bg-slate-400 text-slate-700 font-bold py-2.5 px-6 rounded-lg transition-colors" onclick="window.chiudiEditorDocumento()">Chiudi Senza Salvare</button>
+                <div class="flex gap-3">
+                    <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-lg shadow transition-colors flex items-center gap-2" onclick="window.salvaDocumentoEditor()"><i class="fa-solid fa-cloud-arrow-up"></i> Salva Documento nel Database</button>
+                    <button class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-2.5 px-6 rounded-lg shadow transition-colors flex items-center gap-2" onclick="window.stampaDocumentoEditor()"><i class="fa-solid fa-print"></i> Stampa Formale (Carta Intestata)</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT & FIREBASE CORE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+        import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, onSnapshot, doc, updateDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Configurazione DB
+        const firebaseConfig = { apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", authDomain: "gestione-visite-b445b.firebaseapp.com", projectId: "gestione-visite-b445b" };
+        const app = initializeApp(firebaseConfig);
+        const appCheck = initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), isTokenAutoRefreshEnabled: true });
+        const db = initializeFirestore(app, { localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()}) });
+
+        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQXlj_-C7qIApaHNIGR_tWw1AmH8PhVB6kCi8To1te7mi18FNenm2JSVtfDevpIs4Krr51RueUCLUHh/pub?gid=1077587815&single=true&output=csv";
+        
+        window.getTodayString = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
+        window.formatDateSafe = (d) => { if (!d) return '-'; if (d.includes('-')) return d.split('-').reverse().join('/'); return d; };
+        window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
+        window.showToast = (m) => { const c = document.getElementById('toast-container'); const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<i class="fa-solid fa-circle-info text-blue-300 text-lg"></i> <span>${m}</span>`; c.appendChild(t); setTimeout(() => t.classList.add('show'), 10); setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000); };
+        
+        window.dbOperatori = []; window.activeOperator = ""; window.selectedOpData = null; window.isAdmin = false;
+        window.dbOspiti = []; window.dbClinica = {}; window.countEvidenzeGlobale = {}; window.ncListData = [];
+        window.dbRischio = []; window.dbContenzioni = []; window.dbHaccp = [];
+        window.accreditamentoDocs = {}; // Mappa cache dei documenti testuali per l'editor
+        
+        window.csChartInstance = null; window.ncChartInstance = null;
+        window.globalCsatAvg = 0; window.globalCsatCount = 0;
+
+        // --- DASHBOARD CHARTS E GOOGLE SHEETS (CSAT) ---
+        window.renderCSChart = (labels, dataPoints) => { const ctx = document.getElementById('csChartCanvas').getContext('2d'); if(window.csChartInstance) window.csChartInstance.destroy(); window.csChartInstance = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: 'Media (1-10)', data: dataPoints, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.1)', borderWidth: 3, tension: 0.3, fill: true, pointRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 10 } } } }); };
+        window.renderNCPieChart = (dataCounts) => { const ctx = document.getElementById('ncPieCanvas').getContext('2d'); if(window.ncChartInstance) window.ncChartInstance.destroy(); const labels = Object.keys(dataCounts); const data = Object.values(dataCounts); if(data.reduce((a,b)=>a+b,0) === 0) return; window.ncChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#f59e0b', '#3b82f6', '#ef4444', '#8b5cf6'], borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 11} } } }, cutout: '65%' } }); };
+
+        function parseCSV(text) { let lines = text.trim().split(/\r?\n/); return lines.map(line => { let row = []; let inQuotes = false; let entry = ''; for (let i = 0; i < line.length; i++) { let char = line[i]; if (char === '"') { if (inQuotes && line[i+1] === '"') { entry += '"'; i++; } else { inQuotes = !inQuotes; } } else if (char === ',' && !inQuotes) { row.push(entry.trim()); entry = ''; } else { entry += char; } } row.push(entry.trim()); return row; }); }
+
+        window.fetchGoogleSheetResponses = async () => {
+            const tableBody = document.querySelector('#csUltimeValutazioniTable tbody'); const mCont = document.getElementById('csMedieContainer');
+            try {
+                const res = await fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(GOOGLE_SHEET_CSV_URL));
+                if (!res.ok) throw new Error("Connessione fallita."); const csvData = await res.text();
+                const rows = parseCSV(csvData); if (!rows || rows.length <= 1) return tableBody.innerHTML = '<tr><td colspan="3" class="p-4 text-center">Nessuna compilazione.</td></tr>';
+                const headers = rows[0]; const dataRows = rows.slice(1);
+                let sumScores = {}; let countScores = {}; let parsedSurveys = []; let chartLabels = []; let chartData = [];
+                dataRows.forEach(row => {
+                    let timestamp = row[0] || "-"; let numericVals = []; let commentsArr = [];
+                    for (let colIdx = 1; colIdx < row.length; colIdx++) {
+                        let headerName = headers[colIdx] || `Domanda ${colIdx}`; let num = parseFloat((row[colIdx] || "").trim());
+                        if (!isNaN(num) && num > 0 && num <= 10) { numericVals.push(num); sumScores[headerName] = (sumScores[headerName] || 0) + num; countScores[headerName] = (countScores[headerName] || 0) + 1; } 
+                        else if ((row[colIdx]||"").trim().length > 1) { commentsArr.push((row[colIdx]||"").trim()); }
+                    }
+                    let avgScore = numericVals.length > 0 ? (numericVals.reduce((a, b) => a + b, 0) / numericVals.length).toFixed(1) : null;
+                    if(avgScore) { chartLabels.push(timestamp.split(' ')[0]); chartData.push(parseFloat(avgScore)); parsedSurveys.push({ timestamp: timestamp, media: avgScore, commento: commentsArr.join("; ") || "-" }); }
+                });
+                
+                let totalSum = 0; let totalCount = 0;
+                if (mCont) {
+                    let summaryCardsHtml = "";
+                    Object.keys(sumScores).forEach(qName => { let qAvg = (sumScores[qName] / countScores[qName]).toFixed(1); totalSum += sumScores[qName]; totalCount += countScores[qName]; summaryCardsHtml += `<div class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-3 text-center shadow-sm"><strong class="text-xs text-slate-500">${qName.substring(0, 16)}</strong><br><span class="text-2xl font-bold">${qAvg}</span></div>`; });
+                    let globalAvg = totalCount > 0 ? (totalSum / totalCount).toFixed(1) : "-";
+                    window.globalCsatAvg = globalAvg; window.globalCsatCount = parsedSurveys.length;
+                    summaryCardsHtml += `<div class="flex-1 bg-emerald-50 border-2 border-emerald-500 rounded-lg p-3 text-center shadow-md"><strong class="text-xs text-emerald-700">MEDIA GLOBALE</strong><br><span class="text-2xl font-black text-emerald-600">${globalAvg}</span></div>`;
+                    mCont.innerHTML = summaryCardsHtml;
+                }
+                if(chartLabels.length > 0) window.renderCSChart(chartLabels.slice(-15), chartData.slice(-15));
+                if (tableBody) { tableBody.innerHTML = ""; parsedSurveys.slice(-3).reverse().forEach(item => { tableBody.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-3">${item.timestamp}</td><td class="p-3 text-center"><span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-bold">${item.media}</span></td><td class="p-3 text-xs text-slate-500">${item.commento}</td></tr>`; }); }
+                window.aggiornaEvidenzeLive(); // Trigger per aggiornare il box CSAT nell'accreditamento
+            } catch (err) { if(tableBody) tableBody.innerHTML = '<tr><td colspan="3" class="text-red-500 text-center p-4">Errore lettura foglio Google.</td></tr>'; }
+        };
+
+        window.showCustomerSatisfactionQR = () => { document.getElementById('googleFormUrlInput').value = localStorage.getItem('nvs_google_form_url') || "https://forms.gle/rkDvvEmpupSpnxof6"; window.renderQR(document.getElementById('googleFormUrlInput').value); document.getElementById('csQrModal').classList.remove('hidden'); document.getElementById('csQrModal').classList.add('flex'); };
+        window.saveAndGenerateGoogleFormQR = () => { const url = document.getElementById('googleFormUrlInput').value.trim(); localStorage.setItem('nvs_google_form_url', url); window.renderQR(url); };
+        window.renderQR = (url) => { document.getElementById('csQrContainer').innerHTML = ''; new QRCode(document.getElementById('csQrContainer'), { text: url, width: 170, height: 170 }); };
+        window.printCSQrCode = () => { const qrCanvas = document.querySelector('#csQrContainer canvas'); if(!qrCanvas) return; const printWin = window.open('', '_blank'); printWin.document.write(`<html><head><style>body { font-family: sans-serif; text-align: center; padding: 40px; }</style></head><body onload="window.print(); window.close();"><h2>Questionario Gradimento</h2><img src="${qrCanvas.toDataURL()}"></body></html>`); printWin.document.close(); };
+
+        // --- UI, LOGIN E NAVIGAZIONE ---
+        window.switchView = (viewId, tabElement, activeColorClass = 'text-amber-600', activeBorderClass = 'border-amber-600') => {
+            document.querySelectorAll('.view-section').forEach(el => { el.classList.add('hidden'); el.classList.remove('block'); });
+            document.querySelectorAll('.menu-tab').forEach(el => { el.className = 'menu-tab px-5 py-2.5 bg-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 border-t-4 border-transparent rounded-t-lg font-semibold text-sm transition-colors flex items-center gap-2 whitespace-nowrap'; });
+            document.getElementById(viewId).classList.remove('hidden'); document.getElementById(viewId).classList.add('block');
+            tabElement.className = `menu-tab active px-5 py-2.5 bg-white ${activeColorClass} border-t-4 ${activeBorderClass} rounded-t-lg font-bold text-sm shadow-sm z-10 transition-colors flex items-center gap-2 whitespace-nowrap`;
+        };
+
+        window.performLogin = () => { 
+            const inputPin = document.getElementById('loginPinInput').value;
+            if (window.selectedOpData && inputPin === window.selectedOpData.pin) {
+                window.activeOperator = window.selectedOpData.name;
+                window.isAdmin = window.activeOperator.toLowerCase().includes('direzione') || window.activeOperator.toLowerCase().includes('admin');
+                document.getElementById('currentOpBadge').innerHTML = `👤 ${window.activeOperator}`;
+                document.getElementById('loginScreen').style.opacity = '0';
+                setTimeout(() => { document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('appScreen').classList.remove('hidden'); document.getElementById('appScreen').classList.add('flex'); window.renderAccreditamentoList(); window.fetchGoogleSheetResponses(); }, 400);
+            } else window.showToast("❌ PIN errato!");
+        };
+
+        window.selectLoginProfile = (n, pin) => { document.getElementById('loginProfilesContainer').classList.add('hidden'); document.getElementById('loginPinArea').classList.remove('hidden'); document.getElementById('selectedProfileLabel').innerText = `Ciao ${n}, inserisci il PIN:`; window.selectedOpData = { name: n, pin: pin }; setTimeout(() => document.getElementById('loginPinInput').focus(), 100); };
+        window.resetLoginSelection = () => { document.getElementById('loginPinArea').classList.add('hidden'); document.getElementById('loginProfilesContainer').classList.remove('hidden'); document.getElementById('loginProfilesContainer').classList.add('flex'); document.getElementById('loginPinInput').value = ''; window.selectedOpData = null; };
+        window.logout = () => { window.location.reload(); };
+
+        window.onload = () => {
+            if(document.getElementById('ncData')) document.getElementById('ncData').value = window.getTodayString();
+            const canvas = document.getElementById('signaturePad'); if(canvas) window.signaturePadInstance = new SignaturePad(canvas, { penColor: "rgb(15, 23, 42)", backgroundColor: "rgb(248, 250, 252)" });
+        };
+
+        // --- NON CONFORMITA' E FIRMA ---
+        window.addNC = async () => {
+            const t = document.getElementById('ncTipo').value; const d = document.getElementById('ncData').value;
+            const desc = document.getElementById('ncDesc').value.trim(); const ac = document.getElementById('ncAzione').value.trim();
+            if(!d || !desc) return window.showToast("⚠️ Dati incompleti");
+            await addDoc(collection(db, "qualita_nc"), { tipo: t, data: d, desc: desc, ac: ac, stato: "APERTA", op: window.activeOperator });
+            document.getElementById('ncDesc').value = ''; document.getElementById('ncAzione').value = ''; window.showToast("✅ NC registrata");
+        };
+
+        let currentNCToClose = null;
+        window.openSignatureModal = (id) => { currentNCToClose = id; document.getElementById('signatureModal').classList.remove('hidden'); document.getElementById('signatureModal').classList.add('flex'); const canvas = document.getElementById('signaturePad'); const ratio = Math.max(window.devicePixelRatio || 1, 1); canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio; canvas.getContext("2d").scale(ratio, ratio); window.signaturePadInstance.clear(); };
+        window.closeSignatureModal = () => { currentNCToClose = null; document.getElementById('signatureModal').classList.add('hidden'); document.getElementById('signatureModal').classList.remove('flex'); };
+        window.clearSignature = () => { window.signaturePadInstance.clear(); };
+        window.confirmChiudiNC = async () => { if(window.signaturePadInstance.isEmpty()) return window.showToast("⚠️ Firma richiesta"); if(!currentNCToClose) return; const firmaB64 = window.signaturePadInstance.toDataURL(); await updateDoc(doc(db, "qualita_nc", currentNCToClose), { stato: "CHIUSA", dataChiusura: window.getTimestamp(), firmaResp: firmaB64 }); window.showToast("✅ NC Archiviata"); window.closeSignatureModal(); };
+        window.exportNCToCSV = () => { if(window.ncListData.length === 0) return; let csvContent = "Data,Tipo,Descrizione,Azione,Stato,Operatore\n"; window.ncListData.forEach(n => { csvContent += `${n.data},"${n.tipo}","${n.desc}","${n.ac}",${n.stato},"${n.op}"\n`; }); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob)); link.setAttribute("download", `NC_${window.getTodayString()}.csv`); link.click(); };
+
+        // --- ASCOLTATORI FIREBASE & WIDGET LIVE REPARTI ---
+        onSnapshot(collection(db, "operatori"), snap => { 
+            const lc = document.getElementById('loginProfilesContainer'); if (lc) lc.innerHTML = ''; 
+            snap.forEach(d => { let op = {id:d.id, ...d.data()}; if (op.role === 'admin') { let b = document.createElement('div'); b.className = 'flex flex-col items-center p-3 border border-slate-200 rounded-lg bg-slate-50 cursor-pointer hover:border-amber-500 w-24 transition-colors'; b.innerHTML = `<div class="w-12 h-12 rounded-full bg-teal-600 text-white flex items-center justify-center text-xl font-bold mb-2">👤</div><span class="text-xs font-bold text-slate-700 text-center">${op.name}</span>`; b.onclick = () => window.selectLoginProfile(op.name, op.pin); lc.appendChild(b); } });
+        });
+
+        onSnapshot(collection(db, "ospiti"), snap => { window.dbOspiti = snap.docs.map(d=>d.data()); window.aggiornaEvidenzeLive(); });
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => { window.dbClinica = {}; snap.forEach(d => window.dbClinica[d.id] = d.data()); window.aggiornaEvidenzeLive(); });
+
+        onSnapshot(collection(db, "qualita_nc"), snap => { 
+            const tb = document.querySelector('#ncTable tbody'); window.ncListData = []; let statsCounts = {};
+            if(tb) {
+                tb.innerHTML = '';
+                snap.forEach(d => {
+                    let n = {id:d.id, ...d.data()}; window.ncListData.push(n); statsCounts[n.tipo] = (statsCounts[n.tipo] || 0) + 1;
+                    let isAperta = n.stato === 'APERTA';
+                    let st = isAperta ? '<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-bold">APERTA</span>' : '<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">CHIUSA</span>';
+                    let firmaBox = isAperta ? '-' : `<img src="${n.firmaResp}" class="h-6 mx-auto">`;
+                    let btn = isAperta ? (window.isAdmin ? `<button class="bg-emerald-600 hover:bg-emerald-700 text-white py-1 px-3 rounded text-xs font-bold transition-colors" onclick="window.openSignatureModal('${n.id}')">Archivia</button>` : 'Solo Dir.') : 'Risolto';
+                    tb.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-3">${window.formatDateSafe(n.data)}</td><td class="p-3">${n.tipo}</td><td class="p-3">${n.desc}</td><td class="p-3 text-center">${st}</td><td class="p-3 text-center">${firmaBox}</td><td class="p-3 text-center">${btn}</td></tr>`;
+                });
+                window.renderNCPieChart(statsCounts);
+            }
+            window.aggiornaEvidenzeLive();
+        });
+
+        onSnapshot(collection(db, "rischio"), snap => {
+            window.dbRischio = snap.docs.map(d=>d.data()).sort((a,b)=>new Date(b.data)-new Date(a.data));
+            const list = document.getElementById('liveRischioList');
+            if(list) {
+                list.innerHTML = '';
+                if(window.dbRischio.length === 0) list.innerHTML = '<div class="text-center text-slate-400 text-sm py-4 italic">Nessun evento registrato.</div>';
+                window.dbRischio.slice(0,10).forEach(r => { list.innerHTML += `<div class="bg-slate-50 border border-slate-200 p-2 rounded text-sm"><div class="flex justify-between"><strong class="text-rose-700">${r.tipo}</strong><span class="text-xs text-slate-500">${window.formatDateSafe(r.data)}</span></div><div class="text-slate-700 mt-1">${r.din}</div><div class="text-xs text-slate-400 mt-1">Op: ${r.op}</div></div>`; });
+            }
+            window.aggiornaEvidenzeLive();
+        });
+        window.exportRischioToCSV = () => { let csv = "Data,Tipo,Dinamica,Operatore\n"; window.dbRischio.forEach(r => csv += `${r.data},"${r.tipo}","${r.din}","${r.op}"\n`); const b = new Blob([csv], {type: 'text/csv'}); const l = document.createElement("a"); l.href = URL.createObjectURL(b); l.download = "Rischio_Clinico.csv"; l.click(); };
+
+        onSnapshot(collection(db, "contenzioni"), snap => {
+            window.dbContenzioni = snap.docs.map(d=>d.data());
+            const list = document.getElementById('liveContenzioniList'); const badge = document.getElementById('badgeContenzioni');
+            let attive = window.dbContenzioni.filter(c => c.stato === 'ATTIVA');
+            if(badge) badge.innerText = attive.length;
+            if(list) {
+                list.innerHTML = '';
+                if(attive.length === 0) list.innerHTML = '<div class="text-center text-slate-400 text-sm py-4 italic">Nessuna contenzione attiva.</div>';
+                attive.forEach(c => { list.innerHTML += `<div class="bg-slate-50 border border-slate-200 p-2 rounded text-sm"><div class="flex justify-between"><strong class="text-orange-700">${c.ospite}</strong><span class="text-xs text-slate-500">${window.formatDateSafe(c.dataInizio)}</span></div><div class="text-slate-700 mt-1">Presidio: ${c.tipo}</div><div class="text-xs text-slate-500 mt-1">Motivo: ${c.motivo}</div></div>`; });
+            }
+            window.aggiornaEvidenzeLive();
+        });
+
+        onSnapshot(collection(db, "haccp_temperature"), snap => {
+            window.dbHaccp = snap.docs.map(d=>d.data()).sort((a,b)=>new Date(b.data.replace(' alle ','T'))-new Date(a.data.replace(' alle ','T')));
+            const list = document.getElementById('liveHaccpList');
+            if(list) {
+                list.innerHTML = '';
+                if(window.dbHaccp.length === 0) list.innerHTML = '<div class="text-center text-slate-400 text-sm py-4 italic">Nessun controllo registrato.</div>';
+                window.dbHaccp.slice(0,10).forEach(h => { let tempColor = parseFloat(h.temp) > 5 ? 'text-red-600 font-bold' : 'text-cyan-700'; list.innerHTML += `<div class="bg-slate-50 border border-slate-200 p-2 rounded text-sm flex justify-between items-center"><div><strong class="text-slate-700">${h.frigo}</strong><div class="text-xs text-slate-400">${h.data}</div></div><div class="text-lg ${tempColor}">${h.temp}°C</div></div>`; });
+            }
+            window.aggiornaEvidenzeLive();
+        });
+        window.exportHaccpToCSV = () => { let csv = "Data,Frigo/Cella,Temperatura,Operatore\n"; window.dbHaccp.forEach(h => csv += `${h.data},"${h.frigo}",${h.temp},"${h.op}"\n`); const b = new Blob([csv], {type: 'text/csv'}); const l = document.createElement("a"); l.href = URL.createObjectURL(b); l.download = "HACCP_Temperature.csv"; l.click(); };
+
+        // --- MAPPA ESTESA REQUISITI ACCREDITAMENTO (DA CHECKLIST UFFICIALE REGIONALE) ---
+        const requisitiAccreditamento = [
+            // Criterio 0: Sistema e Processi
+            { id: "REQ_0_1_01", area: "Generale", titolo: "#0.1/01 - Campo di Applicazione del Sistema", descrizione: "Definizione documentata del campo di applicazione.", templateOpzioni: ["Manuale della Qualità - Scopo"], testoDefault: "L'organizzazione definisce in modo documentato il perimetro entro il quale sono applicati i requisiti dell'accreditamento istituzionale." },
+            { id: "REQ_0_2_01", area: "Generale", titolo: "#0.2/01 - Mappatura Processi e Fornitori Esterni", descrizione: "Mappatura dei processi manageriali, clinici e assistenziali e controllo fornitori esterni.", templateOpzioni: ["Albo Fornitori Qualificati", "Scheda Valutazione Fornitore"], testoDefault: "Tutti i processi e i servizi esternalizzati sono mappati. I fornitori vengono valutati periodicamente per garantire gli standard attesi." },
+            // Criterio 1: Pianificazione e Obiettivi
+            { id: "REQ_1_1_01", area: "Generale", titolo: "#1.1/01 - Politica e Obiettivi per la Qualità", descrizione: "L'organizzazione deve stabilire mission, vision e obiettivi per l'appropriatezza e l'esito.", templateOpzioni: ["Piano Strategico Aziendale", "Documento Politica per la Qualità"], testoDefault: "La Direzione stabilisce la politica della qualità orientata al soddisfacimento dei bisogni socio-sanitari e fissa gli obiettivi annuali." },
+            { id: "REQ_1_3_01", area: "Generale", titolo: "#1.3/01 - Organigramma e Sistema di Delega", descrizione: "Definizione documentata di responsabilità, autorità e deleghe.", templateOpzioni: ["Organigramma Aziendale", "Lettera di Incarico / Delega"], testoDefault: "L'organigramma aziendale chiarisce funzioni, responsabilità cliniche/assistenziali e le deleghe per la gestione della sicurezza." },
+            { id: "REQ_1_4_01", area: "Generale", liveQuery: "SISTEMI", titolo: "#1.4/01 - Sistemi Informativi e Tracciabilità", descrizione: "Sistema informativo che garantisca la sicurezza nell'accesso e la qualità dei dati.", templateOpzioni: ["Piano Gestione Dati e Privacy"], testoDefault: "La struttura adotta il software gestionale NVS per la completa tracciabilità informatizzata dei dati clinico-assistenziali." },
+            { id: "REQ_1_5_07", area: "Generale", titolo: "#1.5/07 - Riesame della Direzione", descrizione: "Riesame periodico (almeno annuale) sui 10 input obbligatori (audit, reclami, ecc.).", templateOpzioni: ["Verbale Riesame della Direzione"], testoDefault: "La Direzione effettua con periodicità annuale il Riesame del Sistema Qualità valutando gli audit interni, gli indicatori e i reclami." },
+            { id: "REQ_1_6_01", area: "Generale", liveQuery: "NC", titolo: "#1.6/01 - Gestione Disservizi e Non Conformità", descrizione: "Gestione di disservizi, reclami e non conformità per l'adozione di azioni correttive.", templateOpzioni: ["Procedura Gestione Reclami e NC"], testoDefault: "I disservizi e i reclami sono intercettati e registrati nel software gestionale (Modulo NC), che ne traccia lo stato e la validazione." },
+            // Criterio 2: Prestazioni e Servizi (LIST 05)
+            { id: "REQ_2_1_01", area: "Generale", titolo: "#2.1/01 - Carta dei Servizi", descrizione: "Carta dei servizi aggiornata e disponibile all'utenza sui criteri di accesso e gli standard.", templateOpzioni: ["Carta dei Servizi Aggiornata"], testoDefault: "La Carta dei Servizi definisce in modo trasparente gli standard di erogazione, i criteri di accesso e i meccanismi di tutela." },
+            { id: "REQ_2_2_01_LIST05", area: "Specifico LIST 05", liveQuery: "PAI", titolo: "#2.2/01-L05 - Presa in Carico e P.A.I. Multidisciplinare", descrizione: "Valutazione UVM, PAI, BINA, piano nutrizionale e raccordo MMG per anziani.", templateOpzioni: ["Protocollo Stesura P.A.I.", "Gestione Nutrizione e Disfagia"], testoDefault: "All'ingresso viene compilata la valutazione multidimensionale BINA e steso il PAI multidisciplinare tramite il sistema clinico informatizzato." },
+            { id: "REQ_2_3_01_LIST05", area: "Specifico LIST 05", titolo: "#2.3/01-L05 - Continuità Assistenziale", descrizione: "Trasferimenti sicuri, lettere di dimissione e programmi di continuità a domicilio/ospedale.", templateOpzioni: ["Procedura Trasferimento e Dimissione"], testoDefault: "La struttura assicura un passaggio di consegne e di informazioni cliniche strutturato (lettera di dimissione generata dal gestionale) in caso di invio in pronto soccorso o rientro a domicilio." },
+            { id: "REQ_2_5_01", area: "Specifico LIST 05", liveQuery: "FASCICOLO", titolo: "#2.5/01-L05 - Fascicolo dell'Ospite", descrizione: "Fascicolo digitale, consensi e riconciliazione farmacologica (transition).", templateOpzioni: ["Consenso Informato Trattamenti", "Procedura Riconciliazione Farmaci"], testoDefault: "Il fascicolo dell'ospite è integralmente informatizzato, include il consenso privacy firmato in digitale e traccia tutte le somministrazioni terapeutiche." },
+            // Criterio 3: Infrastrutture e Ambiente
+            { id: "REQ_3_1_01", area: "Generale", liveQuery: "HACCP", titolo: "#3.1/01 - Sicurezza Infrastrutture e Rischio Ambientale", descrizione: "Manutenzioni, rischio ambientale e igiene degli alimenti (HACCP).", templateOpzioni: ["Piano Manutenzioni Ordinario"], testoDefault: "Esiste un programma rigoroso di prevenzione del rischio ambientale e strutturale che comprende anche il monitoraggio digitalizzato delle temperature HACCP." },
+            { id: "REQ_3_2_01", area: "Generale", titolo: "#3.2/01 - Gestione Apparecchiature Biomediche", descrizione: "Inventario, manutenzione e collaudi delle apparecchiature elettromedicali.", templateOpzioni: ["Inventario Elettromedicali", "Piano Verifiche Sicurezza Elettrica"], testoDefault: "Tutte le apparecchiature (sollevatori, concentratori O2) sono inventariate e sottoposte a verifiche periodiche di sicurezza elettrica." },
+            // Criterio 4: Competenze
+            { id: "REQ_4_1_01", area: "Generale", titolo: "#4.1/01 - Piano Formativo e ECM", descrizione: "Piano annuale di formazione e aggiornamento delle competenze del personale (ECM).", templateOpzioni: ["Piano Formativo Annuale", "Registro Presenze Formazione"], testoDefault: "Il fabbisogno formativo viene rilevato annualmente; è garantito l'assolvimento dei debiti ECM per le professioni sanitarie." },
+            // Criterio 5: Comunicazione e Ascolto
+            { id: "REQ_5_5_01", area: "Generale", liveQuery: "CSAT", titolo: "#5.5/01 - Customer Satisfaction", descrizione: "Valutazione dell'esperienza degli utenti e famigliari tramite indagini e ascolto attivo.", templateOpzioni: ["Report Customer Satisfaction"], testoDefault: "Viene somministrato periodicamente un questionario di gradimento (tramite Google Moduli/QR Code) i cui esiti vengono discussi in sede di Riesame Direzionale." },
+            // Criterio 6: Sicurezza e Rischio
+            { id: "REQ_6_1_01", area: "Generale", titolo: "#6.1/01 - Pratica Clinica EBM", descrizione: "Erogazione delle prestazioni secondo la Evidence Based Medicine e le Raccomandazioni ministeriali.", templateOpzioni: ["Adozione Linee Guida Cliniche"], testoDefault: "I professionisti adottano protocolli clinici e assistenziali basati su evidenze scientifiche validate e Linee Guida nazionali/regionali." },
+            { id: "REQ_6_2_01", area: "Generale", liveQuery: "ICA", titolo: "#6.2/01 - Gestione Rischio e Prevenzione ICA", descrizione: "Controllo delle Infezioni Correlate all'Assistenza (ICA) e rischio biologico.", templateOpzioni: ["Protocollo Prevenzione ICA e Isolamento"], testoDefault: "Il gestionale traccia costantemente lo stato infettivo dei pazienti (ICA). Sono adottati rigorosi protocolli di isolamento e sanificazione." },
+            { id: "REQ_6_3_01", area: "Generale", liveQuery: "RISCHIO", titolo: "#6.3/01 - Incident Reporting e Rischio Clinico", descrizione: "Gestione proattiva: FMEA annuale e registro degli eventi avversi (cadute, near miss).", templateOpzioni: ["Matrice Valutazione Rischi (FMEA)"], testoDefault: "Gli eventi avversi, come le cadute accidentali, vengono segnalati dagli operatori sul tablet e archiviati in tempo reale nel registro direzionale per le analisi." },
+            // Criterio 8: Umanizzazione
+            { id: "REQ_8_1_01", area: "Generale", liveQuery: "CONTENZIONI", titolo: "#8.1/01 - Umanizzazione e Personalizzazione dell'Assistenza", descrizione: "Centralità del paziente, gestione delle fragilità e uso corretto/limitato dei mezzi di contenzione fisica.", templateOpzioni: ["Protocollo Limitazione Contenzioni"], testoDefault: "La struttura promuove la personalizzazione delle cure e la riduzione al minimo indispensabile dei mezzi di contenzione fisica, tracciati rigorosamente a livello medico e infermieristico." }
+        ];
+
+        // --- MOTORE DELLE LIVE QUERIES (COLLEGAMENTO GESTIONALE -> ACCREDITAMENTO) ---
+        window.aggiornaEvidenzeLive = () => {
+            requisitiAccreditamento.forEach(req => {
+                if(!req.liveQuery) return;
+                const container = document.getElementById(`live_data_${req.id}`);
+                if(!container) return;
+                let html = '';
+
+                if(req.liveQuery === "PAI") {
+                    let total = 0; let valid = 0; let expired = 0;
+                    Object.values(window.dbClinica).forEach(c => {
+                        if(c.paiDataRevisione) {
+                            total++; let diff = new Date(c.paiDataRevisione) - new Date();
+                            if(diff > 0) valid++; else expired++;
+                        }
+                    });
+                    let ptCount = window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione).length;
+                    html = `<div class="bg-emerald-50 border border-emerald-200 p-3 rounded-lg flex items-center gap-3 shadow-sm"><i class="fa-solid fa-server text-emerald-500 text-2xl"></i><div><strong class="text-emerald-800 text-sm block uppercase tracking-wide">Evidenza Live dal Gestionale Reparti:</strong><span class="text-sm text-emerald-700">Pazienti attivi: ${ptCount} | PAI tracciati: ${total} (<span class="font-bold">${valid} in corso di validità</span>, <span class="${expired>0?'text-red-600 font-bold':'text-emerald-700'}">${expired} scaduti</span>).</span></div></div>`;
+                }
+                else if(req.liveQuery === "RISCHIO") {
+                    let c = window.dbRischio.length;
+                    let c_cadute = window.dbRischio.filter(x=>x.tipo==='Caduta Accidentale').length;
+                    let c_terapia = window.dbRischio.filter(x=>x.tipo==='Errore Terapia').length;
+                    html = `<div class="bg-rose-50 border border-rose-200 p-3 rounded-lg flex items-center gap-3 shadow-sm"><i class="fa-solid fa-server text-rose-500 text-2xl"></i><div><strong class="text-rose-800 text-sm block uppercase tracking-wide">Evidenza Live dal Gestionale Reparti:</strong><span class="text-sm text-rose-700">Eventi Avversi Totali Registrati nell'anno: ${c} (di cui: <span class="font-bold">${c_cadute} Cadute</span>, <span class="font-bold">${c_terapia} Errori Terapia</span>).</span></div></div>`;
+                }
+                else if(req.liveQuery === "CONTENZIONI") {
+                    let attive = window.dbContenzioni.filter(c=>c.stato==='ATTIVA').length;
+                    html = `<div class="bg-orange-50 border border-orange-200 p-3 rounded-lg flex items-center gap-3 shadow-sm"><i class="fa-solid fa-server text-orange-500 text-2xl"></i><div><strong class="text-orange-800 text-sm block uppercase tracking-wide">Evidenza Live dal Gestionale Reparti:</strong><span class="text-sm text-orange-700">Pazienti attualmente sottoposti a misure di contenzione fisica prescritte: <span class="font-bold text-lg">${attive}</span>.</span></div></div>`;
+                }
+                else if(req.liveQuery === "ICA") {
+                    let infetti = 0; Object.values(window.dbClinica).forEach(c => { if(c.infezione && c.infezione.trim()!=='') infetti++; });
+                    html = `<div class="bg-violet-50 border border-violet-200 p-3 rounded-lg flex items-center gap-3 shadow-sm"><i class="fa-solid fa-server text-violet-500 text-2xl"></i><div><strong class="text-violet-800 text-sm block uppercase tracking-wide">Evidenza Live dal Gestionale Reparti:</strong><span class="text-sm text-violet-700">Ospiti attualmente in regime di isolamento / con infezione in atto tracciata: <span class="font-bold text-lg">${infetti}</span>.</span></div></div>`;
+                }
+                else if(req.liveQuery === "FASCICOLO") {
+                    let privacyOk = 0; let totalP = window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione).length;
+                    window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione).forEach(g => { if(g.consensi && g.consensi.privacy && g.consensi.firmaB64) privacyOk++; });
+                    html = `<div class="bg-blue-50 border border-blue-200 p-3 rounded-lg flex items-center gap-3 shadow-sm"><i class="fa-solid fa-server text-blue-500 text-2xl"></i><div><strong class="text-blue-800 text-sm block uppercase tracking-wide">Evidenza Live dal Gestionale Reparti:</strong><span class="text-sm text-blue-700">Ospiti attuali dotati di Fascicolo Informatizzato completo: <span class="font-bold text-lg">${totalP}</span>. Di cui con Consenso Privacy Firmato con tavoletta grafica: <span class="font-bold">${privacyOk}</span>.</span></div></div>`;
+                }
+                else if(req.liveQuery === "HACCP") {
+                    let haccpCount = window.dbHaccp.length;
+                    html = `<div class="bg-cyan-50 border border-cyan-200 p-3 rounded-lg flex items-center gap-3 shadow-sm"><i class="fa-solid fa-server text-cyan-500 text-2xl"></i><div><strong class="text-cyan-800 text-sm block uppercase tracking-wide">Evidenza Live dal Gestionale Reparti:</strong><span class="text-sm text-cyan-700">Rilevazioni termometriche di sicurezza alimentare (Frigoriferi/Celle) archiviate digitalmente: <span class="font-bold text-lg">${haccpCount}</span>.</span></div></div>`;
+                }
+                else if(req.liveQuery === "NC") {
+                    let openNc = window.ncListData.filter(n=>n.stato==='APERTA').length; let closedNc = window.ncListData.filter(n=>n.stato==='CHIUSA').length;
+                    html = `<div class="bg-amber-50 border border-amber-200 p-3 rounded-lg flex items-center gap-3 shadow-sm"><i class="fa-solid fa-server text-amber-500 text-2xl"></i><div><strong class="text-amber-800 text-sm block uppercase tracking-wide">Evidenza Live dal Gestionale Direzionale:</strong><span class="text-sm text-amber-700">Totale Non Conformità gestite: <span class="font-bold">${window.ncListData.length}</span> (Aperte da risolvere: <span class="${openNc>0?'text-red-600 font-bold':'text-amber-700'}">${openNc}</span>, Chiuse e validate: <span class="font-bold">${closedNc}</span>).</span></div></div>`;
+                }
+                else if(req.liveQuery === "SISTEMI") {
+                    html = `<div class="bg-teal-50 border border-teal-200 p-3 rounded-lg flex items-center gap-3 shadow-sm"><i class="fa-solid fa-server text-teal-500 text-2xl"></i><div><strong class="text-teal-800 text-sm block uppercase tracking-wide">Evidenza Live dal Gestionale IT:</strong><span class="text-sm text-teal-700">Architettura in Cloud (Firestore) operativa. Livello di informatizzazione clinica dei pazienti residenti: <span class="font-bold text-lg">100%</span>.</span></div></div>`;
+                }
+                else if(req.liveQuery === "CSAT") {
+                    html = `<div class="bg-emerald-50 border border-emerald-200 p-3 rounded-lg flex items-center gap-3 shadow-sm"><i class="fa-solid fa-server text-emerald-500 text-2xl"></i><div><strong class="text-emerald-800 text-sm block uppercase tracking-wide">Evidenza Live da Google Moduli:</strong><span class="text-sm text-emerald-700">Questionari raccolti: <span class="font-bold text-lg">${window.globalCsatCount}</span>. Indice di Gradimento Globale calcolato: <span class="font-bold text-lg"><i class="fa-solid fa-star text-emerald-500"></i> ${window.globalCsatAvg}</span> / 10.</span></div></div>`;
+                }
+                
+                container.innerHTML = html;
+            });
+        };
+
+        window.updateAccreditamentoDashboard = () => {
+            const dashContainer = document.getElementById('accAlertsList'); if(!dashContainer) return;
+            let completati = 0; let mancantiHtml = ''; let missingCount = 0;
+            requisitiAccreditamento.forEach(req => {
+                if((window.countEvidenzeGlobale[req.id] || 0) > 0) completati++;
+                else { missingCount++; if(missingCount <= 5) mancantiHtml += `<div class="bg-amber-50 border border-amber-200 p-2 text-sm text-amber-800 rounded font-medium shadow-sm mb-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Scoperto: ${req.titolo}</div>`; }
+            });
+            let perc = Math.round((completati / requisitiAccreditamento.length) * 100);
+            document.getElementById('accProgressText').innerText = `${completati} / ${requisitiAccreditamento.length} (${perc}%)`;
+            document.getElementById('accProgressBar').style.width = `${perc}%`;
+            if(perc === 100) document.getElementById('accProgressBar').classList.add('bg-emerald-500'); else document.getElementById('accProgressBar').classList.remove('bg-emerald-500');
+            dashContainer.innerHTML = mancantiHtml || `<div class="text-emerald-700 font-bold text-center mt-4 text-lg"><i class="fa-solid fa-circle-check"></i> Tutte le aree sono coperte!</div>`;
+        };
+
+        window.renderAccreditamentoList = () => {
+            const container = document.getElementById('accreditamentoListContainer');
+            const filtro = document.getElementById('filtroAreaAccreditamento').value;
+            const searchTxt = (document.getElementById('searchAccreditamento').value || '').toLowerCase(); 
+            container.innerHTML = '';
+            
+            const reqs = requisitiAccreditamento.filter(r => (filtro==='TUTTE' || r.area===filtro) && r.titolo.toLowerCase().includes(searchTxt));
+            if(reqs.length === 0) return container.innerHTML = '<div class="text-center py-10 text-slate-400 italic border border-slate-200 rounded-xl bg-white">Nessun requisito trovato per questa ricerca.</div>';
+
+            reqs.forEach(req => {
+                let opts = '<option value="">-- Seleziona Modello o Format da Creare --</option>'; req.templateOpzioni.forEach(o => opts += `<option value="${o}">${o}</option>`);
+                let liveBox = req.liveQuery ? `<div id="live_data_${req.id}" class="mb-4"></div>` : '';
+                container.innerHTML += `
+                <div class="bg-white p-6 rounded-xl border border-slate-200 mb-6 slide-up shadow-md">
+                    <div class="flex justify-between items-center mb-3 border-b pb-3">
+                        <h3 class="text-lg font-bold text-violet-700"><i class="fa-solid fa-bookmark text-violet-300 mr-1"></i> ${req.titolo}</h3>
+                        <span class="text-xs ${req.area==='Generale'?'bg-sky-100 text-sky-800':'bg-amber-100 text-amber-800'} px-3 py-1 rounded-full font-bold uppercase">${req.area}</span>
+                    </div>
+                    <p class="text-sm text-slate-700 mb-4 bg-slate-50 p-3 rounded-lg border-l-4 border-l-violet-400">${req.descrizione}</p>
+                    
+                    ${liveBox} <!-- Widget per i dati Live dal Gestionale -->
+                    
+                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Procedura Operativa adottata dalla Struttura:</label>
+                    <textarea id="proc_${req.id}" rows="3" class="w-full p-3 border border-slate-300 rounded-lg mb-5 text-sm outline-none focus:border-violet-500 transition-colors" oninput="window.autoSalvaProcedura('${req.id}')">${req.testoDefault}</textarea>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 flex flex-col justify-between">
+                            <h4 class="text-emerald-800 font-bold mb-3 text-sm"><i class="fa-solid fa-paperclip"></i> Allega Evidenza Esterna (PDF/Scan)</h4>
+                            <div><input type="file" id="file_${req.id}" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-700 hover:file:bg-emerald-200 mb-2"><input type="text" id="fileName_${req.id}" placeholder="Nome del file allegato..." class="w-full p-2 text-sm border border-emerald-300 rounded mb-3 outline-none"></div>
+                            <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded transition-colors shadow-sm text-sm" onclick="window.simulaUploadDocumento('${req.id}')">Esegui Upload Evidenza</button>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 flex flex-col justify-between">
+                            <h4 class="text-blue-800 font-bold mb-3 text-sm"><i class="fa-solid fa-file-invoice"></i> Crea e Redigi Documento Dinamico</h4>
+                            <div><select id="template_${req.id}" class="w-full p-2.5 text-sm border border-blue-300 rounded mb-3 outline-none bg-white">${opts}</select></div>
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-2 rounded transition-colors shadow-sm text-sm flex justify-center items-center gap-2" onclick="window.apriEditorDocumentoNuovo('${req.id}')"><i class="fa-solid fa-pen-to-square"></i> Apri Editor e Redigi</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-5 p-4 bg-slate-100 rounded-lg border border-slate-200 shadow-inner">
+                        <label class="font-bold text-slate-700 mb-2 flex items-center gap-2 text-sm"><i class="fa-solid fa-folder-open text-amber-500"></i> Documenti ed Evidenze Collegate a questo Requisito:</label>
+                        <ul id="listDoc_${req.id}" class="mt-2 text-sm space-y-2"></ul>
+                    </div>
+                </div>`;
+            });
+            window.avviaListenerAccreditamento(reqs);
+            window.aggiornaEvidenzeLive();
+        };
+
+        window.autoSalvaProcedura = (reqId) => { clearTimeout(window[`st_${reqId}`]); window[`st_${reqId}`] = setTimeout(async () => { await setDoc(doc(db, "accreditamento_procedure", reqId), { testo_procedura: document.getElementById(`proc_${reqId}`).value }, { merge: true }); }, 1000); };
+        window.simulaUploadDocumento = async (reqId) => { const f = document.getElementById(`file_${reqId}`); const n = document.getElementById(`fileName_${reqId}`).value; if(!f.files.length || !n) return window.showToast("⚠️ Scegli il file e inserisci un nome."); await addDoc(collection(db, "accreditamento_evidenze"), { reqId: reqId, nome: n + " (" + f.files[0].name + ")", tipo: "Upload", data: window.getTodayString() }); f.value=''; document.getElementById(`fileName_${reqId}`).value=''; window.showToast("✅ File allegato con successo"); };
+        window.eliminaEvidenza = async (id) => { if(confirm("Sei sicuro di voler eliminare questa evidenza documentale dal cloud? L'azione è irreversibile.")) await deleteDoc(doc(db, "accreditamento_evidenze", id)); window.showToast("🗑️ Documento eliminato."); };
+
+        // --- MOTORE EDITOR AVANZATO PER I DOCUMENTI DEL MANUALE ---
+        window.apriEditorDocumentoNuovo = (reqId) => {
+            const t = document.getElementById(`template_${reqId}`).value;
+            if(!t) return window.showToast("⚠️ Seleziona prima quale modello desideri creare dal menu a tendina.");
+            
+            document.getElementById('docEditorReqId').value = reqId;
+            document.getElementById('docEditorDocId').value = ""; // Nuovo, non ha ID
+            document.getElementById('docEditorTitle').value = t;
+            document.getElementById('docEditorDate').value = window.getTodayString();
+            
+            // Corpo di base professionale ISO 9001
+            let baseText = `DOCUMENTO DI SISTEMA QUALITÀ - ACCREDITAMENTO REGIONALE (D.G.R. UMBRIA)\n`;
+            baseText += `=======================================================================\n\n`;
+            baseText += `TITOLO: ${t.toUpperCase()}\n`;
+            baseText += `REDATTORE: ${window.activeOperator}\n`;
+            baseText += `STRUTTURA: NUOVA VILLA SILVANA - Residenza Protetta\n`;
+            baseText += `DATA DI EMISSIONE/REVISIONE: ${window.getTodayString()}\n\n`;
+            baseText += `-----------------------------------------------------------------------\n\n`;
+            baseText += `1. SCOPO E CAMPO DI APPLICAZIONE\n[Descrivere l'obiettivo della procedura o del documento e a quali reparti o figure si applica...]\n\n\n`;
+            baseText += `2. RIFERIMENTI NORMATIVI\n[Legge Regionale, Linee Guida Ministeriali, Manuale LIST 05...]\n\n\n`;
+            baseText += `3. DESCRIZIONE DELLE ATTIVITÀ (MODUS OPERANDI)\n[Descrivere i passaggi operativi punto per punto, chi fa cosa e come...]\n\n\n`;
+            baseText += `4. RESPONSABILITÀ E MODULISTICA COLLEGATA\n[Elencare i responsabili del controllo e i moduli utilizzati per le registrazioni...]\n\n\n`;
+            
+            document.getElementById('docEditorContent').value = baseText;
+            document.getElementById('docEditorModal').classList.remove('hidden'); document.getElementById('docEditorModal').classList.add('flex');
+        };
+
+        window.apriEditorDocumentoEsistente = (docId) => {
+            const docData = window.accreditamentoDocs[docId];
+            if(!docData) return;
+            document.getElementById('docEditorReqId').value = docData.reqId;
+            document.getElementById('docEditorDocId').value = docId;
+            document.getElementById('docEditorTitle').value = docData.nome;
+            document.getElementById('docEditorDate').value = docData.data || window.getTodayString();
+            document.getElementById('docEditorContent').value = docData.testo_documento || "";
+            document.getElementById('docEditorModal').classList.remove('hidden'); document.getElementById('docEditorModal').classList.add('flex');
+        };
+
+        window.chiudiEditorDocumento = () => { document.getElementById('docEditorModal').classList.add('hidden'); document.getElementById('docEditorModal').classList.remove('flex'); };
+
+        window.salvaDocumentoEditor = async () => {
+            const reqId = document.getElementById('docEditorReqId').value;
+            const docId = document.getElementById('docEditorDocId').value;
+            const title = document.getElementById('docEditorTitle').value;
+            const date = document.getElementById('docEditorDate').value;
+            const content = document.getElementById('docEditorContent').value;
+
+            if(!title) return window.showToast("⚠️ Il Titolo del Documento è obbligatorio");
+            
+            const payload = { reqId: reqId, nome: title, tipo: "Generato", testo_documento: content, data: date, redattore: window.activeOperator };
+
+            if(docId) { await updateDoc(doc(db, "accreditamento_evidenze", docId), payload); } 
+            else { await addDoc(collection(db, "accreditamento_evidenze"), payload); }
+            
+            window.showToast("✅ Documento salvato e sincronizzato nel Cloud!");
+            window.chiudiEditorDocumento();
+        };
+
+        window.stampaDocumentoEditor = () => {
+            const title = document.getElementById('docEditorTitle').value;
+            const date = document.getElementById('docEditorDate').value;
+            const content = document.getElementById('docEditorContent').value.replace(/\n/g, '<br>'); // Converte i ritorni a capo per HTML
+            
+            const printWin = window.open('', '_blank');
+            printWin.document.write(`<html><head><title>Stampa: ${title}</title><style>
+                body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; font-size: 11pt; } 
+                .header { text-align: center; border-bottom: 2px solid #0f766e; padding-bottom: 20px; margin-bottom: 30px; } 
+                .header h1 { color: #0f766e; margin: 0; font-size: 24pt; font-weight: 900; letter-spacing: 2px;} 
+                .header h2 { margin: 5px 0 0 0; font-size: 12pt; color: #475569; } 
+                .content { text-align: justify; } 
+                .footer { margin-top: 50px; border-top: 1px solid #cbd5e1; padding-top: 20px; display: flex; justify-content: space-between; font-size: 9pt; color: #64748b; } 
+                @media print { button { display: none; } }
+            </style></head><body>
+                <div class="header"><h1>NUOVA VILLA SILVANA</h1><h2>Residenza Protetta per Anziani (LIST 05)</h2></div>
+                <h3 style="text-align:center; text-transform:uppercase; color: #0f172a; margin-bottom: 30px; font-size:14pt;">${title}</h3>
+                <div class="content">${content}</div>
+                <div class="footer">
+                    <span>Documento Ufficiale generato dal Sistema di Gestione Qualità</span>
+                    <span>Redattore: ${window.activeOperator} | Data Doc: ${window.formatDateSafe(date)}</span>
+                </div>
+                <div style="text-align:center; margin-top:40px;"><button onclick="window.print()" style="padding:12px 25px; background:#0f766e; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:11pt;">STAMPA DOCUMENTO</button></div>
+            </body></html>`);
+            printWin.document.close();
+        };
+
+        let unsubE = null; let unsubP = null;
+        window.avviaListenerAccreditamento = (reqs) => {
+            if(unsubE) unsubE(); if(unsubP) unsubP();
+            
+            unsubP = onSnapshot(collection(db, "accreditamento_procedure"), snap => { snap.forEach(d => { const tx = document.getElementById(`proc_${d.id}`); if(tx && document.activeElement !== tx) tx.value = d.data().testo_procedura || ''; }); });
+            
+            unsubE = onSnapshot(collection(db, "accreditamento_evidenze"), snap => {
+                reqs.forEach(r => { const ul = document.getElementById(`listDoc_${r.id}`); if(ul) ul.innerHTML = ''; });
+                window.countEvidenzeGlobale = {};
+                window.accreditamentoDocs = {}; // Pulisce e ripopola la mappa documenti per l'editor
+
+                snap.forEach(d => {
+                    const data = d.data(); const docId = d.id;
+                    window.accreditamentoDocs[docId] = data; 
+                    const ul = document.getElementById(`listDoc_${data.reqId}`);
+                    window.countEvidenzeGlobale[data.reqId] = (window.countEvidenzeGlobale[data.reqId] || 0) + 1;
+                    
+                    if(ul) {
+                        let btnHtml = '';
+                        if(data.tipo === "Upload") {
+                            btnHtml = `<span class="text-xs text-slate-500 italic mr-3 bg-slate-200 px-2 py-1 rounded"><i class="fa-solid fa-paperclip"></i> Evidenza Esterna</span>`;
+                        } else {
+                            btnHtml = `<button class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded text-xs font-bold mr-2 transition-colors flex items-center gap-1 shadow-sm" onclick="window.apriEditorDocumentoEsistente('${docId}')"><i class="fa-solid fa-pen-to-square"></i> Apri e Modifica</button>`;
+                        }
+                        
+                        let deleteBtn = window.isAdmin ? `<button class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm" title="Elimina" onclick="window.eliminaEvidenza('${docId}')"><i class="fa-solid fa-trash"></i></button>` : '';
+                        
+                        ul.innerHTML += `<li class="bg-white border border-slate-200 p-3 rounded-lg flex justify-between items-center shadow-sm">
+                            <div class="flex items-center gap-2"><i class="fa-solid ${data.tipo==='Upload'?'fa-file-pdf text-rose-500':'fa-file-lines text-blue-500'} text-lg"></i> <span class="font-bold text-slate-700 text-sm">${data.nome} <span class="text-xs text-slate-400 font-normal ml-1 bg-slate-100 px-2 py-0.5 rounded">(${window.formatDateSafe(data.data)})</span></span></div>
+                            <div class="flex items-center">${btnHtml}${deleteBtn}</div>
+                        </li>`;
+                    }
+                });
+                
+                reqs.forEach(r => {
+                    const ul = document.getElementById(`listDoc_${r.id}`);
+                    if(ul && (!window.countEvidenzeGlobale[r.id] || window.countEvidenzeGlobale[r.id] === 0)) {
+                        ul.innerHTML = '<li class="text-slate-400 italic text-center py-4 border border-dashed border-slate-300 rounded-lg bg-slate-50 text-sm">Nessuna evidenza documentale collegata a questo requisito.</li>';
+                    }
+                });
+                
+                window.updateAccreditamentoDashboard();
+            });
+        };
+    </script>
+</body>
+</html>

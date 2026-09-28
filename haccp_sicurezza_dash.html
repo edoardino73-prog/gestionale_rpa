@@ -39,28 +39,33 @@
         .badge.sicurezza { background: var(--purple-light); color: var(--purple); border: 1px solid #e9d5ff;} .badge.teal-badge { background: var(--teal-light); color: var(--teal); border: 1px solid #99f6e4;}
         .server-time { font-size: 12px; color: var(--secondary); font-weight: 600; display: block; } .firma-img { max-height: 40px; mix-blend-mode: multiply; border: 1px solid #eee; border-radius: 4px; padding: 2px;}
         .thumb-img { max-height: 60px; border-radius: 6px; cursor: pointer; transition: 0.2s; border: 2px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.1);} .thumb-img:hover { transform: scale(1.05); border-color: var(--teal); }
-        .items-grid { display: flex; flex-wrap: wrap; gap: 6px; max-width: 350px; } .item-tag { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 6px; font-size: 12px; color: #334155; } .item-tag.alert { background: #fee2e2; border-color: #fca5a5; color: #991b1b; font-weight: bold; }
-        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; } .admin-panel { background: var(--surface); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); } .admin-panel h3 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--bg); padding-bottom: 10px; margin-bottom: 20px;}
+        .items-grid { display: flex; flex-wrap: wrap; gap: 6px; max-width: 100%; } .item-tag { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 13px; color: #334155; display: flex; align-items: center; gap: 8px;} .item-tag.alert { background: #fee2e2; border-color: #fca5a5; color: #991b1b; font-weight: bold; }
+        .admin-panel { background: var(--surface); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); } .admin-panel h3 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--bg); padding-bottom: 10px; margin-bottom: 20px;}
         .input-group { margin-bottom: 15px; } .input-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; color: var(--text-main); } .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; background: var(--bg);} .flex-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;}
         .btn-add, .btn-print { background: var(--secondary); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s;} .btn-add { background: var(--success); height: 43px;} .btn-add:active { transform: scale(0.95); } .btn-print:hover { opacity: 0.9; transform: translateY(-1px);}
         .list-container { max-height: 250px; overflow-y: auto; padding-right: 10px; } .list-item { background: var(--bg); border: 1px solid var(--border); padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; } .btn-del { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;} .btn-del:hover { background: var(--danger); color: white; }
         .doc-btn-upload { background-color: var(--secondary); color: white; padding: 15px 30px; font-size: 16px; border-radius: 12px; font-weight: bold; text-decoration: none; display: inline-flex; justify-content: center; align-items: center; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); } .doc-btn-upload:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); } .doc-btn-drive { background-color: var(--surface); color: var(--primary); border: 2px solid var(--border); padding: 15px 30px; font-size: 16px; border-radius: 12px; font-weight: bold; text-decoration: none; display: inline-flex; justify-content: center; align-items: center; transition: 0.2s; } .doc-btn-drive:hover { border-color: var(--primary); background: #f8fafc; }
         .btn-back { background-color: rgba(255, 255, 255, 0.15); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 10px 18px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s ease; margin-right: 20px; }
         .btn-back:hover { background-color: rgba(255, 255, 255, 0.25); border-color: white; transform: translateY(-1px); }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
+        .toast { background: var(--primary); color: #fff; padding: 12px 24px; border-radius: 6px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+        .toast.show { opacity: 1; }
     </style>
 </head>
 <body>
+
+    <div id="toast-container"></div>
 
     <div class="navbar">
         <div style="display:flex; align-items:center;">
             <a href="index.html" class="btn-back">⬅️ Torna al Gestionale</a>
             <div>
                 <h1 id="main-title">Struttura Non Impostata</h1>
-                <span>Intranet & Cruscotto Direzionale</span>
+                <span>Intranet & Cruscotto Direzionale HACCP</span>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:15px;">
-            <!-- NUOVO FILTRO TEMPORALE GLOBALE -->
             <select id="globalTimeFilter" style="padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); outline: none; font-weight: bold; cursor: pointer;" onchange="window.initListeners(this.value)">
                 <option value="currentMonth" style="color:black;">📅 Mostra Solo Mese Corrente (Veloce)</option>
                 <option value="all" style="color:black;">📂 Mostra Tutti i Dati in Memoria</option>
@@ -88,17 +93,21 @@
     <!-- DASHBOARD E ADMIN -->
     <div id="tab-dashboard" class="tab-content active">
         <h3 style="color: var(--secondary); margin-bottom: 15px; margin-top: 0;">📊 Stato Generale Procedure HACCP</h3>
-        <div class="kpi-grid"><div class="kpi-card"><span class="kpi-title">Registrazioni Selezionate</span><span class="kpi-value" id="kpi-totali">0</span></div><div class="kpi-card success" id="kpi-box-conformi"><span class="kpi-title">Stato Impianti</span><span class="kpi-value" id="kpi-conformi">Conformi</span></div><div class="kpi-card warning"><span class="kpi-title">Anomalie Gestite</span><span class="kpi-value" id="kpi-gestite">0</span></div><div class="kpi-card danger"><span class="kpi-title">Non Conformità</span><span class="kpi-value" id="kpi-critiche">0</span></div></div>
+        <div class="kpi-grid">
+            <div class="kpi-card"><span class="kpi-title">Registrazioni Selezionate</span><span class="kpi-value" id="kpi-totali">0</span></div>
+            <div class="kpi-card success" id="kpi-box-conformi"><span class="kpi-title">Stato Impianti</span><span class="kpi-value" id="kpi-conformi">Conformi</span></div>
+            <div class="kpi-card warning"><span class="kpi-title">Anomalie Gestite</span><span class="kpi-value" id="kpi-gestite">0</span></div>
+            <div class="kpi-card danger"><span class="kpi-title">Non Conformità</span><span class="kpi-value" id="kpi-critiche">0</span></div>
+        </div>
         
-        <!-- NUOVO PANNELLO OTTIMIZZAZIONE E ARCHIVIAZIONE STORICA -->
         <div class="admin-panel" style="margin-top: 35px; border-left: 5px solid var(--danger);">
-            <h3 style="color: var(--danger); margin-bottom: 10px;">🗄️ Archiviazione Storica e Pulizia Database (Risparmio Firebase)</h3>
-            <p style="font-size:13.5px; color:var(--text-main); margin-bottom: 20px; line-height: 1.5;">Per evitare il blocco del piano gratuito Firebase, archivia regolarmente le registrazioni più vecchie di 3 mesi. Verranno scaricate in un file di backup leggibile e potrai scegliere di liberare spazio nel database.<br><strong>Se hai bisogno di stamparle in futuro, ricarica il file qui sotto.</strong></p>
+            <h3 style="color: var(--danger); margin-bottom: 10px;">🗄️ Archiviazione Storica e Pulizia Database (Risparmio Spazio)</h3>
+            <p style="font-size:13.5px; color:var(--text-main); margin-bottom: 20px; line-height: 1.5;">Per preservare la fluidità del gestionale ed evitare costi cloud, archivia regolarmente le registrazioni più vecchie di 3 mesi. Verranno scaricate in un file protetto di backup sul tuo PC.<br><strong>Se hai bisogno di stamparle in futuro per un'ispezione, ricarica il file qui sotto.</strong></p>
             
             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                 <button class="btn-print" style="background-color: var(--danger); font-size: 14px;" onclick="creaArchivioTrimestrale()">📦 Esporta e Pulisci DB (> 3 mesi)</button>
                 <label class="btn-outline" style="cursor:pointer; display:inline-flex; align-items:center; border: 2px solid var(--text-muted); color: var(--text-main); padding: 12px 20px; border-radius: 6px; font-weight: bold; transition: 0.2s;">
-                    📂 Carica File Archivio Offline (Per Stampa)
+                    📂 Carica File Archivio Offline (Per Consultazione/Stampa)
                     <input type="file" style="display:none;" accept=".json" onchange="loadLocalArchive(event)">
                 </label>
                 <button class="btn-print" style="background-color: var(--success); font-size: 14px; display: none;" id="btnRestoreLive" onclick="restoreLiveCloud()">🔄 Ripristina Connessione Cloud Live</button>
@@ -119,9 +128,27 @@
             </div>
         </div>
 
-        <div class="admin-grid" style="margin-top: 20px;">
-            <div class="admin-panel"><h3>👥 Gestione Operatori Tablet</h3><div class="flex-row" style="margin-bottom: 25px;"><div class="input-group" style="flex:2; margin:0;"><input type="text" id="newOpName" placeholder="Nome Completo"></div><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newOpRole" placeholder="Ruolo"></div><div class="input-group" style="flex:1; margin:0;"><input type="number" id="newOpPin" placeholder="PIN (es. 1234)"></div><button class="btn-add" id="btnAddOp">Aggiungi</button></div><div class="list-container" id="op-list-container"></div></div>
-            <div class="admin-panel"><h3>⚙️ Configurazione Voci Tablet</h3><div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newFrigo" placeholder="Nuovo Frigorifero / Cella"></div><button class="btn-add" onclick="addConfigItem('frigoriferi', 'newFrigo')">Aggiungi</button></div><div class="items-grid" id="list-frigoriferi" style="margin-bottom: 20px;"></div><div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newArea" placeholder="Nuova Area Sanificazione"></div><button class="btn-add" onclick="addConfigItem('aree', 'newArea')">Aggiungi</button></div><div class="items-grid" id="list-aree" style="margin-bottom: 20px;"></div><div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newPulizia" placeholder="Nuova Voce Pulizie (Mod 05)"></div><button class="btn-add" onclick="addConfigItem('pulizie', 'newPulizia')">Aggiungi</button></div><div class="items-grid" id="list-pulizie"></div></div>
+        <div class="admin-panel" style="margin-top: 20px; border-left: 5px solid var(--teal);">
+            <h3 style="color: var(--teal); margin-bottom: 10px;">⚙️ Configurazione Voci Tablet (Menu a tendina reparti)</h3>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom: 20px;">Aggiungendo voci in questi elenchi, i tablet in cucina e nei reparti si aggiorneranno automaticamente mostrando i nuovi frigoriferi o le nuove aree da sanificare.</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div>
+                    <h4 style="margin-top:0; font-size:14px;">🌡️ Frigoriferi e Celle</h4>
+                    <div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newFrigo" placeholder="Es. Frigo Latticini"></div><button class="btn-add" onclick="addConfigItem('frigoriferi', 'newFrigo')">Aggiungi</button></div>
+                    <div class="items-grid" id="list-frigoriferi"></div>
+                </div>
+                <div>
+                    <h4 style="margin-top:0; font-size:14px;">✨ Aree Sanificazione</h4>
+                    <div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newArea" placeholder="Es. Sala Pranzo"></div><button class="btn-add" onclick="addConfigItem('aree', 'newArea')">Aggiungi</button></div>
+                    <div class="items-grid" id="list-aree"></div>
+                </div>
+                <div>
+                    <h4 style="margin-top:0; font-size:14px;">🧹 Pulizie (Mod. 05)</h4>
+                    <div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newPulizia" placeholder="Es. Pavimenti Reparto A"></div><button class="btn-add" onclick="addConfigItem('pulizie', 'newPulizia')">Aggiungi</button></div>
+                    <div class="items-grid" id="list-pulizie"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -184,6 +211,13 @@
     <div id="tab-infestanti" class="tab-content">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><div><h2 style="color: var(--warning); margin: 0 0 5px 0;">🪤 Pest Control (Monitoraggio)</h2></div>
         <button class="btn-print" style="background-color: var(--warning);" onclick="generatePDF('table-pest', 'REGISTRO MONITORAGGIO INFESTANTI (PEST CONTROL)')">🖨️ Stampa PDF</button></div>
+        
+        <div class="kpi-grid">
+            <div class="kpi-card warning-box"><span class="kpi-title" style="color:var(--warning)">Controlli Totali</span><span class="kpi-value" id="kpi-pest-totali">0</span></div>
+            <div class="kpi-card success"><span class="kpi-title">Regolari (Intatte)</span><span class="kpi-value" id="kpi-pest-ok">0</span></div>
+            <div class="kpi-card danger"><span class="kpi-title">Anomalie / Catture</span><span class="kpi-value" id="kpi-pest-err">0</span></div>
+        </div>
+
         <div class="admin-panel" style="margin-bottom: 25px; border-left: 5px solid var(--warning);"><h3 style="color: var(--warning); margin-bottom: 15px;">➕ Registra Controllo Interno Postazione</h3><div class="flex-row"><div class="input-group" style="flex:1; margin:0;"><label>Data</label><input type="date" id="pestDate"></div><div class="input-group" style="flex:2; margin:0;"><label>Nome Postazione</label><input type="text" id="pestName" placeholder="Es. Trappola 1 Esterno..."></div><div class="input-group" style="flex:1; margin:0;"><label>Infestante</label><select id="pestType"><option value="Roditori">Roditori</option><option value="Insetti Striscianti">Insetti Striscianti</option><option value="Insetti Volanti">Insetti Volanti</option></select></div><div class="input-group" style="flex:1; margin:0;"><label>Esito</label><select id="pestResult"><option value="Regolare (Intatta)">Regolare (Intatta)</option><option value="Esca Consumata">Esca Consumata</option><option value="Cattura">Cattura Rilevata</option><option value="Danneggiata">Danneggiata</option></select></div><button class="btn-print" style="background-color: var(--warning);" id="btnAddPest">Salva Controllo</button></div></div>
         <div class="table-wrapper"><table id="pdf-table-pest"><thead><tr><th>Data Controllo</th><th>Postazione</th><th>Target</th><th>Esito Rilevato</th><th>Stato</th><th>Azioni</th></tr></thead><tbody id="table-pest"><tr><td colspan="6" style="text-align:center; padding: 40px;">Caricamento in corso...</td></tr></tbody></table></div>
     </div>
@@ -212,13 +246,14 @@
         <p style="color:white; font-weight:bold; margin-top: 15px; background: rgba(0,0,0,0.5); padding: 8px 15px; border-radius: 20px;">Tocca per chiudere</p>
     </div>
 
-    <!-- FUNZIONE GENERAZIONE PDF A NORMA MULTI-STRUTTURA -->
     <script>
-        window.datiStruttura = { nome: 'STRUTTURA NON IMPOSTATA', indirizzo: '-', piva: '-', admin: '-', haccp: '-' };
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
+
+        window.datiStruttura = { denominazione: 'STRUTTURA NON IMPOSTATA', indirizzo: '-', piva: '-', admin: '-', haccp: '-' };
         window.generatePDF = function(tableId, titoloDocumento) {
             try {
                 const { jsPDF } = window.jspdf; const doc = new jsPDF('landscape'); 
-                doc.setFontSize(18); doc.setTextColor(30, 41, 59); doc.text((window.datiStruttura.nome || 'STRUTTURA NON IMPOSTATA').toUpperCase(), 14, 20);
+                doc.setFontSize(18); doc.setTextColor(30, 41, 59); doc.text((window.datiStruttura.denominazione || window.datiStruttura.nome || 'STRUTTURA NON IMPOSTATA').toUpperCase(), 14, 20);
                 doc.setFontSize(10); doc.setTextColor(100, 116, 139);
                 let stringaIndirizzo = `Indirizzo: ${window.datiStruttura.indirizzo || '-'} | P.IVA/C.F.: ${window.datiStruttura.piva || '-'}`;
                 let stringaResp = `Legale Rappresentante: ${window.datiStruttura.admin || '-'} | Resp. HACCP: ${window.datiStruttura.haccp || '-'}`;
@@ -277,12 +312,10 @@
         };
     </script>
 
-    <!-- SCRIPT FIREBASE, LOGICA DASHBOARD E MOTORE ARCHIVIAZIONE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
         import { getFirestore, collection, query, orderBy, where, onSnapshot, getDocs, addDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 
-        // CONFIGURAZIONE FIREBASE SINCRONIZZATA CON IL TABLET
         const firebaseConfig = { 
             apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
             authDomain: "gestione-visite-b445b.firebaseapp.com", 
@@ -291,7 +324,8 @@
             messagingSenderId: "720937824810", 
             appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
         };
-        const app = initializeApp(firebaseConfig); window.db = getFirestore(app);
+        const app = initializeApp(firebaseConfig); 
+        window.db = getFirestore(app);
         const db = window.db;
 
         document.getElementById('pestDate').value = new Date().toISOString().split('T')[0];
@@ -303,7 +337,6 @@
             btn.classList.add('active'); if(colorClass) btn.classList.add('active-' + colorClass);
         };
 
-        // GESTORE DATE (Compatibile con Firestore e JSON Offline)
         function formatTime(ts) { 
             if(!ts) return "Attendere..."; 
             if(typeof ts.toDate === 'function') return ts.toDate().toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -311,10 +344,6 @@
             if(typeof ts === 'number' || typeof ts === 'string') return new Date(ts).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
             return ts;
         }
-
-        // ==========================================
-        // ARCHITETTURA DI RENDER A FUNZIONI SEPARATE
-        // ==========================================
 
         window.renderRegistriTables = (dati) => {
             const tbTemp = document.getElementById('table-temp'); const tbAree = document.getElementById('table-aree'); const tbPulizie = document.getElementById('table-pulizie');
@@ -335,7 +364,7 @@
                     if (data.temperature && Object.keys(data.temperature).length > 0) {
                         for (const [nome, temp] of Object.entries(data.temperature)) {
                             if (temp === "") continue; let val = parseFloat(temp); let limit = (nome.toLowerCase().includes('cong') || nome.toLowerCase().includes('cella')) ? -18 : 4;
-                            if (val > limit) { hasAnomaly = true; tagsHtml += `<span class="item-tag alert">${nome}: ${val}°C ⚠️</span>`; } else { tagsHtml += `<span class="item-tag">${nome}: ${val}°C</span>`; }
+                            if (val > limit) { hasAnomaly = true; tagsHtml += `<span class="item-tag alert"><i class="fa-solid fa-triangle-exclamation"></i> ${nome}: ${val}°C</span>`; } else { tagsHtml += `<span class="item-tag">${nome}: ${val}°C</span>`; }
                         }
                     } else { isEmpty = true; }
                 } else if (tipo === 'aree') {
@@ -364,7 +393,9 @@
                 if(tipo === 'temperature' || tipo === 'temp') htmlTemp += rigaHtml; else if(tipo === 'aree') htmlAree += rigaHtml; else if(tipo === 'pulizie') htmlPulizie += rigaHtml;
             });
 
-            tbTemp.innerHTML = htmlTemp || '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nessun record.</td></tr>'; tbAree.innerHTML = htmlAree || '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nessuna sanificazione.</td></tr>'; tbPulizie.innerHTML = htmlPulizie || '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nessuna pulizia.</td></tr>';
+            tbTemp.innerHTML = htmlTemp || '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nessun record in questo periodo.</td></tr>'; 
+            tbAree.innerHTML = htmlAree || '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nessuna sanificazione in questo periodo.</td></tr>'; 
+            tbPulizie.innerHTML = htmlPulizie || '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nessuna pulizia in questo periodo.</td></tr>';
             document.getElementById('kpi-totali').innerText = tCount; document.getElementById('kpi-gestite').innerText = gCount; document.getElementById('kpi-critiche').innerText = cCount;
             const kBox = document.getElementById('kpi-box-conformi'); const kText = document.getElementById('kpi-conformi');
             if (cCount > 0) { kBox.className = "kpi-card danger"; kText.innerText = "Intervento Richiesto"; } else if (gCount > 0) { kBox.className = "kpi-card warning"; kText.innerText = "Attenzione (Gestita)"; } else { kBox.className = "kpi-card success"; kText.innerText = "Ottimo (100%)"; }
@@ -378,14 +409,14 @@
                 let infoAbbattimento = data.durata_abbattimento_min ? `<strong>${data.durata_abbattimento_min} min</strong><br><span style="font-size:12px; color:var(--blue);">${data.temp_abbattimento}°C</span>` : '<span style="color:var(--text-muted); font-size: 12px;">Non applicato</span>';
                 htmlCiclo += `<tr class="${rowClass}"><td>${badge}</td><td><strong>${data.data_processo}</strong><br><span class="server-time">${formatTime(data.timestamp_server)}</span></td><td><strong style="color:var(--success); font-size:15px;">${data.alimento}</strong><br><span style="font-size:12px; color:var(--text-muted);">Lotto: ${data.lotto}</span><br><span style="font-size:11px; color:var(--danger); font-weight:bold;">Allergeni: ${data.allergeni}</span></td><td><strong style="font-size:16px;">${data.temp_cottura} °C</strong><br><span style="font-size:12px;">Fine: ${data.ora_fine_cottura || '-'}</span></td><td>${infoAbbattimento}</td><td><span style="font-size: 13px; font-weight: bold;">${data.destinazione}</span><br><strong style="font-size:12px; color:var(--purple); background: var(--purple-light); padding: 2px 5px; border-radius: 4px;">Scad: ${data.scadenza}</strong></td><td><div style="font-size:12px; max-width: 150px; font-style:italic;">${data.azione_correttiva || '-'}</div></td><td><strong>${data.operatore}</strong><br><img src="${data.firma_base64}" class="firma-img"></td></tr>`;
             });
-            tbody.innerHTML = htmlCiclo || '<tr><td colspan="8" style="text-align:center; padding: 20px;">Nessun ciclo cottura/abbattimento.</td></tr>';
+            tbody.innerHTML = htmlCiclo || '<tr><td colspan="8" style="text-align:center; padding: 20px;">Nessun ciclo cottura/abbattimento in questo periodo.</td></tr>';
             document.getElementById('kpi-ciclo-tot').innerText = cTot; document.getElementById('kpi-ciclo-ko').innerText = cKo;
         };
 
         window.renderTracciabilita = (dati) => {
             const tbody = document.getElementById('table-tracc'); let tTot = 0; let htmlTracc = '';
             dati.forEach((data) => { tTot++; htmlTracc += `<tr><td><strong>${data.data_dichiarata}</strong><br><span class="server-time">${formatTime(data.timestamp_server)}</span></td><td><span class="badge teal-badge">${data.categoria_prodotto}</span></td><td><img src="${data.foto_base64}" class="thumb-img" onclick="zoomImage(this.src)" title="Ingrandisci"></td><td><strong>${data.operatore}</strong><br><img src="${data.firma_base64}" class="firma-img"></td></tr>`; });
-            tbody.innerHTML = htmlTracc || '<tr><td colspan="4" style="text-align:center; padding: 20px;">Nessun lotto tracciato.</td></tr>'; document.getElementById('kpi-tracc-tot').innerText = tTot;
+            tbody.innerHTML = htmlTracc || '<tr><td colspan="4" style="text-align:center; padding: 20px;">Nessun lotto tracciato in questo periodo.</td></tr>'; document.getElementById('kpi-tracc-tot').innerText = tTot;
         };
 
         window.renderMerci = (dati) => {
@@ -394,19 +425,21 @@
                 if (data.esito === "Merce Accettata") { badge = `<span class="badge conforme">✓ Accettata</span>`; mOk++; } else if (data.esito === "Accettata con Riserva") { badge = `<span class="badge gestito">⚠️ Riserva</span>`; mOk++; rowClass = "row-warning"; } else { badge = `<span class="badge critico">❌ Respinta</span>`; mKo++; rowClass = "row-critical"; }
                 htmlMerci += `<tr class="${rowClass}"><td>${badge}</td><td><strong>${data.data_dichiarata}</strong><br><span class="server-time">${formatTime(data.timestamp_server)}</span></td><td><strong>${data.fornitore}</strong><br><span style="font-size:12px; color:var(--text-muted);">${data.prodotto || ''}</span></td><td><strong style="font-size:16px;">${data.temperatura || '-'} °C</strong></td><td>${data.imballaggi === 'Intatti' ? '✅ Intatti' : '❌ Danneggiati'}</td><td><strong>${data.operatore}</strong><br><img src="${data.firma_base64}" class="firma-img"></td></tr>`;
             });
-            tbody.innerHTML = htmlMerci || '<tr><td colspan="6" style="text-align:center; padding: 40px;">Nessun arrivo registrato.</td></tr>';
+            tbody.innerHTML = htmlMerci || '<tr><td colspan="6" style="text-align:center; padding: 40px;">Nessun arrivo registrato in questo periodo.</td></tr>';
             document.getElementById('kpi-merci-tot').innerText = mTot; document.getElementById('kpi-merci-ok').innerText = mOk; document.getElementById('kpi-merci-ko').innerText = mKo;
         };
-
-        // ==========================================
-        // GESTIONE CONNESSIONE LIVE E FILTRI
-        // ==========================================
 
         let unsubRegistri, unsubCiclo, unsubMerci, unsubTracc;
 
         window.initListeners = (filterType) => {
             if(unsubRegistri) unsubRegistri(); if(unsubCiclo) unsubCiclo(); if(unsubMerci) unsubMerci(); if(unsubTracc) unsubTracc();
             document.getElementById('btnRestoreLive').style.display = 'none';
+
+            // Reset visuale tabelle durante il caricamento
+            ['table-temp', 'table-aree', 'table-pulizie', 'table-ciclo', 'table-merci', 'table-tracc', 'table-pest'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Caricamento dati dal Server...</td></tr>';
+            });
 
             let startDate = null;
             if(filterType === 'currentMonth') {
@@ -424,12 +457,7 @@
             unsubTracc = onSnapshot(buildQuery("haccp_tracciabilita"), snap => { let a=[]; snap.forEach(d=>a.push(d.data())); window.renderTracciabilita(a); });
         };
 
-        // Avvio Iniziale Limitato (Risparmio Letture)
         window.initListeners('currentMonth');
-
-        // ==========================================
-        // FUNZIONI DI ARCHIVIAZIONE STORICA
-        // ==========================================
 
         window.creaArchivioTrimestrale = async () => {
             try {
@@ -456,19 +484,17 @@
 
                 document.getElementById('cloud-status-text').innerText = "Cloud Attivo";
 
-                if(docRefsToDelete.length === 0) return alert("Ottimo! Non ci sono dati più vecchi di 3 mesi da archiviare.");
+                if(docRefsToDelete.length === 0) return alert("Non ci sono registrazioni antecedenti a 3 mesi da archiviare.");
 
-                // SCARICO IL JSON
                 const blob = new Blob([JSON.stringify(archivio, null, 2)], {type: "application/json"});
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url; a.download = `Archivio_HACCP_Antecedente_${threeMonthsAgo.toISOString().split('T')[0]}.json`;
                 a.click();
 
-                // CANCELLAZIONE FISICA
-                if(confirm(`Il file di backup è stato scaricato correttamente (Contiene ${docRefsToDelete.length} record vecchi).\n\nVuoi ELIMINARE definitivamente questi dati dal database Cloud per mantenere il sistema veloce ed evitare blocchi?`)) {
+                if(confirm(`File scaricato (${docRefsToDelete.length} record archiviati).\n\nEliminare definitivamente i dati archiviati dal Cloud per preservare spazio e velocità?`)) {
                     for(let ref of docRefsToDelete) { await deleteDoc(ref); }
-                    alert("Pulizia completata! Il database è stato ottimizzato.");
+                    alert("Pulizia database completata con successo!");
                 }
 
             } catch(e) { alert("Errore durante l'archiviazione: " + e.message); }
@@ -480,24 +506,19 @@
             reader.onload = (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    // Disattivo Live
                     if(unsubRegistri) unsubRegistri(); if(unsubCiclo) unsubCiclo(); if(unsubMerci) unsubMerci(); if(unsubTracc) unsubTracc();
 
-                    // Rendo visibile il bottone per tornare Live
                     document.getElementById('btnRestoreLive').style.display = 'inline-block';
-                    
-                    // Cambio Stato Visuale
                     document.getElementById('cloud-status-badge').style.background = 'var(--danger)';
                     document.getElementById('cloud-status-badge').style.boxShadow = '0 0 5px var(--danger)';
                     document.getElementById('cloud-status-text').innerText = "Archivio Offline Sola Lettura";
 
-                    // Inietto dati nelle tabelle
                     if(data.registri) window.renderRegistriTables(data.registri);
                     if(data.ciclo) window.renderCicloCucina(data.ciclo);
                     if(data.merci) window.renderMerci(data.merci);
                     if(data.tracc) window.renderTracciabilita(data.tracc);
 
-                    alert("Archivio Storico caricato correttamente! Ora puoi consultarlo o generare i PDF delle tabelle.\nAl termine, clicca su 'Ripristina Connessione Cloud'.");
+                    alert("Archivio Storico caricato! Ora puoi consultare le tabelle o generare i PDF di controllo.");
                 } catch(err) { alert("File di archivio non valido o corrotto."); }
             };
             reader.readAsText(file);
@@ -510,38 +531,45 @@
             window.initListeners(document.getElementById('globalTimeFilter').value);
         };
 
-        // GESTIONE STRUTTURE BASE (NON COINVOLTE NEI FILTRI)
-        onSnapshot(doc(db, "configurazioni", "struttura"), (docSnap) => {
+        // Sincronizzazione Dati Struttura con il Gestionale Principale
+        onSnapshot(doc(db, "struttura", "info"), (docSnap) => {
             if (docSnap.exists()) {
                 const d = docSnap.data(); window.datiStruttura = d;
-                document.getElementById('strutNome').value = d.nome || ''; document.getElementById('strutIndirizzo').value = d.indirizzo || '';
-                document.getElementById('strutPiva').value = d.piva || ''; document.getElementById('strutAdmin').value = d.admin || ''; document.getElementById('strutHaccp').value = d.haccp || '';
-                if(d.nome) { document.getElementById('main-title').innerText = d.nome; document.title = "Dashboard - " + d.nome; }
+                document.getElementById('strutNome').value = d.denominazione || ''; 
+                document.getElementById('strutIndirizzo').value = d.indirizzo || '';
+                document.getElementById('strutPiva').value = d.piva || ''; 
+                document.getElementById('strutAdmin').value = d.admin || ''; 
+                document.getElementById('strutHaccp').value = d.haccp || '';
+                if(d.denominazione) { 
+                    document.getElementById('main-title').innerText = d.denominazione; 
+                    document.title = "Dashboard HACCP - " + d.denominazione; 
+                }
             }
         });
 
-        onSnapshot(query(collection(db, "operatori"), orderBy("nome")), (snapshot) => {
-            const container = document.getElementById('op-list-container'); container.innerHTML = '';
-            snapshot.forEach((docSnap) => { const op = docSnap.data(); container.innerHTML += `<div class="list-item"><div><strong>${op.nome}</strong><span>${op.qualifica} | PIN: ${op.pin}</span></div><button class="btn-del" onclick="deleteOp('${docSnap.id}')">Rimuovi</button></div>`; });
-        });
-        window.deleteOp = async (id) => { if(confirm("Rimuovere operatore?")) await deleteDoc(doc(db, "operatori", id)); };
-        
-        document.getElementById('btnAddOp').addEventListener('click', async () => {
-            const n = document.getElementById('newOpName').value.trim(); const r = document.getElementById('newOpRole').value.trim(); const p = document.getElementById('newOpPin').value.trim();
-            if(!n || !r || p.length < 4) return alert("Compila tutti i campi. PIN min. 4 cifre.");
-            await addDoc(collection(db, "operatori"), { name: n, nome: n, role: r, qualifica: r, pin: p });
-            document.getElementById('newOpName').value = ''; document.getElementById('newOpRole').value = ''; document.getElementById('newOpPin').value = '';
+        document.getElementById('btnSalvaStruttura').addEventListener('click', async () => {
+            const data = {
+                denominazione: document.getElementById('strutNome').value.trim(),
+                indirizzo: document.getElementById('strutIndirizzo').value.trim(),
+                piva: document.getElementById('strutPiva').value.trim(),
+                admin: document.getElementById('strutAdmin').value.trim(),
+                haccp: document.getElementById('strutHaccp').value.trim()
+            };
+            await setDoc(doc(db, "struttura", "info"), data, { merge: true });
+            window.showToast("✅ Dati Struttura aggiornati globalmente!");
         });
 
+        // Configurazione Liste Tablet
         const configRef = doc(db, "configurazioni", "liste"); let currentConfig = { frigoriferi: [], aree: [], pulizie: [] };
         onSnapshot(configRef, (docSnap) => {
             if (docSnap.exists()) currentConfig = docSnap.data();
-            const render = (arr, id, key) => { const c = document.getElementById(id); c.innerHTML = ''; if(arr) arr.forEach((item, idx) => c.innerHTML += `<div class="item-tag">${item} <span style="color:var(--danger); cursor:pointer; margin-left:5px; font-weight:bold;" onclick="removeConfigItem('${key}', ${idx})">✕</span></div>`); };
+            const render = (arr, id, key) => { const c = document.getElementById(id); c.innerHTML = ''; if(arr) arr.forEach((item, idx) => c.innerHTML += `<div class="item-tag">${item} <span style="color:var(--danger); cursor:pointer; margin-left:5px; font-weight:bold; font-size:14px;" title="Rimuovi" onclick="removeConfigItem('${key}', ${idx})">✕</span></div>`); };
             render(currentConfig.frigoriferi, 'list-frigoriferi', 'frigoriferi'); render(currentConfig.aree, 'list-aree', 'aree'); render(currentConfig.pulizie, 'list-pulizie', 'pulizie');
         });
         window.addConfigItem = async (key, inputId) => { const el = document.getElementById(inputId); const val = el.value.trim(); if (!val) return; let arr = currentConfig[key] || []; arr.push(val); await setDoc(configRef, { [key]: arr }, { merge: true }); el.value = ''; };
         window.removeConfigItem = async (key, idx) => { let arr = currentConfig[key] || []; arr.splice(idx, 1); await setDoc(configRef, { [key]: arr }, { merge: true }); };
 
+        // Sicurezza 81/08 Scadenziario
         document.getElementById('btnAddSicurezza').addEventListener('click', async () => {
             const n = document.getElementById('sicDocName').value.trim(); const c = document.getElementById('sicDocCat').value; const d = document.getElementById('sicDocDate').value;
             if(!n || !d) return alert("Inserisci Nome e Data scadenza.");
@@ -563,6 +591,7 @@
             document.getElementById('kpi-sic-totali').innerText = sTot; document.getElementById('kpi-sic-ok').innerText = sOk; document.getElementById('kpi-sic-warn').innerText = sWarn; document.getElementById('kpi-sic-err').innerText = sErr;
         });
 
+        // Pest Control
         document.getElementById('btnAddPest').addEventListener('click', async () => {
             const d = document.getElementById('pestDate').value; const n = document.getElementById('pestName').value.trim(); const t = document.getElementById('pestType').value; const r = document.getElementById('pestResult').value;
             if(!d || !n) return alert("Inserisci Data e Nome.");
