@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - UI Istituzionale (Regione Umbria) & Clinica</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #f1f5f9;         
+            --box-bg: #ffffff;
+            --primary-color: #0d9488; 
+            --secondary-color: #0f766e;  
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --input-bg: #ffffff;
+            --border-color: #cbd5e1;     
+            --error-color: #e11d48; 
+            --warning-color: #d97706; 
+            --success-color: #059669; 
+            --dir-color: #4f46e5;
+            --terapia-color: #0284c7; 
+            --app-color: #db2777;
+            --iso-color: #d97706;
+            --base-font-size: 14px;      
+            --radius: 6px;               
+            --transition: all 0.2s ease;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+        body[data-qualifica="OSS"] textarea.restrict-oss-input, body[data-qualifica="OSS"] input.restrict-oss-input, body[data-qualifica="OSS"] select.restrict-oss-input { pointer-events: none; opacity: 0.6; background-color: #f1f5f9; }
+        
+        body:not([data-med-access="true"]) .only-medico { display: none !important; }
+        body:not([data-med-access="true"]) .only-medico-input { pointer-events: none; opacity: 0.6; background-color: #f1f5f9;}
+        body:not([data-sign-access="true"]) .req-sign-role { display: none !important; }
+        body:not([data-role="admin"]) .req-admin { display: none !important; }
+        
+        .inf-edit-area, .inf-delete-btn, .oss-edit-area, .oss-delete-btn { display: none !important; }
+        body[data-qualifica="Infermiere"] .inf-edit-area, body[data-qualifica="Infermiere"] .inf-delete-btn { display: block !important; }
+        body[data-qualifica="OSS"] .oss-edit-area, body[data-qualifica="OSS"] .oss-delete-btn { display: block !important; }
+        
+        .req-medico, .req-infermiere { display: none; }
+        body[data-qualifica="Medico"] .req-medico, body[data-qualifica="Direttore Sanitario"] .req-medico, body[data-role="admin"] .req-medico { display: block; }
+        body[data-qualifica="Infermiere"] .req-infermiere, body[data-role="admin"] .req-infermiere { display: block; }
+
+        /* CLASSE PER EVIDENZIARE I CAMPI OBBLIGATORI ALLOGGIATI WEB */
+        .alloggiati-obbligatorio { border: 2px solid var(--error-color) !important; background-color: #fff1f2 !important; }
+        .alloggiati-obbligatorio:focus { box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.2) !important; }
+
+        .body-marker { position: absolute; width: 14px; height: 14px; background-color: var(--error-color); border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        
+        #loginScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100%; position: fixed; top: 0; left: 0; z-index: 9999; background-color: var(--primary-color); }
+        .login-header-title { text-align: center; color: white; margin-bottom: 30px; z-index: 10; animation: slideUpFade 0.8s forwards; }
+        .login-header-title h1 { margin: 0; font-size: 2.6em; font-weight: 800; letter-spacing: 2px; }
+        .login-header-title h2 { margin: 5px 0 0 0; font-size: 1.3em; color: #ccfbf1; }
+        .login-box { background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; max-width: 450px; width: 90%; border-top: 5px solid var(--secondary-color); animation: slideUpFade 0.8s forwards;}
+        .profiles-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 10px; max-height: 280px; overflow-y: auto; padding: 5px; }
+        .profile-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 8px; border: 1px solid var(--border-color); border-radius: 6px; background: #f8fafc; cursor: pointer; transition: 0.2s; width: 85px; }
+        .profile-btn:hover { border-color: var(--secondary-color); background: #f0fdfa; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .profile-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4em; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .login-input { width: 100%; padding: 15px; font-size: 1.2em; border: 1px solid var(--border-color); border-radius: var(--radius); text-align: center; letter-spacing: 5px; box-sizing: border-box;}
+        .login-btn-master { background-color: var(--primary-color); color: white; border: none; width: 100%; padding: 14px; border-radius: var(--radius); font-size: 1em; font-weight: bold; margin-top: 10px; cursor: pointer; transition: 0.2s; }
+        .login-btn-master:hover { background-color: var(--secondary-color); }
+        @keyframes slideUpFade { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+        #top-nav-container { position: sticky; top: 0; z-index: 1000; width: 100%; display: flex; flex-direction: column; flex-shrink: 0; }
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); }
+        .navbar-brand { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1em; }
+        .navbar-actions { display: flex; gap: 10px; align-items: center; }
+        .nav-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: var(--radius); cursor: pointer; transition: 0.2s; text-decoration:none; display:flex; align-items:center; }
+        .nav-btn:hover { background: rgba(255,255,255,0.2); }
+        .current-op-badge { background: #ffffff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+        
+        .app-menu { display: flex; background: #cbd5e1; padding: 10px 20px 0 20px; gap: 2px; overflow-x: auto; border-bottom: 1px solid #94a3b8; }
+        .menu-tab { padding: 8px 14px; background: #e2e8f0; border: 1px solid #94a3b8; border-bottom: none; border-radius: 6px 6px 0 0; color: var(--text-light); font-weight: 600; font-size: 0.85em; cursor: pointer; white-space: nowrap; margin-bottom: -1px; }
+        .menu-tab:hover { background: #f8fafc; color: var(--text-main); }
+        .menu-tab.active { background: var(--box-bg); color: var(--primary-color); border-top: 3px solid var(--primary-color); font-weight: bold; }
+
+        #appScreen { display: none; flex-direction: row; flex-grow: 1; height: 0; overflow: hidden; }
+        .sidebar { width: 260px; background: var(--box-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; }
+        .sidebar-item { padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; transition: 0.2s; border: 1px solid transparent; }
+        .sidebar-item:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .sidebar-item.active { background: #e0f2fe; border-color: var(--primary-color); border-left: 4px solid var(--primary-color); }
+        .sidebar-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink:0;}
+        .main-content { padding: 20px; flex-grow: 1; overflow-y: auto; box-sizing: border-box; }
+
+        .workspace { display: none; }
+        .workspace.active { display: block; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .card { background: var(--box-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--primary-color); padding-bottom: 8px; flex-wrap: wrap; gap:10px;}
+        .card-header h3 { margin: 0; color: var(--primary-color); font-size: 1.1em; text-transform: uppercase; }
+
+        .btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-dir, .btn-export, .btn-doc, .btn-outline { color: white; border: none; padding: 8px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.9em; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15); transition: 0.2s;}
+        .btn-primary { background: var(--secondary-color); } .btn-primary:hover { background: var(--primary-color); }
+        .btn-success { background: var(--success-color); } .btn-danger { background: var(--error-color); } .btn-warning { background: var(--warning-color); } .btn-dir { background: var(--dir-color); }
+        .btn-export { background: #047857; border: 1px solid #064e3b; }
+        .btn-doc { background: #475569; } .btn-doc:hover { background: #334155; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); box-shadow: none; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85em; color: var(--text-main); }
+        input[type="text"], input[type="password"], input[type="number"], input[type="date"], input[type="time"], textarea, select { width: 100%; padding: 8px; border: 1px solid #94a3b8; border-radius: 4px; box-sizing: border-box; background-color: var(--input-bg); color: var(--text-main); font-family: inherit; font-size: 0.95em; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-color); outline: none; background-color: #f0fdfa; }
+        input[readonly] { background-color: #f1f5f9; cursor: not-allowed; }
+        
+        .section-box { background: #f8fafc; border: 1px solid var(--border-color); padding: 15px; margin-bottom: 15px; border-radius:4px;}
+        .section-box h4 { margin: 0 0 10px 0; color: var(--primary-color); font-size: 1em; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; }
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .metric-card { background: var(--box-bg); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border-color); text-align: center; border-left: 5px solid var(--primary-color); }
+        .metric-card h2 { margin: 0; font-size: 2em; color: var(--primary-color); }
+        .chart-container { background: #fff; padding: 15px; border-radius: 6px; border: 1px solid #cbd5e1; display:flex; justify-content:center; align-items:center;}
+
+        .guest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-top: 15px; }
+        .guest-card { background: #ffffff; border: 1px solid var(--border-color); padding: 12px; border-radius: var(--radius); display: flex; flex-direction: column; gap: 8px; border-left: 4px solid var(--secondary-color);}
+        .guest-card-top { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+        .guest-avatar { width: 50px; height: 50px; border-radius: 4px; object-fit: cover; background: #e2e8f0; border: 1px solid var(--border-color); overflow: hidden; }
+        .guest-details { font-size: 0.85em; color: var(--text-main); line-height:1.4;}
+        
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.9em; background: #ffffff; }
+        .data-table th, .data-table td { border: 1px solid var(--border-color); padding: 8px; text-align: left; vertical-align: middle; }
+        .data-table th { background-color: var(--primary-color); color: white; font-weight: normal; text-transform: uppercase; font-size: 0.85em; }
+        .data-table tr:nth-child(even) { background-color: #f8fafc; } .data-table tr:hover { background-color: #f1f5f9; }
+
+        .terapia-table { width: 100%; border-collapse: collapse; font-size: 0.8em; text-align:center; min-width: 1000px; background: #ffffff;}
+        .terapia-table th, .terapia-table td { border: 1px solid #cbd5e1; padding: 2px; }
+        .terapia-table th { background: var(--terapia-color); color: white; padding: 6px 2px; font-weight: normal; }
+        .terapia-table td.farmaco-col { text-align:left; padding: 4px 8px; min-width: 200px; background: #f8fafc; position: sticky; left: 0; z-index: 2; border-right: 2px solid var(--terapia-color);}
+        .micro-shifts { display: flex; flex-direction: column; gap: 2px; justify-content: center; align-items:center; height:100%; width: 100%; padding: 2px 0;}
+        .shift-btn.single-btn { width: 90%; min-width: 30px; max-width: 45px; height: 16px; border-radius: 2px; font-size: 8.5px; font-weight:bold; line-height: 16px; text-align: center; color: #334155; cursor: pointer; border: 1px solid #94a3b8; background: #e2e8f0; overflow: hidden; }
+        .shift-btn:not(.disabled):hover { background: #cbd5e1; } 
+        .signature-text { color: var(--success-color); font-weight: bold; font-size: 8px; cursor:pointer; background: #d1fae5; border:1px solid #34d399; border-radius:2px; padding: 0; line-height: 16px; width: 90%; text-align: center; overflow:hidden; white-space:nowrap; margin-bottom:2px;}
+
+        .clinical-header { display: flex; align-items: center; gap: 15px; background: #ffffff; border: 1px solid var(--border-color); border-left: 8px solid var(--primary-color); padding: 15px; margin-bottom: 20px; border-radius:4px;}
+        .clinical-header img { width: 70px; height: 70px; border-radius: 4px; object-fit: cover; border: 1px solid var(--border-color); }
+        .clinical-header h2 { margin: 0; color: var(--primary-color); font-size: 1.4em; }
+        
+        .badge-disfagia { background: var(--warning-color); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #b45309; }
+        .badge-infezione { background: var(--error-color); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #9f1239; animation: pulseRed 2s infinite; }
+
+        .alert-item { background: #fef2f2; border: 1px solid #fca5a5; border-left: 4px solid #ef4444; padding: 10px; margin-bottom: 8px; border-radius: 4px; color: #991b1b; display: flex; justify-content: space-between; align-items: center;}
+        .alert-item.warning { background: #fffbeb; border-color: #fcd34d; border-left-color: #f59e0b; color: #b45309; }
+        
+        .check-item { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9em; cursor:pointer;}
+        .check-item input[type="checkbox"] { transform: scale(1.2); margin-right: 5px; accent-color: var(--primary-color); }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
+        .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .toast.show { opacity: 1; }
+
+        #printArea { display: none; }
+        @media print {
+            body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; }
+            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; font-size: 10pt !important; padding: 20px; box-sizing: border-box; }
+            .print-header { text-align: center; margin-bottom: 20px; }
+            .print-header h1 { margin: 0; font-size: 18pt; text-transform: uppercase; letter-spacing: 1px; color: #000; }
+            .print-header-details { font-size: 9pt; margin-top: 6px; color: #333; line-height: 1.4; }
+            .print-header h2 { margin: 0; font-size: 13pt; border-top: 2px solid black; padding-top: 10px; margin-top: 15px; text-transform: uppercase; font-weight: bold; }
+            
+            .print-title { font-size: 12pt; font-weight: bold; text-align: center; margin-bottom: 15px; text-transform: uppercase; background: #eee; padding: 8px; -webkit-print-color-adjust: exact; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; } 
+            .print-table th, .print-table td { border: 1px solid black; padding: 4px; text-align: center; font-size: 8pt; } 
+            .print-table th { background-color: #eee !important; -webkit-print-color-adjust: exact; }
+            .print-terapia-table { width: 100%; border-collapse: collapse; text-align:center; font-size: 7.5pt !important; margin-top:10px; } 
+            .print-terapia-table th, .print-terapia-table td { border: 1px solid #777; padding: 2px; } 
+            .print-terapia-table th { background: #ddd !important; -webkit-print-color-adjust: exact; font-size: 6.5pt; } 
+            .print-signatures { margin-top: 30px; display: flex; justify-content: space-between; page-break-inside: avoid; } 
+            .print-signatures > div { width: 45%; text-align: center; } 
+            .print-signatures p.line { border-top: 1px solid black; padding-top: 5px; margin-top: 30px; font-weight: bold; }
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    <div id="printArea"></div>
+
+    <!-- MODAL GLOBALE FIRMA -->
+    <div id="signatureModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:30000; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+        <div style="background:#fff; padding:25px; border-radius:8px; width:95%; max-width:500px; text-align:center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <h3 id="sigModalTitle" style="color:var(--primary-color); margin-top:0;">Acquisisci Firma</h3>
+            <p style="font-size:0.85em; color:var(--text-light); margin-bottom:15px;" id="sig-action-desc">Utilizza il mouse o il touch screen per firmare nel riquadro sottostante.</p>
+            <canvas id="modalSignaturePad" width="400" height="200" style="border:2px dashed #cbd5e1; border-radius:6px; background:#f8fafc; touch-action:none; max-width:100%; width:100%; box-sizing:border-box; cursor:crosshair;"></canvas>
+            <div style="display:flex; gap:10px; margin-top:20px; justify-content:center; flex-wrap:wrap;">
+                <button class="btn-doc" onclick="window.clearModalSignature()" style="flex:1;">🔄 Cancella</button>
+                <button class="btn-danger" onclick="window.closeSignatureModal()" style="flex:1;">❌ Annulla</button>
+                <button class="btn-success" onclick="window.confirmModalSignature()" style="flex:2; font-size:1.1em;">✅ Conferma</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SELEZIONE STAMPA FASCICOLO -->
+    <div id="printFascicoloModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:30000; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+        <div style="background:#fff; padding:25px; border-radius:8px; width:95%; max-width:450px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <h3 style="color:var(--primary-color); margin-top:0; border-bottom:2px solid var(--primary-color); padding-bottom:10px;">Opzioni di Stampa Fascicolo</h3>
+            <p style="font-size:0.9em; color:var(--text-light); margin-bottom:15px;">Seleziona le sezioni da includere nella stampa per l'ospite: <strong id="printModalGuestName"></strong></p>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px; background:#f8fafc; padding:15px; border:1px solid #cbd5e1; border-radius:6px;">
+                <label class="check-item"><input type="checkbox" id="printOptAnagrafica" checked> <span>1. Check-in e Condizioni Generali</span></label>
+                <label class="check-item"><input type="checkbox" id="printOptPAI" checked> <span>2. P.A.I. Multidisciplinare</span></label>
+                <label class="check-item"><input type="checkbox" id="printOptVitali" checked> <span>3. Parametri Vitali (Storico)</span></label>
+                <label class="check-item"><input type="checkbox" id="printOptDiari" checked> <span>4. Diario Clinico (Med/Inf/OSS)</span></label>
+                <label class="check-item"><input type="checkbox" id="printOptTerapia" checked> <span>5. Terapia in Atto</span></label>
+                <label class="check-item"><input type="checkbox" id="printOptDocs" checked> <span>6. Allegati e Scansioni Cliniche</span></label>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button class="btn-danger" onclick="document.getElementById('printFascicoloModal').style.display='none'">❌ Annulla</button>
+                <button class="btn-primary" onclick="window.executePrintFascicolo()">🖨️ Genera e Stampa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCHERMATA LOGIN -->
+    <div id="loginScreen">
+        <div class="login-header-title">
+            <h1>NUOVA VILLA SILVANA</h1>
+            <h2>Residenza Protetta per Anziani</h2>
+        </div>
+        <div class="login-box">
+            <h2 class="dynamic-greeting" id="loginGreeting" style="color:var(--primary-color);">Benvenuto</h2>
+            <p class="login-subtitle">Sistema Informativo Clinico</p>
+            <label style="display:block; text-align:center; font-size:0.95em; margin-bottom:15px; font-weight:bold; color:var(--text-main);">Seleziona il tuo Profilo</label>
+            <div id="loginProfilesContainer" class="profiles-grid">
+                <p style="color:var(--text-light); width:100%;">Caricamento profili in corso...</p>
+            </div>
+            <div id="loginPinArea" style="display:none; animation: fadeIn 0.3s ease;">
+                <label id="selectedProfileLabel" style="display:block; text-align:center; font-size:0.9em; margin-bottom:10px; font-weight:bold; color:var(--primary-color);"></label>
+                <div class="login-input-wrapper"><input type="password" id="loginPinInput" class="login-input" placeholder="****"></div>
+                <button class="login-btn-master" onclick="window.performLogin()">Accedi al Sistema</button>
+                <button id="backToProfilesBtn" class="btn-doc" style="margin: 15px auto 0 auto; display:block;" onclick="window.resetLoginSelection()">← Cambia Profilo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVBAR E MENU -->
+    <div id="top-nav-container">
+        <div class="navbar">
+            <div class="navbar-brand"><span>NVS Masterpiece [Clinica]</span></div>
+            <div class="navbar-actions">
+                <a href="iso_9001_accreditamento.html" target="_blank" class="nav-btn" style="text-decoration:none; color:#fde047; font-weight:bold;">🏆 Area Direzione (ISO)</a>
+                <a href="haccp_sicurezza_dash.html" target="_blank" class="nav-btn" style="text-decoration:none; color:#a7f3d0; font-weight:bold;">🛡️ HACCP e Sicurezza</a>
+                <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+                <button class="nav-btn" onclick="window.openPrintFascicoloModal()">🖨️ Stampa Fascicolo PDF</button>
+                <button class="nav-btn" onclick="window.logout()">🚪 Esci</button>
+            </div>
+        </div>
+        <div class="app-menu">
+            <button class="menu-tab active" onclick="window.switchTab('dashboard', this)">🏠 Dashboard</button>
+            <button class="menu-tab" onclick="window.switchTab('elenco', this)">👥 Elenco Ospiti</button>
+            <button class="menu-tab" onclick="window.switchTab('ospiti', this)">🛏️ Anagrafica Letti</button>
+            <button class="menu-tab" onclick="window.switchTab('clinica', this)">⚕️ Cartella Clinica & BINA</button>
+            <button class="menu-tab" onclick="window.switchTab('vitali', this)" style="color:#e11d48;">❤️ Parametri Vitali & Diario</button>
+            <button class="menu-tab" onclick="window.switchTab('diari', this)" style="color:#8b5cf6;">📝 Diari Med / Inf</button>
+            <button class="menu-tab" onclick="window.switchTab('consensi', this)" style="color:#4f46e5;">✍️ Modulistica e Consensi</button>
+            <button class="menu-tab" onclick="window.switchTab('contenzioni', this)" style="color:var(--error-color);">🔒 Registro Contenzioni</button>
+            <button class="menu-tab" style="color:var(--terapia-color);" onclick="window.switchTab('terapia', this)">💊 Terapia & Stupefacenti</button>
+            <button class="menu-tab" onclick="window.switchTab('rischio', this)">⚠️ Rischio Clinico</button>
+            <button class="menu-tab" onclick="window.switchTab('appuntamenti', this)">📅 CUP</button>
+            <button class="menu-tab" onclick="window.switchTab('consegne', this)">📖 Consegne</button>
+            <button class="menu-tab restrict-oss" onclick="window.switchTab('lettere', this)">📄 Lettere & Dimissioni</button>
+            <button class="menu-tab restrict-oss" onclick="window.switchTab('flussi', this)" style="color:var(--dir-color);">📤 Flussi e Portali</button>
+            <button class="menu-tab" onclick="window.switchTab('storico', this)">🗄️ Storico</button>
+        </div>
+    </div>
+
+    <!-- AREA DI LAVORO -->
+    <div id="appScreen">
+        <div class="sidebar" id="patientSidebar">
+            <div style="padding: 15px; border-bottom: 1px solid var(--border-color); background: white; position: sticky; top: 0; z-index: 2;">
+                <button class="btn-success" style="width:100%; margin-bottom: 10px;" onclick="window.goToNuovoOspite()">➕ Nuovo Ospite</button>
+                <input type="text" id="sidebarSearch" placeholder="🔍 Cerca Paziente..." onkeyup="window.renderSidebarPatients()" style="width:100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;">
+            </div>
+            <div id="sidebarPatientList" style="padding: 10px; overflow-y: auto; flex: 1;"></div>
+        </div>
+
+        <div class="main-content">
+            
+            <!-- 1. DASHBOARD E PANNELLO ADMIN -->
+            <div id="ws-dashboard" class="workspace active">
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h2 style="margin:0; color:var(--text-main);">Dashboard Generale</h2>
+                    <!-- PULSANTE ADMIN CON AGGIRAMENTO SICUREZZA ("!important") -->
+                    <button id="btnToggleAdmin" class="btn-outline" style="border-color:var(--dir-color); color:var(--dir-color); font-size:1.1em; padding:10px 20px; font-weight:bold; background:#f8fafc; display:inline-block !important;" onclick="const p = document.getElementById('adminPanel'); p.style.display = p.style.display === 'none' ? 'block' : 'none'; setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);">⚙️ Mostra/Nascondi Impostazioni Staff e Struttura</button>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h2 id="dash-guests-count" style="margin-bottom:0;">0</h2>
+                        <span id="dash-guests-detail" style="font-size:0.85em; color:var(--text-light); font-weight:normal;">0 Presenti | 0 Assenti</span><br>
+                        <span style="margin-top:5px; display:inline-block; font-size:0.8em; text-transform:uppercase;">Posti Letto Occupati</span>
+                    </div>
+                    <div class="metric-card" style="border-left-color: var(--app-color);"><h2 id="dash-app-count" style="color: var(--app-color);">0</h2><span style="font-size:0.8em; text-transform:uppercase;">Visite Programmate (CUP)</span></div>
+                    <div class="metric-card" style="border-left-color: var(--error-color);"><h2 id="dash-cont-count" style="color: var(--error-color);">0</h2><span style="font-size:0.8em; text-transform:uppercase;">Contenzioni Attive</span></div>
+                </div>
+                
+                <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom: 20px;">
+                    <div class="card" style="flex:2; min-width:300px; margin-bottom:0; border-top:4px solid var(--warning-color);"><div class="card-header"><h3 style="color:var(--warning-color);">Scadenziario Legale e Alert Clinici</h3></div><div id="dashboardAlertsList" style="max-height:250px; overflow-y:auto;"></div></div>
+                    <div class="card" style="flex:1; min-width:300px; margin-bottom:0;"><div class="card-header"><h3>Agenda CUP</h3></div><div id="dashMiniCalendar" style="max-height:250px; overflow-y:auto;"></div></div>
+                </div>
+
+                <!-- SEZIONE GRAFICO RIPARTIZIONE GENERE -->
+                <div class="card" style="border-top:4px solid var(--primary-color);">
+                    <div class="card-header">
+                        <h3 style="color:var(--primary-color);">📊 Ripartizione Ospiti per Genere</h3>
+                        <span style="font-size:0.9em; background:#f0fdfa; color:#0f766e; padding:4px 10px; border-radius:4px; border:1px solid #ccfbf1; font-weight:bold;">Totale: <strong id="genderTotalCount">0</strong></span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px;">
+                        <div style="position:relative; width:100%; max-width:300px; height:200px;">
+                            <canvas id="genderChart"></canvas>
+                        </div>
+                        <div style="display:flex; justify-content:center; gap:25px; margin-top:15px; font-weight:bold; font-size:0.95em;">
+                            <span style="color:#0284c7;">🔵 Maschi (M): <strong id="genderMCount">0</strong></span>
+                            <span style="color:#db2777;">🌸 Femmine (F): <strong id="genderFCount">0</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANNELLO ADMIN -->
+                <div id="adminPanel" style="display: none; margin-top: 20px; border: 3px dashed var(--dir-color); padding: 20px; border-radius: 8px; background: #fff;">
+                    <h2 style="color:var(--dir-color); margin-top:0; text-align:center;">⚙️ Area Amministratore</h2>
+                    
+                    <div class="card" style="border-color: var(--dir-color); box-shadow:none;">
+                        <div class="card-header"><h3 style="color:var(--dir-color);">Gestione Staff e Operatori</h3></div>
+                        <div style="display:flex; gap:12px; margin-bottom:15px; flex-wrap:wrap; background: #f8fafc; padding:15px; border: 1px solid var(--border-color); border-radius:6px;">
+                            <div style="flex:2; min-width:180px;"><label>Nome e Cognome</label><input type="text" id="newOpInput"></div>
+                            <div style="flex:1; min-width:140px;"><label>Qualifica</label><select id="newOpQualifica"><option value="Amministrazione">Amministrazione</option><option value="Direttore Sanitario">Direttore Sanitario</option><option value="Infermiere" selected>Infermiere</option><option value="Medico">Medico</option><option value="Fisioterapista">Fisioterapista</option><option value="Educatore">Educatore / Animatore</option><option value="OSS">OSS</option><option value="Altro">Altro</option></select></div>
+                            <div style="flex:1; min-width:120px;"><label>PIN</label><input type="password" id="newOpPin"></div>
+                            <div style="flex:1; min-width:140px;"><label>Accesso</label><select id="newOpRole"><option value="user">Standard</option><option value="admin">Admin</option></select></div>
+                            <div style="flex:1; min-width:140px;"><label>Foto (Opz.)</label><input type="file" id="newOpPhoto" accept="image/*" onchange="window.encodeOpPhoto(event)" style="padding:4px; font-size:0.8em;"></div>
+                            <div style="display:flex; align-items:flex-end;"><button class="btn-primary" onclick="window.addOperator()">Aggiungi</button></div>
+                        </div>
+                        <ul class="staff-list" id="operatorList" style="list-style:none; padding:0; display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:10px;"></ul>
+                    </div>
+
+                    <div class="card" style="border-color: #475569; margin-top: 20px; box-shadow:none;">
+                        <div class="card-header"><h3 style="color:#475569;">Impostazioni Struttura (Intestazione Stampe)</h3></div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; background: #f8fafc; padding:15px; border: 1px solid var(--border-color); border-radius:6px;">
+                            <div class="form-group" style="flex:2; min-width:200px;"><label>Denominazione Struttura</label><input type="text" id="strutDenominazione" placeholder="Es. Nuova Villa Silvana"></div>
+                            <div class="form-group" style="flex:1; min-width:150px;"><label>Tipo Struttura</label><input type="text" id="strutTipo" placeholder="Es. Residenza Protetta"></div>
+                            <div class="form-group" style="flex:2; min-width:250px;"><label>Indirizzo Completo</label><input type="text" id="strutIndirizzo" placeholder="Via, CAP, Città, Prov"></div>
+                            <div class="form-group" style="flex:2; min-width:200px;"><label>Ragione Sociale</label><input type="text" id="strutRagioneSociale" placeholder="Es. NVS S.r.l."></div>
+                            <div class="form-group" style="flex:1; min-width:150px;"><label>Partita IVA / CF</label><input type="text" id="strutPiva"></div>
+                            <div class="form-group" style="flex:1; min-width:150px;"><label>Telefono</label><input type="text" id="strutTelefono"></div>
+                            <div class="form-group" style="flex:1.5; min-width:200px;"><label>Email / PEC</label><input type="text" id="strutEmail"></div>
+                            <div style="display:flex; align-items:flex-end; width:100%; justify-content:flex-end; margin-top:10px;">
+                                <button class="btn-primary" style="background:#475569; padding: 10px 20px;" onclick="window.saveDatiStruttura()">💾 Salva Dati Struttura</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. ELENCO OSPITI -->
+            <div id="ws-elenco" class="workspace">
+                <div class="card">
+                    <div class="card-header"><h3>Elenco Ospiti in Struttura</h3></div>
+                    <div class="guest-grid" id="guestGrid"></div>
+                </div>
+            </div>
+
+            <!-- 3. ANAGRAFICA OSPITI -->
+            <div id="ws-ospiti" class="workspace">
+                <div class="card restrict-oss">
+                    <div class="card-header">
+                        <h3 id="anagraficaFormTitle">Nuovo Ingresso / Anagrafica</h3>
+                        <button class="btn-doc" onclick="window.resetAnagraficaForm()">🔄 Svuota Campi / Nuovo Ospite</button>
+                    </div>
+
+                    <div style="background:#fef2f2; border-left:6px solid var(--error-color); padding:10px 15px; border-radius:4px; margin-bottom:15px; color:#991b1b; font-weight:bold; font-size:0.95em;">
+                        🔴 I campi evidenziati in rosso sono OBBLIGATORI e FONDAMENTALI per la corretta generazione del file verso il Portale "Alloggiati Web" della Polizia di Stato.
+                    </div>
+
+                    <div class="form-group" style="background:#e0f2fe; padding:10px; border:1px solid #bae6fd; border-radius:4px; margin-bottom:15px;">
+                        <label style="color:#0284c7;"><strong>✏️ Modifica Anagrafica / Recupera Ospite</strong> (seleziona per precompilare)</label>
+                        <select id="editAnagraficaSelect" onchange="window.loadAnagraficaForEdit()" style="border-color:#0284c7;">
+                            <option value="">-- ➕ Crea Nuovo Ospite (Svuota Campi) --</option>
+                        </select>
+                    </div>
+                    
+                    <div style="background: #fef9c3; border: 1px solid #fde047; padding: 15px; border-radius: 4px; margin-bottom: 15px;">
+                        <label style="color: #854d0e; font-weight: bold; margin-bottom: 8px; display:block;">Autocompilazione da Tessera Sanitaria (Nuovi Ingressi)</label>
+                        <div style="display:flex; gap:10px;">
+                            <input type="text" id="tsBarcodeScanner" placeholder="Spara Barcode TEAM..." onkeypress="window.handleTSBarcode(event)" style="border-color:#fde047; background:#fff; flex:1;">
+                            <button type="button" class="btn-success" onclick="window.leggiSmartCardTS()" style="white-space: nowrap; padding: 10px 15px;">💳 Leggi Smart Card</button>
+                        </div>
+                    </div>
+
+                    <div class="section-box">
+                        <h4>1. Dati Generali e Nascita (Per Portale Alloggiati)</h4>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <div class="form-group" style="flex:1.5;">
+                                <label>Cognome *</label>
+                                <input type="text" id="newGuestCognome" class="alloggiati-obbligatorio">
+                            </div>
+                            <div class="form-group" style="flex:1.5;">
+                                <label>Nome *</label>
+                                <input type="text" id="newGuestNome" class="alloggiati-obbligatorio">
+                            </div>
+                            <div class="form-group" style="flex:0.5;">
+                                <label>Sesso</label>
+                                <select id="newGuestSesso" class="alloggiati-obbligatorio"><option value="M">M</option><option value="F">F</option></select>
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label>Data Nascita</label>
+                                <input type="date" id="newGuestDob" class="alloggiati-obbligatorio">
+                            </div>
+                            <div class="form-group" style="flex:1.5;">
+                                <label>Codice Fiscale *</label>
+                                <input type="text" id="newGuestCF">
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <div class="form-group" style="flex:2;">
+                                <label>Comune o Stato Estero di Nascita *</label>
+                                <input type="text" id="newGuestPob" class="alloggiati-obbligatorio" list="comuniList" onchange="window.fillComune('Pob')" placeholder="Inizia a digitare...">
+                            </div>
+                            <div class="form-group" style="flex:0.5;"><label>Prov.</label><input type="text" id="newGuestPobProv" maxlength="2" readonly></div>
+                            <div class="form-group" style="flex:1.5;"><label>Codice Alloggiati Nascita</label><input type="text" id="newGuestPobCod" placeholder="Calcolo Auto..." readonly></div>
+                            <div class="form-group" style="flex:1.5;">
+                                <label>Cod. Cittadinanza *</label>
+                                <input type="text" id="newGuestCittadinanza" class="alloggiati-obbligatorio" value="100000100" placeholder="Italia = 100000100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-box">
+                        <h4>2. Luogo di Residenza e Dati Ingresso</h4>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <div class="form-group" style="flex:2;"><label>Indirizzo (Via/Piazza)</label><input type="text" id="newGuestResInd"></div>
+                            <div class="form-group" style="flex:2;">
+                                <label>Comune di Residenza *</label>
+                                <input type="text" id="newGuestResCom" list="comuniList" onchange="window.fillComune('Res')" placeholder="Inizia a digitare...">
+                            </div>
+                            <div class="form-group" style="flex:0.5;"><label>Prov.</label><input type="text" id="newGuestResProv" maxlength="2" readonly></div>
+                            <div class="form-group" style="flex:1.5;"><label>Codice Alloggiati Resid.</label><input type="text" id="newGuestResCod" placeholder="Calcolo Auto..." readonly></div>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <div class="form-group" style="flex:1;">
+                                <label>Data Ingresso in Struttura *</label>
+                                <input type="date" id="newGuestIngresso" class="alloggiati-obbligatorio">
+                            </div>
+                            <div class="form-group" style="flex:1;"><label>Stanza Assegnata</label><input type="text" id="newGuestRoom"></div>
+                            <div class="form-group" style="flex:1.5;"><label>Foto Profilo</label><input type="file" id="newGuestPhoto" accept="image/*" onchange="window.processFileUpload(event, 'newPhoto')" style="background:#fff;"></div>
+                        </div>
+                    </div>
+
+                    <div class="section-box">
+                        <h4>3. Estremi Documento Identità (Obbligatori per Alloggiati Web)</h4>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <div class="form-group" style="flex:1;">
+                                <label>Tipo Doc</label>
+                                <select id="newGuestDocTipo" class="alloggiati-obbligatorio">
+                                    <option value="IDENT">Carta d'Identità</option>
+                                    <option value="PASSP">Passaporto</option>
+                                    <option value="PATEN">Patente</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex:1.5;">
+                                <label>Numero Documento *</label>
+                                <input type="text" id="newGuestDocNum" class="alloggiati-obbligatorio" style="text-transform:uppercase;">
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <div class="form-group" style="flex:2;">
+                                <label>Comune Rilascio *</label>
+                                <input type="text" id="newGuestDocRilascioNome" class="alloggiati-obbligatorio" list="comuniList" onchange="window.fillComune('Doc')" placeholder="Inizia a digitare...">
+                            </div>
+                            <div class="form-group" style="flex:1.5;"><label>Codice Alloggiati Rilascio *</label><input type="text" id="newGuestDocRilascioCod" placeholder="Calcolo Auto..." readonly></div>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <div class="form-group" style="flex:1;"><label>Data Rilascio</label><input type="date" id="newGuestDocDataRil"></div>
+                            <div class="form-group" style="flex:1;"><label>Data Scadenza</label><input type="date" id="newGuestDocDataScad"></div>
+                        </div>
+                    </div>
+
+                    <div class="section-box">
+                        <h4>4. Figure di Riferimento, Tutela Legale e U.V.M.</h4>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <div class="form-group" style="flex:2;"><label>Nome Familiare</label><input type="text" id="newGuestRef"></div>
+                            <div class="form-group" style="flex:1;"><label>Parentela</label><select id="newGuestRefParentela"><option value="Figlio/a">Figlio/a</option><option value="Coniuge">Coniuge</option><option value="Altro">Altro</option></select></div>
+                            <div class="form-group" style="flex:1.5;"><label>Telefono Familiare</label><input type="text" id="newGuestRefTel"></div>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <div class="form-group" style="flex:2;"><label>Medico di Base (MMG)</label><input type="text" id="newGuestMMG"></div>
+                            <div class="form-group" style="flex:1;"><label>Telefono MMG</label><input type="text" id="newGuestMMGTel"></div>
+                            <div class="form-group" style="flex:1.5;"><label>Email MMG</label><input type="text" id="newGuestMMGEmail"></div>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; border-bottom:1px dashed #cbd5e1; padding-bottom:10px;">
+                            <div class="form-group" style="flex:2;"><label>Nome Tutore / AdS</label><input type="text" id="newGuestTutore"></div>
+                            <div class="form-group" style="flex:1.5;"><label>Tel. e Email AdS</label><input type="text" id="newGuestTutoreTel" placeholder="Telefono o Email"></div>
+                            <div class="form-group" style="flex:1;"><label>Scadenza Legale</label><input type="date" id="newGuestTutoreScadenza"></div>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <div class="form-group" style="flex:1;"><label>Data Verbale U.V.M.</label><input type="date" id="newGuestUVMData"></div>
+                            <div class="form-group" style="flex:1;"><label>Punteggio</label><input type="text" id="newGuestUVMPunteggio"></div>
+                            <div class="form-group" style="flex:1.5;"><label>Verbale U.V.M. (PDF)</label><input type="file" id="newGuestDocUVM" accept="image/*,application/pdf" onchange="window.processFileUpload(event, 'newUvm')" style="background:#fff;"></div>
+                        </div>
+                    </div>
+                    
+                    <button id="anagraficaSaveBtn" class="btn-primary" style="width:100%; padding:12px; font-size:1.1em; background:var(--primary-color);" onclick="window.saveAnagrafica()">💾 Registra Nuovo Ospite</button>
+                </div>
+                
+                <div class="card restrict-oss" style="border-left: 4px solid var(--warning-color);">
+                    <div class="card-header"><h3 style="color:var(--warning-color);">Registro Movimenti</h3><button class="btn-export" onclick="window.exportFARUmbria()">📊 Esporta Flusso FAR (USL Umbria)</button></div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; background: #f8fafc; padding: 10px; border: 1px solid var(--border-color);">
+                        <div class="form-group" style="flex:2;"><label>Ospite</label><select id="movGuestSelect" onchange="window.selectPatientGlobal(this.value)"><option value="" disabled selected>Scegli...</option></select></div><div class="form-group" style="flex:1;"><label>Movimento</label><select id="movTipo"><option value="RICOVERO">Ricovero</option><option value="FAMIGLIA">Famiglia</option><option value="RIENTRO">Rientro</option></select></div><div class="form-group" style="flex:1;"><label>Data</label><input type="date" id="movData"></div><div class="form-group" style="flex:2;"><label>Note</label><input type="text" id="movNote"></div><div style="display:flex; align-items:flex-end;"><button class="btn-primary" onclick="window.addMovimento()">Registra</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. CARTELLA CLINICA E BINA -->
+            <div id="ws-clinica" class="workspace">
+                <div class="card"><div class="form-group"><label>Seleziona Fascicolo Paziente</label><select id="clinicalGuestSelect" onchange="window.handlePatientSelect('clinicalGuestSelect')" style="padding: 10px; font-weight:bold; border-color:var(--primary-color);"><option value="" disabled selected>Scegli...</option></select></div></div>
+                <div id="clinicalContent" style="display:none;">
+                    <div class="clinical-header" id="clinicalHeader"></div>
+                    
+                    <div class="card restrict-oss" style="border-top: 5px solid var(--warning-color);">
+                        <div class="card-header warning-header"><h3 style="color:var(--warning-color);">⚠️ Status Infettivo (ICA) e Nutrizionale</h3></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; background:#fffbeb; padding:20px; border:1px solid #fde68a; border-radius:4px; margin-bottom:20px;">
+                            <div class="form-group" style="flex:1; min-width:150px;">
+                                <label style="color:#b45309;">Rischio Soffocamento</label>
+                                <label class="check-item"><input type="checkbox" id="chkDisfagia"> <span>Paziente Disfagico</span></label>
+                            </div>
+                            <div class="form-group" style="flex:2; min-width:200px;">
+                                <label style="color:#b45309;">Stato Infettivo Attivo (ICA)</label>
+                                <select id="selInfezione" style="border-color:#fcd34d;">
+                                    <option value="">Nessuna Infezione / Isolamento</option>
+                                    <option value="MRSA">MRSA</option>
+                                    <option value="Clostridium Difficile">Clostridium Difficile</option>
+                                    <option value="Scabbia">Scabbia</option>
+                                    <option value="COVID-19">COVID-19</option>
+                                    <option value="Altra Infezione">Altra Infezione Attiva</option>
+                                </select>
+                            </div>
+                            <div style="display:flex; align-items:flex-end; width:100%; justify-content:flex-end;">
+                                <button class="btn-warning" style="color:white; padding:10px 20px;" onclick="window.saveClinicalData()">💾 Salva Status</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEZIONE TRIMESTRALE CHECK-IN E RIVALUTAZIONE -->
+                    <div class="card restrict-oss" style="border-top: 4px solid #4f46e5;">
+                        <div class="card-header"><h3 style="color:#4f46e5;">🔄 Scadenza Trimestrale Check-in & Rivalutazioni (90 Giorni)</h3></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; background:#f0fdf4; padding:15px; border:1px solid #bbf7d0; border-radius:4px; margin-bottom:15px;">
+                            <div class="form-group" style="flex:1; min-width:180px;">
+                                <label>Data Ultima Valutazione</label>
+                                <input type="date" id="tab-checkinDataValutazione" onchange="window.updateCheckinExpirationPreview()">
+                            </div>
+                            <div class="form-group" style="flex:1; min-width:180px;">
+                                <label>Scadenza Trimestrale (90gg)</label>
+                                <input type="text" id="tab-checkinDataScadenzaPreview" readonly style="background:#e2e8f0; font-weight:bold;">
+                            </div>
+                            <div class="form-group" style="flex:1; min-width:180px;">
+                                <label>Stato Validità</label>
+                                <div id="checkinValidityBadge" style="padding:8px; font-weight:bold; font-size:0.9em; border-radius:4px; background:#fff; border:1px solid #cbd5e1;">-</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; background:#f8fafc; padding:15px; border:1px solid var(--border-color); border-radius:4px; margin-bottom:15px;">
+                            <div class="form-group" style="flex:1;"><label>Esito Rivalutazione</label><select id="tab-integrazioneEsito"><option value="Miglioramento / Guarigione">Miglioramento / Guarigione</option><option value="Stazionario">Stazionario</option><option value="Peggioramento / Nuova Lesione">Peggioramento / Nuova Lesione</option></select></div>
+                            <div class="form-group" style="flex:2;"><label>Note di Rivalutazione e Rinnovo Trimestre</label><input type="text" id="tab-integrazioneNote" placeholder="Descrivi decorso lesioni, medicazioni, ecc."></div>
+                            <div style="display:flex; align-items:flex-end;"><button class="btn-primary" style="background:#4f46e5;" onclick="window.addIntegrazioneCheckin()">➕ Registra e Rinnova</button></div>
+                        </div>
+                        <div id="checkinIntegrazioniList" style="margin-top:10px;"></div>
+                    </div>
+
+                    <details class="card restrict-oss" style="border-left: 4px solid var(--primary-color);">
+                        <summary style="font-size: 1.1em; font-weight: bold; color: var(--primary-color); cursor: pointer; outline: none; padding-bottom:10px;">📋 Consulta / Modifica Anagrafica Rapida e Documenti</summary>
+                        <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                            <div style="display:flex; gap:10px; flex-wrap:wrap;"><div class="form-group" style="flex:2;"><label>Nome</label><input type="text" id="editGuestName" readonly style="background:#f1f5f9; cursor:not-allowed;"></div><div class="form-group" style="flex:1;"><label>CF</label><input type="text" id="editGuestCF"></div><div class="form-group" style="flex:1;"><label>Stanza</label><input type="text" id="editGuestRoom"></div></div>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; background:#f8fafc; padding:10px; border:1px solid #cbd5e1; margin-bottom:15px;"><div class="form-group" style="flex:2;"><label>Ref</label><input type="text" id="editGuestRef"></div><div class="form-group" style="flex:1;"><label>Tel Ref</label><input type="text" id="editGuestRefTel"></div><div class="form-group" style="flex:2;"><label>MMG</label><input type="text" id="editGuestMMG"></div><div class="form-group" style="flex:1;"><label>Scadenza AdS/Tutore</label><input type="date" id="editGuestTutoreScadenza"></div></div>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; background:#f0f9ff; padding:10px; border:1px solid #bae6fd; margin-bottom:15px;"><div class="form-group" style="flex:1;"><label>Data U.V.M.</label><input type="date" id="editGuestUVMData"></div><div class="form-group" style="flex:1;"><label>Punteggio U.V.M.</label><input type="text" id="editGuestUVMPunteggio"></div><div class="form-group" style="flex:1; min-width:200px;"><label>Aggiorna Verbale U.V.M.</label><div style="display:flex; gap:8px;"><label class="btn-doc" style="flex:1; text-align:center; padding:6px; cursor:pointer;">📁 Sfoglia PDF<input type="file" id="editGuestDocUVM" accept="image/*,application/pdf" onchange="window.processFileUpload(event, 'editUvm')" style="display:none;"></label></div><div id="viewGuestDocUvm" style="margin-top:5px; font-weight:bold; font-size:0.9em;"></div></div></div>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+                                <div class="form-group" style="flex:1; min-width:200px;">
+                                    <label>Cambia Foto Profilo</label>
+                                    <div style="display:flex; gap:8px;">
+                                        <label class="btn-primary" style="flex:1; text-align:center; padding:6px; cursor:pointer;">📷 Scatta<input type="file" accept="image/*" capture="environment" onchange="window.processFileUpload(event, 'editPhoto')" style="display:none;"></label>
+                                        <label class="btn-doc" style="flex:1; text-align:center; padding:6px; cursor:pointer;">📁 Sfoglia<input type="file" accept="image/*" onchange="window.processFileUpload(event, 'editPhoto')" style="display:none;"></label>
+                                    </div>
+                                    <div id="viewGuestPhotoStatus" style="margin-top:5px; font-weight:bold; font-size:0.9em; color:var(--primary-color);"></div>
+                                </div>
+                                <div class="form-group" style="flex:1; min-width:200px;">
+                                    <label>Aggiorna Doc. Identità</label>
+                                    <div style="display:flex; gap:8px;">
+                                        <label class="btn-primary" style="flex:1; text-align:center; padding:6px; cursor:pointer;">📷 Scatta<input type="file" accept="image/*" capture="environment" onchange="window.processFileUpload(event, 'editId')" style="display:none;"></label>
+                                        <label class="btn-doc" style="flex:1; text-align:center; padding:6px; cursor:pointer;">📁 Sfoglia<input type="file" accept="image/*,application/pdf" onchange="window.processFileUpload(event, 'editId')" style="display:none;"></label>
+                                    </div>
+                                    <div id="viewGuestDocId" style="margin-top:5px; font-weight:bold; font-size:0.9em;"></div>
+                                </div>
+                                <div class="form-group" style="flex:1; min-width:200px;">
+                                    <label>Aggiorna CF/TEAM</label>
+                                    <div style="display:flex; gap:8px;">
+                                        <label class="btn-primary" style="flex:1; text-align:center; padding:6px; cursor:pointer; background:#ca8a04;">📷 Scatta<input type="file" accept="image/*" capture="environment" onchange="window.processFileUpload(event, 'editCf')" style="display:none;"></label>
+                                        <label class="btn-doc" style="flex:1; text-align:center; padding:6px; cursor:pointer;">📁 Sfoglia<input type="file" accept="image/*,application/pdf" onchange="window.processFileUpload(event, 'editCf')" style="display:none;"></label>
+                                    </div>
+                                    <div id="viewGuestDocCf" style="margin-top:5px; font-weight:bold; font-size:0.9em;"></div>
+                                </div>
+                            </div>
+                            <button class="btn-success" onclick="window.updateGuestData()">💾 Aggiorna Dati</button>
+                        </div>
+                    </details>
+
+                    <div class="card"><div class="card-header"><h3>Check-in e Mappatura Lesioni</h3></div>
+                        <div class="form-group"><label>Condizioni Generali all'Arrivo</label><textarea id="chkGen" class="restrict-oss-input" rows="2"></textarea></div>
+                        <div class="form-group"><label>Piaghe/Lesioni</label><textarea id="chkPiaghe" class="restrict-oss-input" rows="2"></textarea></div>
+                        
+                        <!-- SEZIONE FOTO LESIONI -->
+                        <div class="form-group restrict-oss" style="background:#f8fafc; padding:15px; border:1px solid var(--border-color); border-radius:4px; margin:10px 0;">
+                            <label style="font-weight:bold; display:block; margin-bottom:10px;">📸 Foto Lesioni / Documentazione</label>
+                            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                                <label class="btn-primary" style="flex:1; cursor:pointer; text-align:center; background:var(--error-color);">📷 Scatta Foto<input type="file" accept="image/*" capture="environment" onchange="window.handlePhotoUpload(event)" style="display:none;"></label>
+                                <label class="btn-doc" style="flex:1; cursor:pointer; text-align:center;">📁 Carica File<input type="file" accept="image/*" onchange="window.handlePhotoUpload(event)" style="display:none;"></label>
+                            </div>
+                            <div id="photoThumbnailsGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px;"></div>
+                        </div>
+
+                        <div class="form-group restrict-oss"><label>Mappa Anatomica (Clicca o tocca per segnare)</label><div id="bodyMapWrapper" style="position:relative; width: 100%; max-width: 350px; margin: 10px 0; border: 1px solid var(--border-color); background: #fff; border-radius:4px;" onclick="window.handleBodyMapClick(event)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 250" id="bodyMapSvg" style="width:100%; height:auto; display:block; cursor:crosshair; pointer-events:none;"><g transform="translate(40, 30)"><text x="35" y="-10" text-anchor="middle" font-size="12" font-weight="bold" fill="#64748b">FRONTE</text><circle cx="35" cy="15" r="18" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="10" y="38" width="50" height="75" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="-8" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(10, -2, 42)"/><rect x="66" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(-10, 72, 42)"/><rect x="14" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="38" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/></g><g transform="translate(190, 30)"><text x="35" y="-10" text-anchor="middle" font-size="12" font-weight="bold" fill="#64748b">RETRO</text><circle cx="35" cy="15" r="18" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="10" y="38" width="50" height="75" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="-8" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(10, -2, 42)"/><rect x="66" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(-10, 72, 42)"/><rect x="14" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="38" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/></g></svg><div id="bodyMarkersLayer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div></div><button class="btn-doc" onclick="window.clearBodyMarkers()">Cancella Punti</button></div><div class="restrict-oss" style="display:flex; gap:10px; margin-top:10px;"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva Check-in</button></div></div>
+                    
+                    <div class="card" style="border-top: 4px solid var(--primary-color);"><div class="card-header"><h3>🏃‍♂️ Scheda Fisioterapica (FKT)</h3></div><div class="form-group"><label>Valutazione Motoria Iniziale / Attuale</label><textarea id="fktValutazione" class="restrict-oss-input" rows="3"></textarea></div><div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;"><div class="form-group" style="flex:1;"><label>Ausili in Uso</label><input type="text" id="fktAusili" class="restrict-oss-input"></div></div><div class="form-group"><label>Piano di Trattamento / Obiettivi</label><textarea id="fktObiettivi" class="restrict-oss-input" rows="2"></textarea></div><div class="restrict-oss" style="display:flex; gap:10px; margin-top:10px;"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva Scheda FKT</button></div></div>
+
+                    <div class="card req-infermiere" style="border-top: 4px solid #8b5cf6;">
+                        <div class="card-header"><h3 style="color:#8b5cf6;">🩺 Dispositivi Medici (C.V., PEG, SNG...)</h3></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; background:#f5f3ff; padding:15px; border:1px solid #ede9fe; border-radius:4px; margin-bottom:15px;">
+                            <div class="form-group" style="flex:1; min-width:180px;">
+                                <label>Tipo Dispositivo</label>
+                                <select id="dispTipo">
+                                    <option value="Catetere Vescicale (C.V.)">Catetere Vescicale (C.V.)</option>
+                                    <option value="Sondino Naso-Gastrico (SNG)">Sondino Naso-Gastrico (SNG)</option>
+                                    <option value="P.E.G.">P.E.G.</option>
+                                    <option value="C.V.C. / PICC / Midline">C.V.C. / PICC / Midline</option>
+                                    <option value="Cannula Tracheostomica">Cannula Tracheostomica</option>
+                                    <option value="Altro Dispositivo">Altro Dispositivo</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex:1; min-width:130px;"><label>Data Inserimento</label><input type="date" id="dispDataInizio"></div>
+                            <div class="form-group" style="flex:1; min-width:140px;"><label>Scadenza / Sostituzione</label><input type="date" id="dispDataScadenza"></div>
+                            <div class="form-group" style="flex:2; min-width:200px;"><label>Note (Calibro, Modello...)</label><input type="text" id="dispNote" placeholder="Es. Foley Ch 16, palloncino 10cc"></div>
+                            <div style="display:flex; align-items:flex-end; width:100%; justify-content:flex-end;">
+                                <button class="btn-primary" style="background:#8b5cf6;" onclick="window.addDispositivo()">➕ Registra Dispositivo</button>
+                            </div>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table class="data-table" id="dispositiviTable">
+                                <thead><tr><th>Dispositivo</th><th>Inserimento</th><th>Scadenza</th><th>Note</th><th>Firma</th><th>Stato</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- MODULO B.I.N.A. REGIONE UMBRIA -->
+                    <div class="card" style="border-top: 4px solid var(--primary-color);">
+                        <div class="card-header">
+                            <h3 style="color:var(--primary-color);">🏛️ Scheda Valutazione B.I.N.A. (Regione Umbria)</h3>
+                            <button class="btn-primary" onclick="window.calcolaBINA()">📊 Calcola Indice B.I.N.A.</button>
+                        </div>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:15px; background:#f8fafc; padding:15px; border:1px solid var(--border-color); margin-bottom:15px;">
+                            <div class="form-group">
+                                <label>1. Non Autosufficienza (0-10)</label>
+                                <input type="number" id="binaAuto" min="0" max="10" step="0.5" class="restrict-oss-input" placeholder="0 = Autonomo, 10 = Grave">
+                            </div>
+                            <div class="form-group">
+                                <label>2. Stato Sanitario / Cura (0-10)</label>
+                                <input type="number" id="binaSanita" min="0" max="10" step="0.5" class="restrict-oss-input" placeholder="Comorbidità/Trattamenti">
+                            </div>
+                            <div class="form-group">
+                                <label>3. Stato Psichico / Comportamento (0-10)</label>
+                                <input type="number" id="binaPsiche" min="0" max="10" step="0.5" class="restrict-oss-input" placeholder="Demenza/Disturbi">
+                            </div>
+                            <div class="form-group">
+                                <label>4. Condizione Socio-Relazionale (0-10)</label>
+                                <input type="number" id="binaSociale" min="0" max="10" step="0.5" class="restrict-oss-input" placeholder="Rete familiare/supporto">
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:#e0f2fe; padding:12px; border-radius:4px;">
+                            <div>
+                                <strong>Punteggio B.I.N.A. Totale:</strong> <span id="binaScoreBadge" style="font-size:1.3em; font-weight:bold; color:var(--primary-color);">- / 40</span>
+                                <div id="binaClasseBadge" style="font-size:0.85em; color:#0369a1; margin-top:2px;">Classe di Intensità: Da calcolare</div>
+                            </div>
+                            <button class="btn-success restrict-oss" onclick="window.saveClinicalData()">💾 Salva B.I.N.A.</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header"><h3>P.A.I. Multidisciplinare</h3><button class="btn-primary restrict-oss" onclick="window.archiviaNuovoPAI()">➕ Nuovo PAI (Archivia)</button></div>
+                        <div id="paiStatusBanner"></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;"><div class="form-group" style="flex:1;"><label>Data Stesura</label><input type="date" id="paiDataStesura" class="restrict-oss-input" onchange="window.calcProssimaRevisione()"></div><div class="form-group" style="flex:1;"><label>Scadenza</label><input type="date" id="paiDataRevisione" class="restrict-oss-input" onchange="window.aggiornaBannerPAI()"></div></div>
+                        <div class="form-group"><label>Medica</label><textarea id="paiMedico" class="restrict-oss-input" rows="2"></textarea></div>
+                        <div class="form-group"><label>Infermieristica</label><textarea id="paiInfermieristico" class="restrict-oss-input" rows="2"></textarea></div>
+                        <div class="form-group"><label>Assistenziale (OSS)</label><textarea id="paiAssistenziale" class="restrict-oss-input" rows="2"></textarea></div>
+                        
+                        <div style="background:#f8fafc; border:1px solid var(--border-color); padding:15px; border-radius:4px; margin-bottom:15px;">
+                            <h4 style="margin:0 0 10px 0; color:var(--primary-color);">Firme P.A.I. Multidisciplinare (Tablet / Desktop)</h4>
+                            <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                                <div style="flex:1; min-width:180px; background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:4px; text-align:center;">
+                                    <strong style="color:#166534;">Medico / Dir. Sanitario</strong><br>
+                                    <div id="paiFirmaMedStatus" style="font-size:0.85em; color:var(--text-light); margin:5px 0;">⏳ In attesa</div>
+                                    <input type="hidden" id="paiFirmaMedDate">
+                                    <button id="btnFirmaMedico" class="btn-primary restrict-oss" style="margin-top:5px; width:100%; font-size:0.85em; background:#15803d;" onclick="window.firmaPAI('Medico')">✍️ Acquisisci Firma</button>
+                                </div>
+                                <div style="flex:1; min-width:180px; background:#f0f9ff; border:1px solid #bae6fd; padding:10px; border-radius:4px; text-align:center;">
+                                    <strong style="color:#0369a1;">Infermiere</strong><br>
+                                    <div id="paiFirmaInfStatus" style="font-size:0.85em; color:var(--text-light); margin:5px 0;">⏳ In attesa</div>
+                                    <input type="hidden" id="paiFirmaInfDate">
+                                    <button id="btnFirmaInfermiere" class="btn-primary restrict-oss" style="margin-top:5px; width:100%; font-size:0.85em; background:#0284c7;" onclick="window.firmaPAI('Infermiere')">✍️ Acquisisci Firma</button>
+                                </div>
+                                <div style="flex:1; min-width:180px; background:#fffbeb; border:1px solid #fde68a; padding:10px; border-radius:4px; text-align:center;">
+                                    <strong style="color:#b45309;">O.S.S.</strong><br>
+                                    <div id="paiFirmaOssStatus" style="font-size:0.85em; color:var(--text-light); margin:5px 0;">⏳ In attesa</div>
+                                    <input type="hidden" id="paiFirmaOssDate">
+                                    <button id="btnFirmaOSS" class="btn-primary restrict-oss" style="margin-top:5px; width:100%; font-size:0.85em; background:#d97706;" onclick="window.firmaPAI('OSS')">✍️ Acquisisci Firma</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="restrict-oss" style="display:flex; gap:10px; margin-top:10px;"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva Testi PAI</button></div>
+                        <div id="paiStoricoList" style="margin-top:20px; border-top:2px solid var(--border-color); padding-top:15px;"></div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header"><h3>V.M.D. Scale</h3></div>
+                        
+                        <details style="margin-bottom:15px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:4px; padding:10px;">
+                            <summary style="color:#0369a1; font-weight:bold; cursor:pointer; outline:none;">ℹ️ Guida e Significato delle Scale V.M.D. (Clicca per leggere)</summary>
+                            <div style="margin-top:10px; font-size:0.9em; color:var(--text-main); line-height:1.5;">
+                                <ul style="margin:0; padding-left:20px;">
+                                    <li><strong>ADL (Activities of Daily Living):</strong> Valuta l'autonomia nelle attività di base (mangiare, lavarsi, ecc.). Range: 0 (Dipendenza totale) - 6 (Indipendente).</li>
+                                    <li><strong>IADL (Instrumental Activities of Daily Living):</strong> Valuta l'autonomia nelle attività strumentali (telefono, farmaci, denaro). Range: 0 (Dipendenza totale) - 8 (Indipendente).</li>
+                                    <li><strong>MMSE (Mini-Mental State Examination):</strong> Valuta la funzione cognitiva. Range: 0-30. Un punteggio <strong>&lt; 24</strong> indica un deterioramento cognitivo.</li>
+                                    <li><strong>Scala Braden:</strong> Valuta il rischio di insorgenza di lesioni da decubito. Range: 6-23. Un punteggio <strong>&lt; 16</strong> indica un paziente a rischio.</li>
+                                    <li><strong>Scala Morse:</strong> Valuta il rischio di caduta. Range: 0-125. Un punteggio <strong>&gt; 45</strong> indica un rischio di caduta elevato.</li>
+                                </ul>
+                            </div>
+                        </details>
+
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color);">
+                            <div class="form-group"><label>ADL</label><input type="number" id="vmdADL" class="restrict-oss-input"></div>
+                            <div class="form-group"><label>IADL</label><input type="number" id="vmdIADL" class="restrict-oss-input"></div>
+                            <div class="form-group"><label>MMSE</label><input type="number" id="vmdMMSE" class="restrict-oss-input" step="0.1"></div>
+                            <div class="form-group"><label>Braden</label><input type="number" id="vmdBraden" class="restrict-oss-input"></div>
+                            <div class="form-group"><label>Morse</label><input type="number" id="vmdMorse" class="restrict-oss-input"></div>
+                        </div>
+                        <div class="restrict-oss" style="display:flex; gap:10px; margin-top:10px;">
+                            <button class="btn-success" onclick="window.saveClinicalData()">💾 Salva Scale</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header"><h3>📎 Documenti PDF e Immagini (Cartella Clinica)</h3></div>
+                        <div class="form-group restrict-oss" style="background:#f0f9ff; padding:15px; border:2px dashed var(--primary-color); border-radius:4px;">
+                            <label style="font-size:1em; color:var(--primary-color); margin-bottom:10px;">Aggiungi nuovo documento (Referti, Esami, etc.)</label>
+                            <div style="display:flex; gap:10px; width:100%;">
+                                <label class="btn-primary" style="flex:1; cursor:pointer; text-align:center;">📷 Scatta Fotocamera<input type="file" accept="image/*" capture="environment" onchange="window.handlePatientDocUpload(event)" style="display:none;"></label>
+                                <label class="btn-doc" style="flex:1; cursor:pointer; text-align:center;">📁 Allega File<input type="file" accept="image/*,application/pdf" onchange="window.handlePatientDocUpload(event)" style="display:none;"></label>
+                            </div>
+                        </div>
+                        <div id="patientDocsList" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:15px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4.1 PARAMETRI VITALI E DIARIO O.S.S. -->
+            <div id="ws-vitali" class="workspace">
+                <div class="card"><div class="form-group"><label>Seleziona Paziente per Parametri Vitali</label><select id="vitaliGuestSelect" onchange="window.selectPatientGlobal(this.value)" style="padding: 10px; font-weight:bold; border-color:var(--error-color);"><option value="" disabled selected>Scegli...</option></select></div></div>
+                <div id="vitaliContent" style="display:none;">
+                    <div class="clinical-header" id="vitaliHeader"></div>
+                    <div class="card" style="border-top: 4px solid #e11d48;">
+                        <div class="card-header"><h3 style="color:#e11d48;">🩺 Inserimento Rapido Parametri Vitali e Dolore</h3></div>
+                        <div class="restrict-oss" style="display:flex; gap:15px; flex-wrap:wrap; background:#fff1f2; padding:15px; border:1px solid #fecdd3; border-radius:4px; margin-bottom:20px;">
+                            <div class="form-group" style="flex:1; min-width:120px;"><label style="color:#b91c1c;">🩸 P.A. (es. 120/80)</label><input type="text" id="rap-vitPA" placeholder="120/80" style="border-color:#fca5a5;"></div>
+                            <div class="form-group" style="flex:1; min-width:80px;"><label style="color:#c026d3;">💓 FC</label><input type="number" id="rap-vitFC" placeholder="bpm" style="border-color:#f0abfc;"></div>
+                            <div class="form-group" style="flex:1; min-width:80px;"><label style="color:#0284c7;">🫁 SpO2</label><input type="number" id="rap-vitSPO2" placeholder="%" style="border-color:#bae6fd;"></div>
+                            <div class="form-group" style="flex:1; min-width:80px;"><label style="color:#d97706;">🌡️ TC (°C)</label><input type="number" step="0.1" id="rap-vitTC" style="border-color:#fcd34d;"></div>
+                            <div class="form-group" style="flex:1; min-width:80px;"><label>Glicemia</label><input type="number" id="rap-vitGLI" placeholder="mg/dl"></div>
+                            <div class="form-group" style="flex:1; min-width:100px;"><label>Dolore (NRS)</label><input type="number" id="rap-vitNRS" placeholder="0-10" min="0" max="10"></div>
+                            <div style="display:flex; align-items:flex-end; width:100%; justify-content:flex-end;"><button class="btn-danger" style="padding:10px 20px;" onclick="window.addRapVitals()">💾 Registra Valori</button></div>
+                        </div>
+                        
+                        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:300px;">
+                                <table class="data-table" id="rapVitalsTable" style="margin-top:0;">
+                                    <thead><tr><th>Data/Ora</th><th>Op</th><th>P.A.</th><th>FC</th><th>SpO2</th><th>TC</th><th>Glic.</th><th>NRS</th><th class="restrict-oss">Del</th></tr></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <div style="flex:1; min-width:300px;">
+                                <div class="chart-container" style="height:250px;"><canvas id="vitalsChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border-top: 4px solid #d97706; margin-top: 20px;">
+                        <div class="card-header"><h3 style="color:#d97706;">🧻 Diario Assistenziale (Alvo, Diuresi, Idratazione)</h3></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; background:#fffbeb; padding:15px; border:1px solid #fde68a; border-radius:4px; margin-bottom:20px;">
+                            <div class="form-group" style="flex:1; min-width:150px;">
+                                <label>Alvo</label>
+                                <select id="rap-assAlvo"><option value="">-- Seleziona --</option><option value="Regolare">Regolare</option><option value="Assente">Assente</option><option value="Diarroico">Diarroico</option><option value="Feci Dure/Caprine">Feci Dure</option><option value="Evacuato con Clisma">Evacuato con Clisma</option></select>
+                            </div>
+                            <div class="form-group" style="flex:1; min-width:150px;">
+                                <label>Diuresi</label>
+                                <select id="rap-assDiuresi"><option value="">-- Seleziona --</option><option value="Regolare">Regolare</option><option value="Scarsa">Scarsa</option><option value="Assente/Globo">Assente / Globo Vescicale</option><option value="Catetere (Limpida)">Catetere (Limpida)</option><option value="Catetere (Torbida/Ematica)">Catetere (Torbida/Ematica)</option></select>
+                            </div>
+                            <div class="form-group" style="flex:1; min-width:120px;"><label>Idratazione (ml)</label><input type="number" id="rap-assIdratazione" placeholder="Es. 500"></div>
+                            <div class="form-group" style="flex:1; min-width:150px;">
+                                <label>Igiene / Bagno</label>
+                                <select id="rap-assIgiene"><option value="">-- Seleziona --</option><option value="Igiene a letto">Igiene a letto</option><option value="Bagno assistito">Bagno assistito</option><option value="Autonomo">Autonomo</option></select>
+                            </div>
+                            <div style="display:flex; align-items:flex-end; width:100%; justify-content:flex-end;"><button class="btn-warning" style="color:white; padding:10px 20px;" onclick="window.addAssistenza()">💾 Registra Diario OSS</button></div>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table class="data-table" id="rapAssistenzaTable">
+                                <thead><tr><th>Data/Ora</th><th>Op</th><th>Alvo</th><th>Diuresi</th><th>Idrat. (ml)</th><th>Igiene</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4.2 DIARI MEDICO E INFERMIERISTICO -->
+            <div id="ws-diari" class="workspace">
+                <div class="card"><div class="form-group"><label>Seleziona Ospite per Diari</label><select id="diariGuestSelect" onchange="window.handlePatientSelect('diariGuestSelect')" style="padding:10px; font-weight:bold; border-color:#8b5cf6;"><option value="" disabled selected>Scegli...</option></select></div></div>
+                <div id="diariContent" style="display:none;">
+                    <div class="clinical-header" id="diariHeader"></div>
+                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:320px;">
+                            <div class="card req-medico" style="border-top: 4px solid #16a34a; margin-bottom: 15px;">
+                                <div class="card-header"><h3 style="color:#16a34a;">👨‍⚕️️ Gestione Medica</h3></div>
+                                <button class="btn-success" style="width:100%; padding:10px; background:#16a34a;" onclick="window.toggleDiario('medico', true)">➕ Nuova Nota Medica</button>
+                                <div id="box-nota-medica" style="display:none; background:#f0fdf4; padding:15px; border-radius:4px; border:1px solid #bbf7d0; margin-top: 15px;">
+                                    <textarea id="notaMedicaText" rows="4" placeholder="Esame obiettivo, prescrizioni aggiuntive..." style="width:100%;"></textarea>
+                                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;"><button class="btn-doc" onclick="window.toggleDiario('medico')">❌ Annulla</button><button class="btn-success" onclick="window.addDiario('Medico')">💾 Registra Nota</button></div>
+                                </div>
+                            </div>
+                            <div class="card" style="border-color:#bbf7d0;"><div class="card-header"><h3 style="color:#15803d;">Storico Note Mediche</h3></div><div id="diariMediciList" style="display:flex; flex-direction:column; gap:10px;"></div></div>
+                        </div>
+                        <div style="flex:1; min-width:320px;">
+                            <div class="card req-infermiere" style="border-top: 4px solid #0284c7; margin-bottom: 15px;">
+                                <div class="card-header"><h3 style="color:#0284c7;">💉 Gestione Infermieristica</h3></div>
+                                <button class="btn-primary" style="width:100%; padding:10px; background:#0284c7;" onclick="window.toggleDiario('infermiere', true)">➕ Nuova Nota Inf.</button>
+                                <div id="box-nota-infermiere" style="display:none; background:#f0f9ff; padding:15px; border-radius:4px; border:1px solid #bae6fd; margin-top: 15px;">
+                                    <textarea id="notaInfText" rows="4" placeholder="Osservazioni infermieristiche, decorso..." style="width:100%;"></textarea>
+                                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;"><button class="btn-doc" onclick="window.toggleDiario('infermiere')">❌ Annulla</button><button class="btn-primary" style="background:#0284c7;" onclick="window.addDiario('Infermiere')">💾 Registra Nota</button></div>
+                                </div>
+                            </div>
+                            <div class="card" style="border-color:#bae6fd;"><div class="card-header"><h3 style="color:#0369a1;">Storico Note Inf.</h3></div><div id="diariInfList" style="display:flex; flex-direction:column; gap:10px;"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4.3 CONSENSI E PRIVACY (MODULISTICA AMPLIATA) -->
+            <div id="ws-consensi" class="workspace">
+                <div class="card" style="border-top: 4px solid #4f46e5;">
+                    <div class="card-header"><h3 style="color:#4f46e5;">📝 Modulistica: Consensi e Privacy</h3></div>
+                    <div class="form-group"><label>Seleziona Ospite</label><select id="consensiGuestSelect" onchange="window.selectPatientGlobal(this.value)" style="padding:10px; font-weight:bold; border-color:#4f46e5;"><option value="" disabled selected>Scegli...</option></select></div>
+                    
+                    <div id="consensiArea" style="display:none; margin-top:15px;">
+                        <div style="display:flex; gap:20px; flex-wrap:wrap; background:#f8fafc; padding:15px; border:1px solid #cbd5e1; border-radius:4px;">
+                            
+                            <div style="flex:2; display:flex; flex-direction:column; gap:12px; min-width:280px;">
+                                <h4 style="margin:0 0 10px 0; color:var(--text-main); font-size:1em; border-bottom:1px solid #cbd5e1; padding-bottom:5px;">Spunte di Accettazione Legale</h4>
+                                <label class="check-item"><input type="checkbox" id="consPrivacy"> <span><strong>GDPR Privacy:</strong> Acconsento al trattamento dei dati sanitari e personali.</span></label>
+                                <label class="check-item"><input type="checkbox" id="consInfo"> <span><strong>Consenso Informato:</strong> Accetto le prestazioni e le cure proposte (L. 219/2017).</span></label>
+                                <label class="check-item"><input type="checkbox" id="consPresidi"> <span><strong>Presidi:</strong> Acconsento all'uso di presidi medici e contenzioni fisiche a tutela.</span></label>
+                                <label class="check-item"><input type="checkbox" id="consUscite"> <span><strong>Uscite/Trasporti:</strong> Autorizzo i trasporti sanitari e le uscite con il personale o volontari.</span></label>
+                                <label class="check-item"><input type="checkbox" id="consFoto"> <span><strong>Immagini:</strong> Autorizzo l'uso di foto per documentazione interna clinica.</span></label>
+                                <label class="check-item"><input type="checkbox" id="consReg"> <span><strong>Regolamento:</strong> Dichiaro di aver ricevuto e accettato il regolamento interno.</span></label>
+                            </div>
+
+                            <div style="flex:1.5; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:4px; text-align:center; min-width:280px; display:flex; flex-direction:column; align-items:center;">
+                                <strong style="color:var(--success-color); font-size:1.1em;">Firma Elettronica Autografa</strong>
+                                <p style="color:var(--text-light); font-size:0.85em; margin-bottom:10px;">Il documento assumerà valore legale al momento del salvataggio.</p>
+                                
+                                <div class="form-group" style="width:100%; text-align:left;">
+                                    <label>Nome e Cognome del Firmatario</label>
+                                    <input type="text" id="nomeFirmatarioModulo" placeholder="Es. Rossi Mario" style="border-color:#bbf7d0;">
+                                </div>
+                                <div class="form-group" style="width:100%; text-align:left;">
+                                    <label>Ruolo del Firmatario</label>
+                                    <select id="ruoloFirmatarioModulo" style="border-color:#bbf7d0;">
+                                        <option value="Paziente">Paziente stesso</option>
+                                        <option value="Familiare / Parente" selected>Familiare / Parente</option>
+                                        <option value="Amministratore di Sostegno">Amministratore di Sostegno</option>
+                                        <option value="Tutore Legale">Tutore Legale</option>
+                                    </select>
+                                </div>
+                                
+                                <div id="moduloSignaturePreview" style="height:80px; width:100%; background:#fff; border:1px dashed #94a3b8; border-radius:4px; display:flex; align-items:center; justify-content:center; margin-bottom:10px; overflow:hidden;">
+                                    <span style="color:#94a3b8; font-size:0.85em;">Nessuna firma acquisita</span>
+                                </div>
+                                <div id="moduloFirmaMeta" style="font-size:0.8em; color:var(--text-light); margin-bottom:10px; font-weight:bold; height:15px;"></div>
+                                
+                                <button id="btnAvviaFirmaModulo" class="btn-success" onclick="window.avviaFirmaConsensi()" style="width:100%; margin-bottom:10px;">✍️ Apri Pad di Firma</button>
+                                
+                                <div style="display:flex; gap:10px; width:100%;">
+                                    <button class="btn-primary" style="flex:1; background:#4f46e5;" onclick="window.salvaConsensi()">💾 Salva Dati</button>
+                                    <button class="btn-doc" style="flex:1;" onclick="window.stampaConsensi()">🖨️ Stampa PDF</button>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. REGISTRO CONTENZIONI FISICHE -->
+            <div id="ws-contenzioni" class="workspace">
+                <div class="card restrict-oss" style="border-left: 5px solid var(--error-color);">
+                    <div class="card-header"><h3 style="color:var(--error-color);">🔒 Prescrizione e Registro Contenzioni Fisiche</h3></div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; background:#fef2f2; border:1px solid #fca5a5; padding:15px; margin-bottom:15px; border-radius:4px;">
+                        <div class="form-group" style="flex:1.5;"><label>Ospite</label><select id="contOspite" onchange="window.selectPatientGlobal(this.value)"><option value="" disabled selected>Scegli...</option></select></div>
+                        <div class="form-group" style="flex:1;"><label>Tipo Presidio</label><select id="contTipo"><option value="Spondine letto">Spondine a letto</option><option value="Cintura pelvica">Cintura pelvica in carrozzina</option><option value="Tavolino carrozzina">Tavolino per carrozzina</option><option value="Altro">Altro presidio</option></select></div>
+                        <div class="form-group" style="flex:1;"><label>Data Inizio</label><input type="date" id="contDataInizio"></div>
+                        <div class="form-group" style="flex:1;"><label>Ora Inizio</label><input type="time" id="contOraInizio"></div>
+                        <div class="form-group" style="flex:2;"><label>Motivazione Medica / Rischio</label><input type="text" id="contMotivo" placeholder="Es. Rischio caduta grave da decubito"></div>
+                        <div class="form-group" style="flex:1;"><label>Consenso Informato</label><select id="contConsenso"><option value="Acquisito Familiare/AdS">Acquisito Familiare/AdS</option><option value="Stato di Necessità">Stato di Necessità (Art. 54 CP)</option></select></div>
+                        <div style="display:flex; align-items:flex-end;"><button class="btn-danger" onclick="window.addContenzione()">🔒 Prescrivi Contenzione</button></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>Registro Contenzioni in Essere e Storico</h3></div>
+                    <table class="data-table" id="contenzioniTable">
+                        <thead><tr><th>Ospite</th><th>Tipo Presidio</th><th>Inizio</th><th>Motivo Clinico</th><th>Firme (Tablet)</th><th>Stato / Revoca</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 6. TERAPIA E STUPEFACENTI -->
+            <div id="ws-terapia" class="workspace">
+                <div class="card"><div class="form-group"><label>Seleziona Paziente per Prospetto Terapia</label><select id="terapiaGuestSelect" onchange="window.handlePatientSelect('terapiaGuestSelect')"><option value="" disabled selected>Scegli...</option></select></div></div>
+                <div id="terapiaContent" style="display:none;">
+                    <div class="clinical-header" id="terapiaHeader"></div>
+                    <div class="card" style="padding: 10px;">
+                        <div class="card-header" style="padding: 10px;"><h3 style="color:var(--terapia-color);">Prospetto Terapia Ordinaria</h3><button class="btn-primary" onclick="window.printModule('terapia')">🖨️ Stampa</button></div>
+                        <div class="only-medico" style="display:flex; gap:10px; margin:15px 10px; flex-wrap:wrap; background:#f0f9ff; padding:15px; border:1px solid #bae6fd; border-radius:4px;">
+                            <div style="flex:2; min-width:180px;">
+                                <label style="font-size:0.8em;">Farmaco (Ricerca rapida)</label>
+                                <input type="text" id="terapiaFarmaco" list="listaFarmaciAifa" placeholder="Scrivi nome farmaco o p.attivo...">
+                                <datalist id="listaFarmaciAifa"></datalist>
+                            </div>
+                            <div style="flex:1; min-width:120px;"><label style="font-size:0.8em;">Posologia</label><input type="text" id="terapiaPosologia"></div>
+                            <div style="flex:1.5; min-width:140px;"><label style="font-size:0.8em;">Orario</label><select id="terapiaOrario" style="width:100%;"><option value="08:00">08:00 (Mattina)</option><option value="12:00">12:00 (Pranzo)</option><option value="18:00">18:00 (Sera)</option><option value="20:00">20:00 (Cena)</option><option value="08:00 - 20:00">08:00 - 20:00</option><option value="08:00 - 12:00 - 18:00">08:00 - 12:00 - 18:00</option><option value="Al bisogno">Al bisogno</option><option value="Firma">Solo Firma</option></select></div>
+                            <div style="flex:2; min-width:180px;"><label style="font-size:0.8em;">Note Aggiuntive</label><input type="text" id="terapiaNote"></div>
+                            <div style="display:flex; align-items:flex-end;"><button class="btn-primary" style="background:var(--terapia-color); padding: 8px 12px; white-space:nowrap;" onclick="window.addTerapiaItem()">➕ Prescrivi</button></div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin: 10px; padding:8px 15px; border:1px solid var(--border-color); background: #f1f5f9; border-radius:4px;"><button class="btn-doc" onclick="window.changeTerapiaMonth(-1)">◀ Mese Prec.</button><h4 id="terapiaMonthLabel" style="margin:0; font-size:1.2em; text-transform:uppercase;">...</h4><button class="btn-doc" onclick="window.changeTerapiaMonth(1)">Mese Succ. ▶</button></div>
+                        <div style="overflow-x:auto; padding: 0 10px;">
+                            <table class="terapia-table" id="terapiaGridTable"><thead><tr id="terapiaGridHead"></tr></thead><tbody></tbody></table>
+                        </div>
+                        
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; margin: 15px 10px 10px 10px; border-radius:4px;">
+                            <div style="flex:1;">
+                                <strong style="color:var(--success-color);">Firma e Validazione Piano Terapeutico</strong><br>
+                                <div id="terapiaFirmaGlobaleStatus" style="font-size:0.85em; color:var(--text-light); margin-top:5px;">Non validato</div>
+                            </div>
+                            <button id="btnFirmaTerapiaPiano" class="btn-success only-medico" onclick="window.firmaTerapiaPiano()">⚕️ Acquisisci Firma (Tablet)</button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:20px;" class="restrict-oss">
+                    <div style="flex:1; min-width:350px;">
+                        <div class="card" style="border-top: 4px solid #ef4444;">
+                            <div class="card-header"><h3 style="color:#ef4444;">Armadio Stupefacenti</h3><div style="display:flex; align-items:center; gap:10px;"><input type="number" id="narcThreshold" value="5" min="1" style="width:60px; padding:4px;" onchange="window.loadNarcoticsTable()"><button class="btn-primary" onclick="window.printStupefacentiInv()">🖨️ Stampa</button></div></div>
+                            <table class="data-table" id="narcoticInvTable"><thead><tr><th>Farmaco</th><th>Stato</th><th>Qta</th><th>Barcode</th></tr></thead><tbody></tbody></table>
+                        </div>
+                    </div>
+                    <div style="flex:2; min-width:400px;">
+                        <div class="card" style="border-top: 4px solid #ef4444;">
+                            <div class="card-header"><h3 style="color:#ef4444;">Movimento 309/90</h3><button class="btn-primary" onclick="window.printStupefacentiRegistry()">🖨️ Stampa Registro</button></div>
+                            <div class="restrict-oss" style="display:flex; gap:15px; margin-bottom:15px; background:#fef2f2; padding:15px; border:1px solid #fecaca; border-radius:4px; flex-wrap:wrap;">
+                                <div class="form-group" style="flex:2; min-width:180px;"><label>Nome / Barcode</label><input type="text" id="narcBarcode" placeholder="Spara barcode o scrivi..." onkeypress="window.handleNarcBarcode(event)"><input type="hidden" id="narcNome"></div>
+                                <div class="form-group" style="flex:1; min-width:110px;"><label>Op</label><select id="narcTipoOp"><option value="CARICO">CARICO</option><option value="SCARICO">SCARICO</option><option value="SCARTO">SCARTO</option></select></div>
+                                <div class="form-group" style="flex:1; min-width:90px;"><label>Qta</label><input type="number" id="narcQta" min="1"></div>
+                                <div class="form-group" style="flex:2; min-width:180px;"><label>Rif. Ricetta/Paziente</label><input type="text" id="narcRif"></div>
+                                <div style="display:flex; align-items:flex-end;"><button class="btn-danger" onclick="window.addNarcoticMovement()">Registra</button></div>
+                            </div>
+                            <table class="data-table" id="narcoticTable"><thead><tr><th>Data</th><th>Farmaco</th><th>Op</th><th>Qta</th><th>Rif</th></tr></thead><tbody></tbody></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. RISCHIO CLINICO -->
+            <div id="ws-rischio" class="workspace"><div class="card restrict-oss" style="border-left: 5px solid var(--error-color);"><div class="card-header"><h3 style="color:var(--error-color);">Incident Reporting</h3></div><div style="display:flex; gap:10px; flex-wrap:wrap; background:#fef2f2; border:1px solid #fca5a5; padding:15px; margin-bottom:15px; border-radius:4px;"><div class="form-group"><label>Ospite</label><select id="newRischioOspite" onchange="window.selectPatientGlobal(this.value)"><option value="" disabled selected>Scegli...</option></select></div><div class="form-group"><label>Data Evento</label><input type="date" id="newRischioData"></div><div class="form-group"><label>Tipo</label><select id="newRischioTipo"><option value="Caduta Accidentale">Caduta Accidentale</option><option value="Errore Terapia">Errore Terapia</option><option value="Lesione">Lesione/Trauma</option><option value="Fuga">Fuga</option><option value="Aggressione">Aggressione</option><option value="Altro">Altro</option></select></div><div class="form-group" style="flex:2;"><label>Dinamica</label><input type="text" id="newRischioDinamica"></div><div style="display:flex; align-items:flex-end;"><button class="btn-danger" onclick="window.addEventoRischio()">Segnala</button></div></div></div><div class="card"><div class="card-header"><h3>Archivio Eventi</h3></div><table class="data-table" id="rischioTable"><thead><tr><th>Data</th><th>Ospite</th><th>Tipo</th><th>Dinamica</th><th>Op</th></tr></thead><tbody></tbody></table></div></div>
+            
+            <!-- 8. CUP APPUNTAMENTI (AMPLIATO TABLET) -->
+            <div id="ws-appuntamenti" class="workspace">
+                <div class="card restrict-oss" style="border-top: 4px solid #10b981;">
+                    <div class="card-header"><h3 style="color:#10b981;">📅 Nuovo Appuntamento CUP / Visita Specialistica</h3></div>
+                    <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:4px;">
+                        <div class="form-group" style="flex:1.5; min-width:200px;"><label>Ospite</label><select id="appGuestSelect" onchange="window.selectPatientGlobal(this.value)"><option value="" disabled selected>Scegli...</option></select></div>
+                        <div class="form-group" style="flex:2; min-width:250px;"><label>Prestazione / Esame</label><input type="text" id="appType" placeholder="Es. Visita Cardiologica con ECG"></div>
+                        <div class="form-group" style="flex:2; min-width:250px;"><label>Luogo / Struttura</label><input type="text" id="appLuogo" placeholder="Es. Ospedale S. Maria Terni"></div>
+                        <div class="form-group" style="flex:1; min-width:130px;"><label>Data</label><input type="date" id="appDate"></div>
+                        <div class="form-group" style="flex:1; min-width:100px;"><label>Ora</label><input type="time" id="appTime"></div>
+                        <div class="form-group" style="flex:1.5; min-width:200px;"><label>Modalità di Trasporto</label><select id="appTransport"><option value="In Sede">In Sede</option><option value="Ambulanza con Barelliere">Ambulanza (con Barelliere)</option><option value="Mezzo Attrezzato con Pedana">Mezzo Attrezzato (Carrozzina)</option><option value="Autovettura Volontari">Autovettura Volontari</option><option value="A cura Famiglia">A cura Famiglia</option></select></div>
+                        <div class="form-group" style="flex:1.5; min-width:200px;"><label>Regime Economico</label><select id="appRegime"><option value="Convenzionato / SSN">Convenzionato / SSN</option><option value="A Pagamento">A Pagamento (Ospite/Famiglia)</option><option value="Gratuito">Gratuito</option></select></div>
+                        <div class="form-group" style="flex:3; min-width:300px;"><label>Note Operative</label><input type="text" id="appNote" placeholder="Es. Necessita di OSS accompagnatore, barella, digiuno..."></div>
+                        <div style="display:flex; align-items:flex-end; width:100%; justify-content:flex-end;"><button class="btn-primary restrict-oss" style="background:#10b981; padding:10px 20px;" onclick="window.addAppointment()">📅 Fissa Appuntamento</button></div>
+                    </div>
+                </div>
+                <div class="card"><div class="card-header"><h3>Agenda Appuntamenti CUP</h3></div><table class="data-table" id="appointmentsTable"><thead><tr><th>Data/Ora</th><th>Ospite</th><th>Esame e Luogo</th><th>Trasporto / Regime</th><th>Op</th><th class="restrict-oss">Az</th></tr></thead><tbody></tbody></table></div>
+            </div>
+            
+            <!-- 9. CONSEGNE -->
+            <div id="ws-consegne" class="workspace">
+                <div class="card" style="border-top: 4px solid #4f46e5;">
+                    <div class="card-header"><h3 style="color:#4f46e5;">📖 Bacheca Consegne Reparto</h3></div>
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom: 20px;">
+                        <button class="btn-primary inf-edit-area" style="flex:1; min-width:250px; padding:12px; background:#0284c7;" onclick="window.toggleConsegna('inf')"><span style="font-size:1.1em; margin-right:8px;">💉</span> Nuova Consegna Inf.</button>
+                        <button class="btn-success oss-edit-area" style="flex:1; min-width:250px; padding:12px; background:#d97706;" onclick="window.toggleConsegna('oss')"><span style="font-size:1.1em; margin-right:8px;">🦺</span> Nuova Consegna O.S.S.</button>
+                    </div>
+                    <div id="box-consegna-inf" style="display:none; background:#f0f9ff; padding:15px; border-radius:4px; border:1px solid #bae6fd; margin-bottom: 20px;">
+                        <h4 style="margin-top:0; color:#0369a1; font-size:1em;">Stesura Consegna Infermieristica</h4>
+                        <textarea id="newConsegnaInfText" rows="3" style="width:100%;"></textarea>
+                        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;"><button class="btn-doc" onclick="window.toggleConsegna('inf')">❌ Annulla</button><button class="btn-primary" style="background:#0284c7;" onclick="window.addConsegna('inf')">💾 Pubblica</button></div>
+                    </div>
+                    <div id="box-consegna-oss" style="display:none; background:#fffbeb; padding:15px; border-radius:4px; border:1px solid #fde68a; margin-bottom: 20px;">
+                        <h4 style="margin-top:0; color:#b45309; font-size:1em;">Stesura Consegna O.S.S.</h4>
+                        <textarea id="newConsegnaOssText" rows="3" style="width:100%;"></textarea>
+                        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;"><button class="btn-doc" onclick="window.toggleConsegna('oss')">❌ Annulla</button><button class="btn-success" style="background:#d97706;" onclick="window.addConsegna('oss')">💾 Pubblica</button></div>
+                    </div>
+                    <div style="display:flex; gap:25px; flex-wrap:wrap; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <div style="flex:1; min-width:300px;"><h3 style="color:#0284c7; border-bottom:1px solid #bae6fd; padding-bottom:5px; margin-top:0;">Bacheca Infermieri</h3><div id="consegneInfList"></div></div>
+                        <div style="flex:1; min-width:300px;"><h3 style="color:#d97706; border-bottom:1px solid #fde68a; padding-bottom:5px; margin-top:0;">Bacheca O.S.S.</h3><div id="consegneOssList"></div></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 10. LETTERE -->
+            <div id="ws-lettere" class="workspace">
+                <div class="card"><div class="form-group"><label>Seleziona Fascicolo Paziente per Modulistica</label><select id="lettereGuestSelect" onchange="window.handlePatientSelect('lettereGuestSelect')"><option value="" disabled selected>Scegli...</option></select></div></div>
+                <div id="lettereContent" style="display:none;">
+                    <div class="clinical-header" id="lettereHeader"></div>
+                    
+                    <div class="card">
+                        <div class="card-header"><h3>Attestazione di Decesso</h3><button class="btn-primary" onclick="window.printModule('decesso')">🖨️ Stampa Documento</button></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;"><div class="form-group" style="flex:1;"><label>Data Decesso</label><input type="date" id="decData" class="restrict-oss-input only-medico-input"></div><div class="form-group" style="flex:1;"><label>Ora Decesso</label><input type="time" id="decOra" class="restrict-oss-input only-medico-input"></div></div>
+                        <div class="restrict-oss only-medico"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva ed Archivia Paziente</button></div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header"><h3>Lettera di Dimissione (Rientro a Casa o Altra Struttura)</h3><button class="btn-primary" onclick="window.printModule('dimissioni')">🖨️ Stampa Lettera</button></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
+                            <div class="form-group" style="flex:1;">
+                                <label>Tipo di Uscita</label>
+                                <select id="dimTipo" class="restrict-oss-input only-medico-input">
+                                    <option value="Rientro">🏠 Rientro a Casa</option>
+                                    <option value="Trasferimento">🚑 Trasferimento (Altra Struttura)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex:1;"><label>Data Trasferimento/Dimissione</label><input type="date" id="dimData" class="restrict-oss-input only-medico-input"></div>
+                            <div class="form-group" style="flex:1;"><label>Ora</label><input type="time" id="dimOra" class="restrict-oss-input only-medico-input"></div>
+                        </div>
+                        <div class="form-group"><label>Motivo e Destinazione</label><textarea id="dimMotivo" class="restrict-oss-input only-medico-input" rows="2" placeholder="Es. Rientro a domicilio, trasferimento presso RSA..."></textarea></div>
+                        <div class="form-group"><label>Decorso Clinico</label><textarea id="dimDecorso" class="restrict-oss-input only-medico-input" rows="4" placeholder="Inserisci un riassunto del decorso..."></textarea></div>
+                        <p style="font-size:0.85em; color:var(--text-light);"><em>La Terapia in atto verrà automaticamente allegata alla stampa della lettera.</em></p>
+                        <div class="restrict-oss only-medico"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva ed Archivia Paziente</button></div>
+                    </div>
+
+                    <div class="card" style="border-top: 4px solid var(--error-color);">
+                        <div class="card-header"><h3 style="color:var(--error-color);">Lettera di Trasferimento in Pronto Soccorso</h3><button class="btn-primary" onclick="window.printModule('prontosoccorso')">🖨️ Stampa Lettera per 118 / P.S.</button></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;"><div class="form-group" style="flex:1;"><label>Data Invio</label><input type="date" id="psData" class="restrict-oss-input only-medico-input"></div><div class="form-group" style="flex:1;"><label>Ora Invio</label><input type="time" id="psOra" class="restrict-oss-input only-medico-input"></div></div>
+                        <div class="form-group"><label>Motivo Invio / Sintomi Acuti</label><textarea id="psMotivo" class="restrict-oss-input only-medico-input" rows="2"></textarea></div>
+                        <div class="form-group"><label>Riassunto Cartella Clinica</label><textarea id="psRiassunto" class="restrict-oss-input only-medico-input" rows="4"></textarea></div>
+                        <p style="font-size:0.85em; color:var(--text-light);"><em>La Terapia in atto e le copie dei Documenti d'Identità verranno automaticamente allegati alla stampa.</em></p>
+                        <div class="restrict-oss only-medico"><button class="btn-success" onclick="window.saveClinicalData()">💾 Salva Dati</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 11. FLUSSI E PORTALI -->
+            <div id="ws-flussi" class="workspace">
+                <div class="card restrict-oss" style="border-left: 4px solid var(--dir-color);">
+                    <div class="card-header"><h3 style="color:var(--dir-color);">📤 Flussi Regionali e Portali</h3></div>
+                    <div style="display:flex; flex-direction:column; gap:15px; margin-top:15px;">
+                        
+                        <!-- ALLOGGIATI WEB -->
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:#e0f2fe; padding:15px; border:1px solid #bae6fd; border-radius:4px; flex-wrap:wrap; gap:10px;">
+                            <div>
+                                <strong style="color:var(--text-main); font-size:1.1em;">👮‍♂️ Esportazione "Alloggiati Web" (Polizia)</strong>
+                                <div style="font-size:0.85em; color:var(--text-light); margin-top:5px;">Genera file .txt (170 byte/record). "Rinnovo Tutti" imposta la <b>Data Dal</b> come data arrivo e 30gg di permanenza per tutti i presenti.</div>
+                                <div style="display:flex; gap:10px; margin-top:10px; align-items:flex-end; flex-wrap:wrap;">
+                                    <div class="form-group" style="margin:0;"><label style="font-size:10px;">Dal (Data Inizio / Rinnovo):</label><input type="date" id="alloggiatiStart" class="alloggiati-obbligatorio" style="padding:4px; font-size:12px;"></div>
+                                    <div class="form-group" style="margin:0;"><label style="font-size:10px;">Al (Per i nuovi ingressi):</label><input type="date" id="alloggiatiEnd" class="alloggiati-obbligatorio" style="padding:4px; font-size:12px;"></div>
+                                    <button class="btn-doc" style="padding:4px 10px; font-size:11px; height:26px;" onclick="window.setAlloggiatiDates('oggi')">📅 Oggi</button>
+                                    <button class="btn-doc" style="padding:4px 10px; font-size:11px; height:26px;" onclick="window.setAlloggiatiDates('mese')">🗓️ Mese Corrente (1-30)</button>
+                                </div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                <button class="btn-primary" style="background:#0284c7; white-space:nowrap; font-size:0.9em; padding:10px;" onclick="window.exportAlloggiati('nuovi')">⬇️ File TXT: Solo Nuovi Ingressi</button>
+                                <button class="btn-success" style="background:#15803d; white-space:nowrap; font-size:0.9em; padding:10px;" onclick="window.exportAlloggiati('rinnovo')">🔄 File TXT: Rinnovo TUTTI I PRESENTI (30gg)</button>
+                            </div>
+                        </div>
+                        
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:15px; border:1px solid var(--border-color); border-radius:4px; flex-wrap:wrap; gap:10px;"><div><strong style="color:var(--text-main); font-size:1.1em;">Flusso F.A.R. (USL Umbria)</strong></div><button class="btn-primary" style="background:#0f766e; white-space:nowrap;" onclick="window.exportFARUmbria()">📊 Genera CSV FAR</button></div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:15px; border:1px solid var(--border-color); border-radius:4px; flex-wrap:wrap; gap:10px;"><div><strong style="color:var(--text-main); font-size:1.1em;">Flusso S.I.A.R. / S.I.C.O.F.</strong></div><button class="btn-primary" style="background:#0ea5e9; white-space:nowrap;" onclick="window.exportSIAR()">🏃‍♂️ Genera CSV SIAR</button></div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:15px; border:1px solid var(--border-color); border-radius:4px; flex-wrap:wrap; gap:10px;"><div><strong style="color:var(--text-main); font-size:1.1em;">Integrazione FSE (FHIR)</strong></div><button class="btn-primary" style="background:var(--dir-color); white-space:nowrap;" onclick="window.exportFSE()">🌐 Genera Tracciato FSE</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 12. STORICO -->
+            <div id="ws-storico" class="workspace"><div class="card"><div class="card-header"><h3>Archivio Storico (Dimessi/Deceduti)</h3></div><div class="guest-grid" id="storicoGrid"></div></div></div>
+
+        </div>
+    </div>
+scite','consFoto','consReg'].forEach(id => {
+                    let el = document.getElementById(id);
+                    if(el) el.disabled = true;
+                }); 
+                document.getElementById('nomeFirmatarioModulo').disabled = true;
+                document.getElementById('moduloSignaturePreview').innerHTML = `<img src="${window.currentModuloFirma}" style="max-height:100%; max-height:80px; object-fit:contain;">`; 
+                document.getElementById('moduloFirmaMeta').innerText = `Firmato il: ${c.dataFirma || '-'}`; 
+                document.getElementById('btnAvviaFirmaModulo').style.display = 'none';
+            } else {
+                ['consPrivacy','consInfo','consPresidi','consUscite','consFoto','consReg'].forEach(id => {
+                    let el = document.getElementById(id);
+                    if(el) el.disabled = false;
+                }); 
+                document.getElementById('nomeFirmatarioModulo').disabled = false;
+                document.getElementById('moduloSignaturePreview').innerHTML = '<span style="color:#94a3b8; font-size:0.85em;">Nessuna firma acquisita</span>'; 
+                document.getElementById('moduloFirmaMeta').innerText = ''; 
+                document.getElementById('btnAvviaFirmaModulo').style.display = 'block';
+            }
+        };
+
+        window.avviaFirmaConsensi = () => { 
+            const firmatario = document.getElementById('nomeFirmatarioModulo').value.trim(); 
+            if(!firmatario) return window.showToast("⚠️ Inserisci il Nome e Cognome di chi sta firmando!"); 
+            window.openSignatureModal(`Consensi: ${firmatario}`, (sig) => { 
+                window.currentModuloFirma = sig; 
+                document.getElementById('moduloSignaturePreview').innerHTML = `<img src="${sig}" style="max-height:100%; max-height:80px; object-fit:contain;">`; 
+                document.getElementById('moduloFirmaMeta').innerText = `In attesa di salvataggio...`; 
+            }); 
+        };
+
+        window.salvaConsensi = async () => { 
+            if(window.checkOssRestriction()) return; 
+            const n = window.globalSelectedPatient; 
+            const g = window.dbOspiti.find(x => x.name === n); 
+            if(!g) return window.showToast("⚠️ Ospite non trovato"); 
+            let firmatario = document.getElementById('nomeFirmatarioModulo').value.trim(); 
+            if(!firmatario && window.currentModuloFirma) return window.showToast("⚠️ Manca il nome del firmatario"); 
+            
+            let c = { 
+                privacy: document.getElementById('consPrivacy')?.checked || false, 
+                consensoInformato: document.getElementById('consInfo')?.checked || false, 
+                presidi: document.getElementById('consPresidi')?.checked || false,
+                uscite: document.getElementById('consUscite')?.checked || false,
+                foto: document.getElementById('consFoto')?.checked || false, 
+                regolamento: document.getElementById('consReg')?.checked || false, 
+                firmatoDa: firmatario, 
+                firmaB64: window.currentModuloFirma, 
+                dataFirma: window.currentModuloFirma ? (g.consensi?.dataFirma || window.getTimestamp()) : "" 
+            }; 
+            
+            if(window.currentModuloFirma && (!g.consensi || window.currentModuloFirma !== (g.consensi.firmaB64 || g.consensi.firmaImmagine))) { 
+                c.dataFirma = window.getTimestamp(); 
+            } 
+            
+            await updateDoc(doc(db, "ospiti", g.id), { consensi: c }); 
+            window.showToast("✅ Consensi e Firma salvati con successo!"); 
+            window.loadConsensiOspite(); 
+        };
+
+        window.stampaConsensi = () => { 
+            const n = window.globalSelectedPatient; 
+            const g = window.dbOspiti.find(x => x.name === n); 
+            if(!g) return window.showToast("⚠️ Seleziona ospite"); 
+            let c = g.consensi || {}; 
+            let firmaImg = c.firmaB64 || c.firmaImmagine || window.currentModuloFirma; 
+            if(!firmaImg) return window.showToast("⚠️ Impossibile stampare: documento non firmato!"); 
+            
+            let html = window.getPrintHeaderCustom('Informativa Privacy e Consenso Informato') + `<div style="font-size: 11pt; line-height: 1.6; margin-top:20px; font-family: sans-serif; padding: 0 10px;"><p>Il/La sottoscritto/a <strong>${c.firmatoDa || document.getElementById('nomeFirmatarioModulo').value}</strong>, in riferimento al ricovero dell'ospite <strong>${g.name}</strong> (CF: ${g.cf||'-'}, Nato il: ${window.formatDateSafe(g.dob)}):</p><h4 style="border-bottom:1px solid #ccc; padding-bottom:4px; margin-top:30px; color:#0f172a;">1. INFORMATIVA PRIVACY (GDPR 2016/679)</h4><p style="text-align:justify;">Dichiara di aver letto e compreso l'informativa sul trattamento dei dati personali e sensibili per le finalità socio-sanitarie della struttura. Il titolare del trattamento si impegna a proteggere i dati secondo i massimi standard di sicurezza.</p><p>Acconsente al trattamento dei dati sanitari: <strong>${c.privacy ? 'SI' : 'NO'}</strong></p><p>Acconsente all'utilizzo di foto/immagini per fini interni: <strong>${c.foto ? 'SI' : 'NO'}</strong></p><h4 style="border-bottom:1px solid #ccc; padding-bottom:4px; margin-top:30px; color:#0f172a;">2. CONSENSO INFORMATO ALLE CURE E PRESIDI</h4><p style="text-align:justify;">Dichiara di essere stato adeguatamente informato sulle prestazioni mediche fornite dalla struttura e presta il proprio consenso libero e consapevole. Acconsente inoltre all'uso di presidi terapeutici o di sicurezza qualora prescritti dal medico.</p><p>Acconsente alle cure e trattamenti: <strong>${c.consensoInformato ? 'SI' : 'NO'}</strong></p><p>Acconsente all'uso di presidi medici/sicurezza: <strong>${c.presidi ? 'SI' : 'NO'}</strong></p><h4 style="border-bottom:1px solid #ccc; padding-bottom:4px; margin-top:30px; color:#0f172a;">3. USCITE E REGOLAMENTO</h4><p>Autorizza le uscite e i trasporti per visite mediche o attività: <strong>${c.uscite ? 'SI' : 'NO'}</strong></p><p>Dichiara di aver ricevuto e accettato il Regolamento Interno: <strong>${c.regolamento ? 'SI' : 'NO'}</strong></p><div style="margin-top: 60px; display:flex; justify-content:space-between; align-items:flex-end;"><div><p style="margin:0;"><strong>Luogo e Data Firma:</strong></p><p style="margin:5px 0 0 0;">Terni, ${c.dataFirma || window.getTodayString().split('-').reverse().join('/')}</p></div><div style="text-align:center;"><p style="margin:0 0 10px 0;"><strong>Firma Elettronica Autografa</strong></p><img src="${firmaImg}" style="max-height: 120px; border-bottom:1px solid #000; padding-bottom:10px;"><p style="margin:5px 0 0 0; font-size:10pt;">${c.firmatoDa || document.getElementById('nomeFirmatarioModulo').value}</p></div></div></div>`; 
+            document.getElementById('printArea').innerHTML = html; 
+            window.print(); 
+        };
+
+        window.onload = () => { 
+            let pi = document.getElementById('loginPinInput'); 
+            if(pi) pi.addEventListener('keypress', (e)=>{if(e.key==='Enter') window.performLogin();});
+            
+            let todayStr = window.getTodayString();
+            ['alloggiatiStart','alloggiatiEnd'].forEach(id=>{
+                let inputDate = document.getElementById(id);
+                if(inputDate) { inputDate.value = todayStr; }
+            });
+
+            const dl = document.getElementById('listaFarmaciAifa'); 
+            if(dl) prontuario.forEach(f => { let opt = document.createElement('option'); opt.value = f; dl.appendChild(opt); });
+            window.loadComuni(); 
+            window.initSignaturePad();
+
+            let savedOp = sessionStorage.getItem("activeOperator");
+            if(savedOp) {
+                window.activeOperator = savedOp;
+                window.activeOperatorRole = sessionStorage.getItem("activeRole") || "user";
+                window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica") || "";
+                
+                document.getElementById('currentOpBadge').innerText = `👤 ${savedOp}`; 
+                document.getElementById('loginScreen').style.display = 'none'; 
+                document.getElementById('appScreen').style.display = 'flex'; 
+                
+                window.applyRolePermissions();
+                if(window.renderCharts) setTimeout(() => { window.renderCharts(); window.renderGenderChart(); }, 500);
+                window.loadGuests();
+            } else {
+                window.loadOperators();
+            }
+        };
+    </script>
+</body>
+</html>
