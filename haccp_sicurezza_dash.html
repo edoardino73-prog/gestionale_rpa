@@ -40,6 +40,8 @@
             min-height: 100vh; 
         }
 
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+
         /* NAVBAR PRINCIPALE */
         #top-nav-container { position: sticky; top: 0; z-index: 1000; width: 100%; display: flex; flex-direction: column; flex-shrink: 0; }
         .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); }
@@ -122,6 +124,30 @@
         .status-ok { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
         .status-warn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
         .status-err { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        /* LISTE CONFIGURAZIONE ELEMENTI */
+        .config-list-box {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.88em;
+        }
+        .config-item:hover {
+            background: #f1f5f9;
+        }
 
         /* GALLERIA LOTTI */
         .lotti-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-top: 12px; }
@@ -212,6 +238,50 @@
                 </div>
             </div>
 
+            <!-- GESTIONE DINAMICA IMPIANTI, FRIGORIFERI E LOCALI (NUOVA SEZIONE AMMINISTRATIVA) -->
+            <div class="card" style="border-top:4px solid var(--secondary-color);">
+                <div class="card-header">
+                    <h3 style="color:var(--secondary-color);">⚙️ Configurazione Dinamica Reparti, Impianti & Locali HACCP</h3>
+                </div>
+                <p style="color:var(--text-light); font-size:0.9em; margin-top:0;">
+                    Aggiungi o rimuovi le unità refrigeranti, i locali di disinfezione e gli ambienti dedicati alle pulizie. I menu a tendina delle schede operative si aggiorneranno automaticamente.
+                </p>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap:18px;">
+                    
+                    <!-- BOX 1: FRIGORIFERI & CELLE -->
+                    <div class="config-list-box">
+                        <strong style="color:var(--terapia-color); font-size:0.95em;">❄️ Impianti Frigoriferi, Celle & Surgelati</strong>
+                        <div style="display:flex; gap:6px;">
+                            <input type="text" id="newCfgFrigo" placeholder="Es. Frigo Latticini (+0/+4°C)" style="padding:6px; font-size:0.88em;">
+                            <button class="btn-primary" style="background:var(--terapia-color); padding:6px 12px;" onclick="window.aggiungiElementoConfig('frigoriferi')">Aggiungi</button>
+                        </div>
+                        <div id="cfgListFrigoriferi" style="max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:5px; margin-top:6px;"></div>
+                    </div>
+
+                    <!-- BOX 2: LOCALI DISINFEZIONE & SANIFICAZIONE -->
+                    <div class="config-list-box">
+                        <strong style="color:var(--primary-color); font-size:0.95em;">✨ Aree & Locali Sanificazione</strong>
+                        <div style="display:flex; gap:6px;">
+                            <input type="text" id="newCfgSanif" placeholder="Es. Locale Lavaggio Carrelli" style="padding:6px; font-size:0.88em;">
+                            <button class="btn-primary" style="padding:6px 12px;" onclick="window.aggiungiElementoConfig('sanificazione')">Aggiungi</button>
+                        </div>
+                        <div id="cfgListSanificazione" style="max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:5px; margin-top:6px;"></div>
+                    </div>
+
+                    <!-- BOX 3: LOCALI & AMBIENTI PULIZIE (MOD. 05) -->
+                    <div class="config-list-box">
+                        <strong style="color:var(--warning-color); font-size:0.95em;">🧹 Locali & Checklist Pulizie (Mod. 05)</strong>
+                        <div style="display:flex; gap:6px;">
+                            <input type="text" id="newCfgPulizie" placeholder="Es. Pulizia Cella Rifiuti" style="padding:6px; font-size:0.88em;">
+                            <button class="btn-warning" style="padding:6px 12px;" onclick="window.aggiungiElementoConfig('pulizie')">Aggiungi</button>
+                        </div>
+                        <div id="cfgListPulizie" style="max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:5px; margin-top:6px;"></div>
+                    </div>
+
+                </div>
+            </div>
+
             <!-- DATI STRUTTURA PER INTESTAZIONI PDF -->
             <div class="card" style="border-top:4px solid var(--primary-color);">
                 <div class="card-header">
@@ -260,14 +330,7 @@
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:10px; margin-bottom:10px;">
                         <div class="form-group" style="margin:0;">
                             <label>Unità / Impianto *</label>
-                            <select id="tempUnita">
-                                <option value="Frigo Cucina 1 (0°C / +4°C)">Frigo Cucina 1 (+0/+4°C)</option>
-                                <option value="Frigo Cucina 2 (0°C / +4°C)">Frigo Cucina 2 (+0/+4°C)</option>
-                                <option value="Cella Carni (0°C / +3°C)">Cella Carni (+0/+3°C)</option>
-                                <option value="Cella Verdure (+4°C / +7°C)">Cella Verdure (+4/+7°C)</option>
-                                <option value="Freezer Surgelati (≤ -18°C)">Freezer Surgelati (≤ -18°C)</option>
-                                <option value="Frigo Farmaci Reparto (+2°C / +8°C)">Frigo Farmaci Reparto (+2/+8°C)</option>
-                            </select>
+                            <select id="tempUnita"></select>
                         </div>
                         <div class="form-group" style="margin:0;">
                             <label>Temperatura Rilevata (°C) *</label>
@@ -314,13 +377,7 @@
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:10px;">
                         <div class="form-group" style="margin:0;">
                             <label>Area Trattata *</label>
-                            <select id="sanifArea">
-                                <option value="Cucina & Piani Preparazione">Cucina & Piani Preparazione</option>
-                                <option value="Zona Lavaggio & Stoviglie">Zona Lavaggio & Stoviglie</option>
-                                <option value="Dispensa & Celle Frigo">Dispensa & Celle Frigo</option>
-                                <option value="Refettorio Ospiti">Refettorio Ospiti</option>
-                                <option value="Servizi Igienici Personale">Servizi Igienici Personale</option>
-                            </select>
+                            <select id="sanifArea"></select>
                         </div>
                         <div class="form-group" style="margin:0;">
                             <label>Prodotto Chimico & Diluizione</label>
@@ -358,14 +415,8 @@
                 <div style="background:#fffbeb; border:1px solid #fde68a; padding:15px; border-radius:6px; margin-bottom:15px;">
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-bottom:10px;">
                         <div class="form-group" style="margin:0;">
-                            <label>Operazione Eseguita *</label>
-                            <select id="puliziaTipo">
-                                <option value="Pulizia Piani di Lavoro & Affettatrice">Pulizia Piani di Lavoro & Affettatrice</option>
-                                <option value="Sgrassaggio Forni & Fornelli">Sgrassaggio Forni & Fornelli</option>
-                                <option value="Lavaggio & Igienizzazione Pavimenti">Lavaggio & Igienizzazione Pavimenti</option>
-                                <option value="Pulizia Cappa Aspirante e Filtri">Pulizia Cappa Aspirante e Filtri</option>
-                                <option value="Smaltimento Rifiuti & Svuotamento Bidoni">Smaltimento Rifiuti & Svuotamento Bidoni</option>
-                            </select>
+                            <label>Operazione / Locale *</label>
+                            <select id="puliziaTipo"></select>
                         </div>
                         <div class="form-group" style="margin:0;">
                             <label>Esito Controllo</label>
@@ -387,7 +438,7 @@
                 <div style="overflow-x:auto;">
                     <table class="data-table" id="tablePulizie">
                         <thead>
-                            <tr><th>Stato</th><th>Data e Ora</th><th>Operazione</th><th>Esito</th><th>Note</th><th>Operatore</th><th class="restrict-oss">Azione</th></tr>
+                            <tr><th>Stato</th><th>Data e Ora</th><th>Operazione / Locale</th><th>Esito</th><th>Note</th><th>Operatore</th><th class="restrict-oss">Azione</th></tr>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -490,9 +541,9 @@
 
         <!-- 7. WORKSPACE: PEST CONTROL (MONITORAGGIO INFESTANTI) -->
         <div id="ws-pest" class="workspace">
-            <div class="card" style="border-top:4px solid var(--pres-color);">
+            <div class="card" style="border-top:4px solid var(--warning-color);">
                 <div class="card-header">
-                    <h3 style="color:var(--pres-color);">🪤 Pest Control & Monitoraggio Infestanti</h3>
+                    <h3 style="color:var(--warning-color);">🪤 Pest Control & Monitoraggio Infestanti</h3>
                     <button class="btn-doc" onclick="window.stampaRegistro('pest')">🖨️ Stampa Verbale PDF/A4</button>
                 </div>
 
@@ -643,6 +694,32 @@
         window.dbTemp = []; window.dbSanif = []; window.dbPulizie = []; 
         window.dbMerci = []; window.dbLotti = []; window.dbPest = []; window.dbSicurezza = [];
 
+        // CONFIGURAZIONE DINAMICA PREDEFINITA (SE NON ANCORA PRESENTE SU FIRESTORE)
+        window.haccpConfig = {
+            frigoriferi: [
+                "Frigo Cucina 1 (0°C / +4°C)",
+                "Frigo Cucina 2 (0°C / +4°C)",
+                "Cella Carni (0°C / +3°C)",
+                "Cella Verdure (+4°C / +7°C)",
+                "Freezer Surgelati (≤ -18°C)",
+                "Frigo Farmaci Reparto (+2°C / +8°C)"
+            ],
+            sanificazione: [
+                "Cucina & Piani Preparazione",
+                "Zona Lavaggio & Stoviglie",
+                "Dispensa & Celle Frigo",
+                "Refettorio Ospiti",
+                "Servizi Igienici Personale"
+            ],
+            pulizie: [
+                "Pulizia Piani di Lavoro & Affettatrice",
+                "Sgrassaggio Forni & Fornelli",
+                "Lavaggio & Igienizzazione Pavimenti",
+                "Pulizia Cappa Aspirante e Filtri",
+                "Smaltimento Rifiuti & Svuotamento Bidoni"
+            ]
+        };
+
         window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
         window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} ore ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
         window.formatDateSafe = (d) => { if (!d) return '-'; if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/'); return d; };
@@ -655,6 +732,94 @@
             if(btn) btn.classList.add('active');
         };
 
+        // =========================================================================
+        // GESTIONE DINAMICA FRIGORIFERI, LOCALI DISINFEZIONE E LOCALI PULIZIE
+        // =========================================================================
+        window.renderConfigLists = () => {
+            // 1. Render Lista Frigoriferi
+            const cFrigo = document.getElementById('cfgListFrigoriferi');
+            const selFrigo = document.getElementById('tempUnita');
+            if(cFrigo) {
+                cFrigo.innerHTML = '';
+                (window.haccpConfig.frigoriferi || []).forEach((item, index) => {
+                    cFrigo.innerHTML += `
+                        <div class="config-item">
+                            <span>❄️ ${item}</span>
+                            <button class="btn-danger restrict-oss" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaElementoConfig('frigoriferi', ${index})">✕</button>
+                        </div>`;
+                });
+            }
+            if(selFrigo) {
+                selFrigo.innerHTML = '';
+                (window.haccpConfig.frigoriferi || []).forEach(item => {
+                    selFrigo.innerHTML += `<option value="${item}">${item}</option>`;
+                });
+            }
+
+            // 2. Render Lista Sanificazione
+            const cSanif = document.getElementById('cfgListSanificazione');
+            const selSanif = document.getElementById('sanifArea');
+            if(cSanif) {
+                cSanif.innerHTML = '';
+                (window.haccpConfig.sanificazione || []).forEach((item, index) => {
+                    cSanif.innerHTML += `
+                        <div class="config-item">
+                            <span>✨ ${item}</span>
+                            <button class="btn-danger restrict-oss" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaElementoConfig('sanificazione', ${index})">✕</button>
+                        </div>`;
+                });
+            }
+            if(selSanif) {
+                selSanif.innerHTML = '';
+                (window.haccpConfig.sanificazione || []).forEach(item => {
+                    selSanif.innerHTML += `<option value="${item}">${item}</option>`;
+                });
+            }
+
+            // 3. Render Lista Pulizie
+            const cPul = document.getElementById('cfgListPulizie');
+            const selPul = document.getElementById('puliziaTipo');
+            if(cPul) {
+                cPul.innerHTML = '';
+                (window.haccpConfig.pulizie || []).forEach((item, index) => {
+                    cPul.innerHTML += `
+                        <div class="config-item">
+                            <span>🧹 ${item}</span>
+                            <button class="btn-danger restrict-oss" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaElementoConfig('pulizie', ${index})">✕</button>
+                        </div>`;
+                });
+            }
+            if(selPul) {
+                selPul.innerHTML = '';
+                (window.haccpConfig.pulizie || []).forEach(item => {
+                    selPul.innerHTML += `<option value="${item}">${item}</option>`;
+                });
+            }
+        };
+
+        window.aggiungiElementoConfig = async (tipo) => {
+            let inputId = tipo === 'frigoriferi' ? 'newCfgFrigo' : (tipo === 'sanificazione' ? 'newCfgSanif' : 'newCfgPulizie');
+            const val = document.getElementById(inputId).value.trim();
+            if(!val) return window.showToast("⚠️ Inserisci la denominazione dell'elemento da aggiungere");
+
+            if(!window.haccpConfig[tipo]) window.haccpConfig[tipo] = [];
+            window.haccpConfig[tipo].push(val);
+
+            // Salvataggio permanente su Firestore
+            await setDoc(doc(db, "impostazioni", "haccp_config"), window.haccpConfig, { merge: true });
+            document.getElementById(inputId).value = '';
+            window.renderConfigLists();
+            window.showToast("✅ Configurazione aggiornata con successo!");
+        };
+
+        window.eliminaElementoConfig = async (tipo, index) => {
+            if(!confirm(`Sei sicuro di voler rimuovere questo elemento dalla lista attiva?`)) return;
+            window.haccpConfig[tipo].splice(index, 1);
+            await setDoc(doc(db, "impostazioni", "haccp_config"), window.haccpConfig, { merge: true });
+            window.renderConfigLists();
+            window.showToast("Elemento rimosso dalla configurazione");
+        };
+
         // GESTIONE TEMPERATURE
         window.salvaTemperatura = async () => {
             const u = document.getElementById('tempUnita').value;
@@ -662,22 +827,28 @@
             const dt = document.getElementById('tempDataOra').value ? document.getElementById('tempDataOra').value.replace('T', ' ') : window.getTimestamp();
             const az = document.getElementById('tempAzione').value.trim();
 
+            if(!u) return window.showToast("⚠️ Seleziona un impianto frigorifero");
             if(isNaN(v)) return window.showToast("⚠️ Inserisci un valore di temperatura valido");
 
-            // Verifica range conforme
             let conforme = true;
-            if(u.includes('Cucina') && (v < 0 || v > 4.5)) conforme = false;
-            if(u.includes('Carni') && (v < 0 || v > 3.5)) conforme = false;
-            if(u.includes('Verdure') && (v < 4 || v > 8)) conforme = false;
-            if(u.includes('Freezer') && (v > -17)) conforme = false;
-            if(u.includes('Farmaci') && (v < 2 || v > 8)) conforme = false;
+            if(u.toLowerCase().includes('freezer') || u.toLowerCase().includes('surgelat')) {
+                if(v > -17) conforme = false;
+            } else if(u.toLowerCase().includes('verdur')) {
+                if(v < 3 || v > 8) conforme = false;
+            } else if(u.toLowerCase().includes('carn')) {
+                if(v < 0 || v > 3.5) conforme = false;
+            } else if(u.toLowerCase().includes('farmac')) {
+                if(v < 2 || v > 8) conforme = false;
+            } else {
+                if(v < 0 || v > 4.5) conforme = false;
+            }
 
             await addDoc(collection(db, "haccp_temperature"), {
                 unita: u,
                 valore: v,
                 dataOra: dt,
                 conforme: conforme,
-                azione: az || (conforme ? 'Nessuna (Nella norma)' : 'ATTENZIONE: Fuori range'),
+                azione: az || (conforme ? 'Nessuna (Nella norma)' : 'ATTENZIONE: Fuori range termico'),
                 op: window.activeOperator,
                 ts: Date.now()
             });
@@ -711,6 +882,8 @@
             const p = document.getElementById('sanifProdotto').value.trim();
             const n = document.getElementById('sanifNote').value.trim() || 'Regolare';
 
+            if(!a) return window.showToast("⚠️ Seleziona un'area di sanificazione");
+
             await addDoc(collection(db, "haccp_sanificazioni"), {
                 area: a, prodotto: p, note: n, op: window.activeOperator, dataOra: window.getTimestamp(), ts: Date.now()
             });
@@ -739,6 +912,8 @@
             const t = document.getElementById('puliziaTipo').value;
             const e = document.getElementById('puliziaEsito').value;
             const n = document.getElementById('puliziaNote').value.trim() || 'Regolare';
+
+            if(!t) return window.showToast("⚠️ Seleziona un locale o operazione di pulizia");
 
             await addDoc(collection(db, "haccp_pulizie"), {
                 tipo: t, esito: e, note: n, op: window.activeOperator, dataOra: window.getTimestamp(), ts: Date.now()
@@ -816,7 +991,6 @@
             const file = fileInput.files[0];
             const reader = new FileReader();
             reader.onload = async (e) => {
-                // Compressione canvas veloce
                 const img = new Image();
                 img.onload = async () => {
                     const canvas = document.createElement('canvas');
@@ -1020,7 +1194,7 @@
                 });
             } else if(tipo === 'pulizie') {
                 titolo = "REGISTRO PULIZIE GIORNALIERE E PERIODICHE (MOD. 05)";
-                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Operazione Eseguita</th><th>Esito Controllo</th><th>Note</th><th>Operatore (OSA)</th></tr></thead><tbody>`;
+                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Operazione / Locale</th><th>Esito Controllo</th><th>Note</th><th>Operatore (OSA)</th></tr></thead><tbody>`;
                 window.dbPulizie.forEach(r => {
                     rowsHtml += `<tr><td>${r.dataOra}</td><td>${r.tipo}</td><td>${r.esito}</td><td>${r.note}</td><td>${r.op}</td></tr>`;
                 });
@@ -1079,6 +1253,17 @@
         onSnapshot(collection(db, "haccp_pest"), snap => { window.dbPest = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTablePest(); window.aggiornaKpiGenerali(); });
         onSnapshot(collection(db, "sicurezza_8108"), snap => { window.dbSicurezza = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTableSicurezza(); });
 
+        // ASCOLTO CONFIGURAZIONE DINAMICA IMPIANTI & LOCALI
+        onSnapshot(doc(db, "impostazioni", "haccp_config"), docSnap => {
+            if(docSnap.exists()) {
+                const cfg = docSnap.data();
+                if(cfg.frigoriferi) window.haccpConfig.frigoriferi = cfg.frigoriferi;
+                if(cfg.sanificazione) window.haccpConfig.sanificazione = cfg.sanificazione;
+                if(cfg.pulizie) window.haccpConfig.pulizie = cfg.pulizie;
+            }
+            window.renderConfigLists();
+        });
+
         // LETTURA DATI STRUTTURA SALVATI
         onSnapshot(doc(db, "impostazioni", "haccp_struttura"), docSnap => {
             if(docSnap.exists()) {
@@ -1094,6 +1279,7 @@
         window.onload = () => {
             document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
             document.getElementById('tempOperatore').value = window.activeOperator;
+            window.renderConfigLists();
         };
     </script>
 </body>
