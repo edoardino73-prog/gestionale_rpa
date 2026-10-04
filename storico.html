@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - Archivio Storico Dimessi & Deceduti</title>
+
+    <style>
+        :root {
+            --bg-color: #f1f5f9; --box-bg: #ffffff;
+            --primary-color: #0d9488; --secondary-color: #0f766e;
+            --text-main: #0f172a; --text-light: #475569;
+            --border-color: #cbd5e1; --radius: 6px;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-color); margin: 0; color: var(--text-main); font-size: 14px; min-height: 100vh; display: flex; flex-direction: column; }
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { font-weight: bold; font-size: 1.1em; }
+        .nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: var(--radius); cursor: pointer; text-decoration: none; font-weight: 600; }
+        .current-op-badge { background: #fff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
+
+        .container { max-width: 1350px; width: 96%; margin: 15px auto; flex-grow: 1; }
+        .card { background: var(--box-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid var(--primary-color); }
+        .card-header h3 { margin: 0; text-transform: uppercase; font-size: 1.05em; color: var(--primary-color); }
+
+        .guest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin-top: 15px; }
+        .guest-card { background: #ffffff; border: 1px solid var(--border-color); padding: 14px; border-radius: var(--radius); display: flex; flex-direction: column; gap: 10px; border-left: 5px solid #64748b; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        .guest-card-top { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+        .guest-avatar { width: 52px; height: 52px; border-radius: 6px; object-fit: cover; background: #e2e8f0; border: 1px solid var(--border-color); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.8em; flex-shrink: 0; }
+        .btn-doc { color: white; border: none; padding: 6px 12px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.85em; background: #475569; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-brand"><span>🗄️ NVS Masterpiece - Archivio Storico Dimessi & Deceduti</span></div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+            <button class="nav-btn" onclick="window.location.href='ospiti.html'">👥 Ospiti Presenti ↗</button>
+            <button class="nav-btn" onclick="window.location.href='lettere_dimissioni.html'">📄 Lettere ↗</button>
+            <button class="nav-btn" onclick="window.location.href='index.html'">🏠 Torna al Reparto (Home)</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h3>🗄️ Archivio Cartelle Chiuse & Fascicoli Storici</h3>
+                <span id="totaleStoricoBadge" style="font-weight:bold; color:var(--text-light); font-size:0.9em;">Archiviati: 0</span>
+            </div>
+            <p style="color:var(--text-light); font-size:0.9em; margin:0 0 10px 0;">Elenco degli ospiti la cui permanenza in struttura si è conclusa per dimissione, trasferimento o decesso.</p>
+            <div class="guest-grid" id="storicoGrid"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.dbOspiti = [];
+        window.activeOperator = sessionStorage.getItem("activeOperator") || "Operatore";
+
+        window.formatDateSafe = (d) => { if (!d) return '-'; if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/'); return d; };
+        
+        window.apriFascicoloArchiviato = (nome) => {
+            sessionStorage.setItem("globalSelectedPatient", nome);
+            window.location.href = 'cartella_clinica.html';
+        };
+
+        window.renderStorico = () => {
+            const sg = document.getElementById('storicoGrid'); if(!sg) return;
+            const arc = window.dbOspiti.filter(g => g.decesso || g.dimissione).sort((a,b) => a.name.localeCompare(b.name));
+            document.getElementById('totaleStoricoBadge').innerText = `Archiviati: ${arc.length}`;
+
+            if(arc.length === 0) {
+                sg.innerHTML = '<p style="color:#64748b; padding:20px; text-align:center;">Nessuna cartella chiusa presente nello storico.</p>';
+                return;
+            }
+
+            sg.innerHTML = '';
+            arc.forEach(g => {
+                const av = g.photo ? `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">` : `👤`;
+                const statusLabel = g.decesso 
+                    ? `✝️ Deceduto il ${window.formatDateSafe(g.decesso)}` 
+                    : `🚪 Uscita il ${window.formatDateSafe(g.dimissione)} (${g.motivoChiusura || 'Dimesso'})`;
+
+                sg.innerHTML += `
+                    <div class="guest-card">
+                        <div class="guest-card-top">
+                            <div class="guest-avatar">${av}</div>
+                            <div>
+                                <h4 style="margin:0; font-size:1.05em;">${g.name}</h4>
+                                <small style="color:var(--text-light);">CF: <strong>${g.cf || '-'}</strong></small>
+                            </div>
+                        </div>
+                        <div style="font-size:0.85em; font-weight:bold; color:#475569; background:#f1f5f9; padding:8px 10px; border-radius:4px;">
+                            ${statusLabel}
+                        </div>
+                        <div style="font-size:0.82em; color:var(--text-light);">
+                            Ingresso originario: <strong>${window.formatDateSafe(g.ingresso)}</strong>
+                        </div>
+                        <button class="btn-doc" onclick="window.apriFascicoloArchiviato('${g.name}')">Consulta Fascicolo Clinico ↗</button>
+                    </div>`;
+            });
+        };
+
+        onSnapshot(collection(db, "ospiti"), snap => {
+            window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.renderStorico();
+        });
+
+        window.onload = () => {
+            document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
+        };
+    </script>
+</body>
+</html>

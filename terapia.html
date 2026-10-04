@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - Terapia Mensile & Registro Stupefacenti</title>
+
+    <style>
+        :root {
+            --bg-color: #f1f5f9;         
+            --box-bg: #ffffff;
+            --primary-color: #0d9488; 
+            --secondary-color: #0f766e;  
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --border-color: #cbd5e1;     
+            --error-color: #e11d48; 
+            --warning-color: #d97706; 
+            --success-color: #059669; 
+            --terapia-color: #0284c7;
+            --base-font-size: 14px;      
+            --radius: 6px;               
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; min-height: 100vh; }
+
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+        body:not([data-med-access="true"]) .only-medico { display: none !important; }
+
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1em; }
+        .nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 14px; border-radius: var(--radius); cursor: pointer; text-decoration:none; font-weight: 600; display:inline-flex; align-items:center; }
+        .nav-btn:hover { background: rgba(255,255,255,0.25); }
+        .current-op-badge { background: #ffffff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+
+        .container { max-width: 1400px; width: 96%; margin: 15px auto; flex-grow: 1; }
+        .card { background: var(--box-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--primary-color); padding-bottom: 8px; flex-wrap: wrap; gap:10px; }
+        .card-header h3 { margin: 0; color: var(--primary-color); font-size: 1.1em; text-transform: uppercase; }
+
+        /* CARD OSPITE ATTIVO GLOBALE */
+        .global-active-patient-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-left: 8px solid var(--terapia-color);
+            border-radius: var(--radius);
+            padding: 12px 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .gap-info-left { display: flex; align-items: center; gap: 14px; }
+        .gap-avatar { width: 52px; height: 52px; border-radius: 6px; object-fit: cover; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 1.8em; border: 1px solid var(--border-color); overflow: hidden; flex-shrink: 0; }
+        .gap-name-block h2 { margin: 0; font-size: 1.25em; color: var(--text-main); letter-spacing: 0.5px; }
+        .gap-sub { font-size: 0.85em; color: var(--text-light); margin-top: 3px; }
+        .gap-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        .badge-disfagia { background: var(--warning-color); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+        .badge-infezione { background: var(--error-color); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+        .badge-contenzione { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85em; color: var(--text-main); }
+        input[type="text"], input[type="number"], select { width: 100%; padding: 8px; border: 1px solid #94a3b8; border-radius: 4px; box-sizing: border-box; background-color: #fff; color: var(--text-main); font-family: inherit; font-size: 0.95em; }
+
+        .btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-doc { color: white; border: none; padding: 8px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.9em; transition: 0.2s; }
+        .btn-primary { background: var(--secondary-color); }
+        .btn-success { background: var(--success-color); }
+        .btn-danger { background: var(--error-color); }
+        .btn-warning { background: var(--warning-color); }
+        .btn-doc { background: #475569; }
+
+        /* GRIGLIA TERAPIA MENSILE */
+        .terapia-table { width: 100%; border-collapse: collapse; font-size: 0.8em; text-align:center; min-width: 1000px; background: #ffffff;}
+        .terapia-table th, .terapia-table td { border: 1px solid #cbd5e1; padding: 2px; }
+        .terapia-table th { background: var(--terapia-color); color: white; padding: 6px 2px; font-weight: normal; }
+        .terapia-table td.farmaco-col { text-align:left; padding: 6px 8px; min-width: 230px; background: #f8fafc; position: sticky; left: 0; z-index: 2; border-right: 2px solid var(--terapia-color);}
+        .micro-shifts { display: flex; flex-direction: column; gap: 2px; justify-content: center; align-items:center; height:100%; width: 100%; padding: 2px 0;}
+        .shift-btn.single-btn { width: 90%; min-width: 32px; max-width: 48px; height: 18px; border-radius: 2px; font-size: 8.5px; font-weight:bold; line-height: 18px; text-align: center; color: #334155; cursor: pointer; border: 1px solid #94a3b8; background: #e2e8f0; }
+        .shift-btn.disabled { opacity: 0.4; cursor: not-allowed; }
+        .signature-text { color: var(--success-color); font-weight: bold; font-size: 8px; cursor:pointer; background: #d1fae5; border:1px solid #34d399; border-radius:2px; line-height: 18px; width: 90%; text-align: center; }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.9em; background: #ffffff; }
+        .data-table th, .data-table td { border: 1px solid var(--border-color); padding: 8px; text-align: left; vertical-align: middle; }
+        .data-table th { background-color: var(--primary-color); color: white; font-weight: normal; text-transform: uppercase; font-size: 0.85em; }
+        .data-table tr:nth-child(even) { background-color: #f8fafc; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
+        .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
+        .toast.show { opacity: 1; }
+
+        #printArea { display: none; }
+        @media print {
+            body * { visibility: hidden; } 
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 20px; box-sizing: border-box; }
+            .print-terapia-table { width: 100%; border-collapse: collapse; text-align:center; font-size: 7.5pt !important; margin-top:10px; } 
+            .print-terapia-table th, .print-terapia-table td { border: 1px solid #777; padding: 2px; } 
+            .print-terapia-table th { background: #eee !important; -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    <div id="printArea"></div>
+
+    <!-- MODAL FIRMA DIGITALE TOUCH -->
+    <div id="signatureModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:30000; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:25px; border-radius:8px; width:95%; max-width:500px; text-align:center;">
+            <h3 id="sigModalTitle" style="color:var(--primary-color); margin-top:0;">Validazione Piano Terapeutico</h3>
+            <p style="font-size:0.85em; color:var(--text-light); margin-bottom:15px;" id="sig-action-desc">Firma del Medico / Direttore Sanitario</p>
+            <canvas id="modalSignaturePad" width="400" height="200" style="border:2px dashed #cbd5e1; border-radius:6px; background:#f8fafc; touch-action:none; max-width:100%; width:100%; box-sizing:border-box; cursor:crosshair;"></canvas>
+            <div style="display:flex; gap:10px; margin-top:20px; justify-content:center;">
+                <button class="btn-doc" onclick="window.clearModalSignature()">🔄 Cancella</button>
+                <button class="btn-danger" onclick="window.closeSignatureModal()">❌ Annulla</button>
+                <button class="btn-success" onclick="window.confirmModalSignature()">✅ Conferma Firma</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVBAR SATELLITE -->
+    <div class="navbar">
+        <div class="navbar-brand">
+            <span>💊 NVS Masterpiece - Terapia & Stupefacenti</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+            <button class="nav-btn" onclick="window.navigaA('cartella_clinica.html')">⚕️ Fascicolo Clinico ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('anagrafica.html')">🛏️ Anagrafica ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('index.html')">🏠 Torna al Reparto (Home)</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <!-- CARD OSPITE ATTIVO IN ALTO PERSISTENTE -->
+        <div id="globalActivePatientBanner" class="global-active-patient-card">
+            <div class="gap-info-left">
+                <div id="gapAvatar" class="gap-avatar">👤</div>
+                <div class="gap-name-block">
+                    <h2 id="gapNome">NESSUN OSPITE SELEZIONATO</h2>
+                    <div class="gap-sub" id="gapDettagli">Stanza: - | CF: -</div>
+                </div>
+            </div>
+            <div class="gap-badges" id="gapBadges">
+                <span style="color:#64748b; font-size:0.85em;">Seleziona un paziente dal menu a tendina sottostante.</span>
+            </div>
+        </div>
+
+        <!-- SELEZIONE PAZIENTE -->
+        <div class="card" style="padding:15px;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:0.95em; color:var(--terapia-color); font-weight:bold;">Seleziona Ospite per Prospetto Farmacologico</label>
+                <select id="terapiaGuestSelect" onchange="window.handlePatientSelect(this.value)" style="padding:9px; font-weight:bold; border-color:var(--terapia-color);">
+                    <option value="" disabled selected>Seleziona un paziente...</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="terapiaContent" style="display:none;">
+            <!-- PROSPETTO TERAPIA ORDINARIA -->
+            <div class="card" style="padding: 15px;">
+                <div class="card-header" style="border-bottom-color:var(--terapia-color);">
+                    <h3 style="color:var(--terapia-color);">Prospetto Somministrazione Farmaci</h3>
+                    <button class="btn-primary" style="background:var(--terapia-color);" onclick="window.printTerapia()">🖨️ Stampa Prospetto</button>
+                </div>
+
+                <!-- PRESCRIZIONE MEDICA -->
+                <div class="only-medico" style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; background:#f0f9ff; padding:15px; border:1px solid #bae6fd; border-radius:4px;">
+                    <div style="flex:2.2; min-width:200px;">
+                        <label style="font-size:0.85em; font-weight:bold;">Farmaco (Ricerca Prontuario AIFA / Geriatria)</label>
+                        <input type="text" id="terapiaFarmaco" list="listaFarmaciAifa" placeholder="Cerca principio attivo o nome commerciale..." autocomplete="off">
+                        <datalist id="listaFarmaciAifa"></datalist>
+                    </div>
+                    <div style="flex:1; min-width:120px;">
+                        <label style="font-size:0.85em; font-weight:bold;">Posologia</label>
+                        <input type="text" id="terapiaPosologia" placeholder="Es. 1 cpr, 20 gtt, 1 fl">
+                    </div>
+                    <div style="flex:1.5; min-width:140px;">
+                        <label style="font-size:0.85em; font-weight:bold;">Fasce Orarie</label>
+                        <select id="terapiaOrario">
+                            <option value="08:00">08:00 (Mattina)</option>
+                            <option value="12:00">12:00 (Pranzo)</option>
+                            <option value="18:00">18:00 (Pomeriggio)</option>
+                            <option value="20:00">20:00 (Cena)</option>
+                            <option value="22:00">22:00 (Notte / Riposo)</option>
+                            <option value="08:00 - 20:00">08:00 - 20:00 (B.I.D.)</option>
+                            <option value="08:00 - 12:00 - 20:00">08:00 - 12:00 - 20:00 (T.I.D.)</option>
+                            <option value="08:00 - 12:00 - 18:00 - 22:00">08:00 - 12:00 - 18:00 - 22:00 (Q.I.D.)</option>
+                            <option value="Al bisogno">Al bisogno (S.O.S.)</option>
+                            <option value="Firma">Firma Singola Giornaliera</option>
+                        </select>
+                    </div>
+                    <div style="flex:2; min-width:180px;">
+                        <label style="font-size:0.85em; font-weight:bold;">Note Cliniche & Istruzioni</label>
+                        <input type="text" id="terapiaNote" placeholder="A stomaco pieno, triturabile, a digiuno...">
+                    </div>
+                    <div style="display:flex; align-items:flex-end;">
+                        <button class="btn-primary" style="background:var(--terapia-color); padding: 9px 16px;" onclick="window.addTerapiaItem()">➕ Prescrivi</button>
+                    </div>
+                </div>
+
+                <!-- SELETTORE MESE -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding:8px 15px; border:1px solid var(--border-color); background: #f8fafc; border-radius:4px;">
+                    <button class="btn-doc" onclick="window.changeTerapiaMonth(-1)">◀ Mese Prec.</button>
+                    <h4 id="terapiaMonthLabel" style="margin:0; font-size:1.2em; text-transform:uppercase;">...</h4>
+                    <button class="btn-doc" onclick="window.changeTerapiaMonth(1)">Mese Succ. ▶</button>
+                </div>
+
+                <!-- TABELLA SOMMINISTRAZIONE 31 GG -->
+                <div style="overflow-x:auto;">
+                    <table class="terapia-table" id="terapiaGridTable">
+                        <thead><tr id="terapiaGridHead"></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <!-- VALIDAZIONE MENSILE PIANO TERAPEUTICO -->
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; margin-top:20px; border-radius:4px; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <strong style="color:var(--success-color); font-size:1.05em;">Validazione Piano Terapeutico Mensile</strong>
+                        <div id="terapiaFirmaGlobaleStatus" style="font-size:0.85em; color:var(--text-light); margin-top:4px;">In attesa di validazione</div>
+                    </div>
+                    <button id="btnFirmaTerapiaPiano" class="btn-success only-medico" onclick="window.firmaTerapiaPiano()">⚕️ Valida e Firma (Tablet)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEZIONE STUPEFACENTI DPR 309/90 -->
+        <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:20px;" class="restrict-oss">
+            <!-- ARMADIO STUPEFACENTI -->
+            <div style="flex:1; min-width:340px;">
+                <div class="card" style="border-top: 4px solid #ef4444;">
+                    <div class="card-header">
+                        <h3 style="color:#ef4444;">Armadio Stupefacenti</h3>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <input type="number" id="narcThreshold" value="5" min="1" style="width:55px; padding:4px;" onchange="window.loadNarcoticsTable()">
+                            <button class="btn-primary" style="background:#ef4444; padding:5px 10px;" onclick="window.printStupefacentiInv()">🖨️ Giacenze</button>
+                        </div>
+                    </div>
+                    <table class="data-table" id="narcoticInvTable">
+                        <thead><tr><th>Farmaco</th><th>Stato</th><th>Qta</th><th>Barcode</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- REGISTRO CARICO / SCARICO -->
+            <div style="flex:2; min-width:400px;">
+                <div class="card" style="border-top: 4px solid #ef4444;">
+                    <div class="card-header">
+                        <h3 style="color:#ef4444;">Registro Movimenti DPR 309/90</h3>
+                        <button class="btn-primary" style="background:#ef4444; padding:5px 10px;" onclick="window.printStupefacentiRegistry()">🖨️ Stampa Registro</button>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-bottom:15px; background:#fef2f2; padding:12px; border:1px solid #fecaca; border-radius:4px; flex-wrap:wrap;">
+                        <div style="flex:2; min-width:160px;">
+                            <label style="font-size:0.8em; font-weight:bold;">Farmaco / Barcode</label>
+                            <input type="text" id="narcBarcode" placeholder="Spara barcode o scrivi..." onkeypress="window.handleNarcBarcode(event)">
+                            <input type="hidden" id="narcNome">
+                        </div>
+                        <div style="flex:1; min-width:100px;">
+                            <label style="font-size:0.8em; font-weight:bold;">Operazione</label>
+                            <select id="narcTipoOp"><option value="CARICO">CARICO</option><option value="SCARICO">SCARICO</option><option value="SCARTO">SCARTO</option></select>
+                        </div>
+                        <div style="flex:0.8; min-width:70px;">
+                            <label style="font-size:0.8em; font-weight:bold;">Q.tà</label>
+                            <input type="number" id="narcQta" min="1" value="1">
+                        </div>
+                        <div style="flex:2; min-width:160px;">
+                            <label style="font-size:0.8em; font-weight:bold;">Rif. Ricetta / Paziente</label>
+                            <input type="text" id="narcRif" placeholder="N° ricetta o nome paziente">
+                        </div>
+                        <div style="display:flex; align-items:flex-end;">
+                            <button class="btn-danger" onclick="window.addNarcoticMovement()">Registra</button>
+                        </div>
+                    </div>
+                    <table class="data-table" id="narcoticTable">
+                        <thead><tr><th>Data</th><th>Farmaco</th><th>Op</th><th>Qta</th><th>Rif.</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGICA JAVASCRIPT & FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        try {
+            initializeAppCheck(app, { 
+                provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), 
+                isTokenAutoRefreshEnabled: true 
+            });
+        } catch(e) { console.warn("AppCheck bypassato."); }
+        const db = getFirestore(app);
+
+        window.dbOspiti = [];
+        window.dbClinica = {};
+        window.dbContenzioni = [];
+        window.dbStupefacentiInv = [];
+        window.dbStupefacentiLog = [];
+
+        window.globalSelectedPatient = sessionStorage.getItem("globalSelectedPatient") || "";
+        window.activeOperator = sessionStorage.getItem("activeOperator") || "Operatore";
+        window.activeOperatorRole = sessionStorage.getItem("activeRole") || "user";
+        window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica") || "";
+
+        let curTerDate = new Date();
+        let curTerMonth = curTerDate.getMonth();
+        let curTerYear = curTerDate.getFullYear();
+        const monthNames = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
+
+        // PRONTUARIO TERAPEUTICO GERIATRICO AMPLIATO (250+ FARMACI ORDINATI ALFABETICAMENTE)
+        const prontuario = [
+            "Abilify (Aripiprazolo)", "Aciclovir", "Acido Acetilsalicilico (Aspirinetta)", "Acido Alendronico", 
+            "Acido Clavulanico + Amoxicillina (Augmentin)", "Acido Folico (Folina)", "Acido Ialuronico fiale/pomata", 
+            "Acido Ursodesossicolico (Deursil)", "Adalat Crono (Nifedipina)", "Aerius (Desloratadina)", 
+            "Akineton (Biperidene)", "Aldactone (Spironolattone)", "Aliflus (Fluticasone + Salmeterolo)", 
+            "Allopurinolo (Zyloric)", "Aloperidolo (Serenase / Haldol)", "Amiodarone (Cordarone)", 
+            "Amlodipina (Norvasc)", "Amoxicillina (Zimox)", "Ananase (Bromelina)", "Antra (Omeprazolo)", 
+            "Apixaban (Eliquis)", "Aprovel (Irbesartan)", "Arixtra (Fondaparinux)", "Ascriptin", 
+            "Atarax (Idrossizina)", "Atenololo (Tenormin)", "Atorvastatina (Torvast / Totalip)", 
+            "Augmentin (Amoxicillina + Ac. Clavulanico)", "Avodart (Dutasteride)", "Azitromicina (Zitromax)", 
+            "Baclofene (Lioresal)", "Bactrim (Sulfametossazolo + Trimetoprim)", "Basaglar (Insulina Glargine)", 
+            "Bebren (Bisoprololo)", "Benadon (Vitamina B6)", "Benerva (Vitamina B1)", "Bentelan (Betametasone)", 
+            "Besitran (Sertralina)", "Betadine (Iodopovidone)", "Betametasone (Bentelan)", "Betaserc (Betaistina)", 
+            "Bipreterax (Perindopril + Indapamide)", "Bisoprololo (Cardicor / Congescor)", "Blopress (Candesartan)", 
+            "Brevibloc (Esmololo)", "Brilique (Ticagrelor)", "Brimonidina collirio", "Brivirac (Brivaracetam)", 
+            "Brufen (Ibuprofene)", "Budesonide (Aerosol / Pulmaxan)", "Buprenorfina cerotti (Transtec)", 
+            "Buscopan (Ioscina N-butilbromuro)", "Ca-C-1000 Sandoz", "Calcio Carbonato + Vitamina D3", 
+            "Calcitriol (Rocaltrol)", "Canrenoato di Potassio (Venalston / Luvion)", "Cardicor (Bisoprololo)", 
+            "Cardioaspirina (ASA 100mg)", "Cardura (Doxazosina)", "Carvedilolo (Dilatrend)", 
+            "Catapresan (Clonidina)", "Cefixima (Cefixoral)", "Ceftriaxone (Rocefin)", "Celebrex (Celecoxib)", 
+            "Centrum Silver", "Cerotto Fentanyl (Durogesic)", "Cialis (Tadalafil)", "Ciclolat collirio", 
+            "Cinarizina", "Cipralex (Escitalopram)", "Ciprofloxacina (Ciproxin)", "Ciproxin", 
+            "Citalopram (Seropram)", "Clexane (Enoxaparina sodica)", "Clometiazolo (Distraneurin)", 
+            "Clonazepam (Rivotril)", "Clopidogrel (Plavix)", "Clorpromazina (Largactil)", 
+            "Co-Efferalgan (Paracetamolo + Codeina)", "Co-Tareg (Valsartan + Idroclorotiazide)", 
+            "Colchicina", "Colecalciferolo (Dibase Vitamina D)", "Combivent (Ipratropio + Salbutamolo)", 
+            "Condrosulf", "Congescor", "Cordarone (Amiodarone)", "Coumadin (Warfarin)", "Coversyl (Perindopril)", 
+            "Creon (Pancreatina)", "Crestor (Rosuvastatina)", "Cronocef (Cefprozil)", "Cymbalta (Duloxetina)", 
+            "Dafalgan (Paracetamolo)", "Daktarin (Miconazolo)", "Daonil (Glibenclamide)", "Daflon", 
+            "Debridat (Trimebutina)", "Decadron (Desametasone)", "Delorazepam (En gocce/cpr)", 
+            "Deltacortene (Prednisone)", "Depakin Chrono (Sodio Valproato)", "Depalgos (Ossicodone + Paracetamolo)", 
+            "Deprenyl (Selegilina)", "Desametasone fiale/cpr", "Deursil (Acido Ursodesossicolico)", 
+            "Diamicron (Gliclazide)", "Dibase (Vitamina D3 flaconcini/gtt)", "Diazepam (Valium gocce/fiale)", 
+            "Diclofenac (Voltaren)", "Diflucan (Fluconazolo)", "Digitalina (Digitossina)", "Digossina (Lanoxin)", 
+            "Diladel (Diltiazem)", "Dilatrend (Carvedilolo)", "Diltiazem (Altiazem / Diladel)", 
+            "Diosmina", "Diuresix (Torasemide)", "Dobetin (Vitamina B12)", "Domperidone (Peridon)", 
+            "Donepezil (Aricept)", "Dosberotec", "Doxazosina (Cardura)", "Dulcolax (Bisacodile)", 
+            "Duloxetina (Cymbalta / Xeristar)", "Duodart (Dutasteride + Tamsulosina)", "Duoplavin", 
+            "Duravir", "Durogesic (Fentanyl cerotti transdermici)", "Ebastina", "Ebrantil (Urapidil)", 
+            "Efferalgan (Paracetamolo effervescente)", "Eliquis (Apixaban)", "Enalapril (Enapren)", 
+            "Enapren (Enalapril)", "Enoxaparina (Clexane)", "Entresto (Sacubitril / Valsartan)", 
+            "Eparina Sodica fiale", "Eparema", "Equasym", "Ercefuryl", "Esilgan (Estazolam)", 
+            "Esomeprazolo (Nexium / Lucen)", "Espaven", "Eudigox (Digossina)", "Eutirox (Levotiroxina sodica)", 
+            "Exforge (Amlodipina + Valsartan)", "Ezetimibe (Zetia / Ezetrol)", "Famotidina", 
+            "Fentanil / Fentanyl fiale/cerotti", "Fisiologica NaCl 0.9% flacone", "Flectadol", 
+            "Fleet Clisma (Enema fosfati)", "Flixonase", "Fluconazolo (Diflucan)", "Fluifort (Carbocisteina)", 
+            "Fluimucil (N-Acetilcisteina aerosol/bustine)", "Fluoxetina (Prozac)", "Flurazepam (Felison)", 
+            "Folico (Folina 5mg)", "Forsteo (Teriparatide)", "Forxiga (Dapagliflozin)", "Foster (Beclometasone + Formoterolo)", 
+            "Fucidin crema/garze", "Furosemide (Lasix cpr/fiale)", "Gabapentin (Neurontin)", 
+            "Galantamina (Reminyl)", "Geffer bustine", "Gentamicina crema/fiale (Gentalyn)", 
+            "Gentalyn Beta (Gentamicina + Betametasone)", "Gliclazide (Diamicron)", "Glimepiride (Amaryl)", 
+            "Glipizide (Minidiab)", "Glucophage (Metformina)", "Glicerolo microclismi (Peretta)", 
+            "Gutron (Midodrina gocce/cpr)", "Haldol (Aloperidolo gtt/fiale)", "Humalog (Insulina Lispro)", 
+            "Ibuprofene (Brufen / Spidifen)", "Idroclorotiazide (Esidrex)", "Imodium (Loperamide)", 
+            "Inderal (Propranololo)", "Inegy (Simvastatina + Ezetimibe)", "Innohep (Tinzaparina)", 
+            "Insulina Aspart (Novorapid)", "Insulina Degludec (Tresiba)", "Insulina Detemir (Levemir)", 
+            "Insulina Glargine (Lantus / Toujeo / Basaglar)", "Insulina Lispro (Humalog)", 
+            "Iperten (Manidipina)", "Ipratropio Bromuro (Atem / Broncovaleas)", "Irbesartan (Aprovel)", 
+            "Isoptin (Verapamil)", "Isosorbide Mononitrato (Monoket)", "Jardiance (Empagliflozin)", 
+            "Januvia (Sitagliptin)", "Kalymin (Piridostigmina)", "Keppra (Levetiracetam)", 
+            "Ketoprofene (Orudis / Oki)", "Ketorolac (Toradol)", "Klacid (Claritromicina)", 
+            "K-Contin (Cloruro di Potassio lento rilascio)", "Lacirex (Lacidipina)", "Laevolac (Lattulosio sciroppo)", 
+            "Lamictal (Lamotrigina)", "Lanoxin (Digossina)", "Lansoprazolo (Lansox / Limpidex)", 
+            "Lantus (Insulina Glargine 100 U/ml)", "Largactil (Clorpromazina)", "Lasix (Furosemide)", 
+            "Lercanidipina (Zanidip)", "Levemir (Insulina Detemir)", "Levetiracetam (Keppra)", 
+            "Levocarb (Levodopa + Carbidopa)", "Levofloxacina (Levoxacin / Tavanic)", "Levopraid (Levosulpiride)", 
+            "Levotiroxina (Eutirox / Tirosint)", "Limpidex (Lansoprazolo)", "Lioresal (Baclofene)", 
+            "Lipitor (Atorvastatina)", "Lisi-Tec (Lisinopril)", "Lisinopril (Zestril)", 
+            "Lixiana (Edoxaban)", "Lobivon (Nebivololo)", "Lonarid", "Loperamide (Imodium)", 
+            "Lorazepam (Tavor cpr/gtt/fiale)", "Losartan (Lortaan)", "Lucen (Esomeprazolo)", 
+            "Ludiomil (Maprotilina)", "Luvion (Canrenone)", "Lyrica (Pregabalin)", 
+            "Macladin (Claritromicina)", "Macrogol (Movicol / Paxabel)", "Madopar (Levodopa + Benserazide)", 
+            "Magnesio Supremo", "Mannitolo 18% / 10%", "Memantina (Ebixa)", "Mepral (Omeprazolo)", 
+            "Mesavancol (Mesalazina)", "Metfodd (Metformina)", "Metformina (Glucophage)", 
+            "Methadone / Metadone cloridrato", "Metilprednisolone (Solumedrol / Urbason)", 
+            "Metoprololo (Seloken)", "Micardis (Telmisartan)", "Midodrina (Gutron)", 
+            "Minias (Lormetazepam gtt/cpr)", "Mirtazapina (Remeron)", "Monoket (Isosorbide mononitrato)", 
+            "Monuril (Fosfomicina bustine)", "Morfina Cloridrato fiale", "Motilium (Domperidone)", 
+            "Movicol (Macrogol bustine)", "Moxifloxacina (Vigamox / Avalox)", "Muscoril (Tiocolchicoside)", 
+            "N-Acetilcisteina (Fluimucil)", "Naloxone (Narcan fiale)", "Nebivololo (Lobivon)", 
+            "Neobil (Acido Deidrocolico)", "Neurontin (Gabapentin)", "Nexium (Esomeprazolo)", 
+            "Nimesulide (Aulin)", "Nitroglicerina cerotti (Venitrin / Minitran)", "Nizoral", 
+            "Noan (Diazepam)", "Nootropil (Piracetam)", "Normix (Rifaximina)", "Norvasc (Amlodipina)", 
+            "Novalgina (Metamizolo gtt/fiale)", "Novorapid (Insulina Aspart penna)", "Oki bustine (Ketoprofene sale di lisina)", 
+            "Olanzapina (Zyprexa)", "Olpress (Olmesartan)", "Omegor (Omega-3)", "Omeprazen (Omeprazolo)", 
+            "Omeprazolo (Antra / Mepral)", "Omnic (Tamsulosina)", "Onbrez (Indacaterolo)", 
+            "Oralair", "Oramorph gocce orali (Morfina)", "Orencia", "Ostepack", "Ossicodone (Oxycontin)", 
+            "Oxycontin (Ossicodone cloridrato)", "Pantoprazolo (Pantorc / Peptazol)", "Pantorc (Pantoprazolo)", 
+            "Paracetamolo (Tachipirina / Perfalgan)", "Pariet (Rabeprazolo)", "Paxabel (Macrogol)", 
+            "Peptazol (Pantoprazolo)", "Perfalgan (Paracetamolo fiale)", "Peridon (Domperidone)", 
+            "Perindopril (Coversyl)", "Piroxicam (Feldene)", "Plaquenil (Idrossiclorochina)", 
+            "Plavix (Clopidogrel)", "Polase bustine", "Pradaxa (Dabigatran etexilato)", 
+            "Pravastatina (Selectin)", "Prednisone (Deltacortene)", "Pregabalin (Lyrica)", 
+            "Progeffik", "Propantelina", "Propranololo (Inderal)", "Proscar (Finasteride)", 
+            "Prozac (Fluoxetina)", "Quetiapina (Seroquel)", "Rabeprazolo (Pariet)", "Ramipril (Triatec)", 
+            "Ranidil (Ranitidina)", "Reidratante orale bustine", "Remeron (Mirtazapina)", 
+            "Reminyl (Galantamina)", "Rifacol (Rifaximina)", "Rilaten", "Riopan gel/bustine (Magaldrato)", 
+            "Risperdal (Risperidone)", "Risperidone", "Ritalin (Metilfenidato)", "Rivastigmina cerotti (Exelon)", 
+            "Rivaroxaban (Xarelto)", "Rivotril (Clonazepam)", "Robilas (Bilastina)", "Rocefin (Ceftriaxone fiale)", 
+            "Ropinirolo (Requip)", "Rosuvastatina (Crestor)", "Salbutamolo (Ventolin spray/soluzione)", 
+            "Samyr (Ademetionina fiale/cpr)", "Sanipirina", "Secadrex", "Sedatol gocce", 
+            "Seleparina (Nadroparina calcica)", "Selexid (Pivmecillinam)", "Serenase (Aloperidolo)", 
+            "Seroquel (Quetiapina)", "Serpasil", "Sertralina (Zoloft)", "Sevorane", 
+            "Sideral Folic (Ferro sucrosomiale)", "Simestat (Simvastatina)", "Simvastatina (Zocor)", 
+            "Sintrom (Acenocumarolo)", "Sinemet (Levodopa + Carbidopa)", "Singulair (Montelukast)", 
+            "Sirdalud (Tizanidina)", "Solian (Amisulpride)", "Solumedrol (Metilprednisolone)", 
+            "Spasmodex", "Spiriva Respimat (Tiotropio)", "Spironolattone (Aldactone)", 
+            "Stilnox (Zolpidem)", "Subutex (Buprenorfina)", "Tachidol (Paracetamolo + Codeina)", 
+            "Tachipirina 1000mg / 500mg (Paracetamolo)", "Tambocor (Flecainide)", "Tamsulosina (Omnic)", 
+            "Tanatril (Imidapril)", "Tapazole (Tiamazolo)", "Tavor (Lorazepam)", 
+            "Tegretol (Carbamazepina)", "Temesta (Lorazepam)", "Tenormin (Atenololo)", 
+            "Tefillina", "Teriparatide (Forsteo)", "Ticlopidina (Tiklid)", "Tirofiban", 
+            "Tirosint (Levotiroxina soluzione)", "Tobral collirio/unguento (Tobramicina)", 
+            "Toradol (Ketorolac fiale/gtt)", "Torasemide (Diuresix)", "Torvast (Atorvastatina)", 
+            "Totalip (Atorvastatina)", "Toujeo (Insulina Glargine 300 U/ml)", "Trajenta (Linagliptin)", 
+            "Tramadolo (Contramal gocce/fiale/cpr)", "Trandate (Labetalolo)", "Transtec cerotti (Buprenorfina)", 
+            "Trasicor", "Traumanec", "Tresiba (Insulina Degludec)", "Triatec (Ramipril)", 
+            "Trileptal (Oxcarbazepina)", "Trittico (Trazodone gocce/cpr)", "Triquis", 
+            "Ubretid", "Unasyn", "Urdes (Acido Ursodesossicolico)", "Valium (Diazepam)", 
+            "Valprazolo", "Valsartan (Tareg)", "Venlafaxina (Efexor)", "Ventolin spray (Salbutamolo)", 
+            "Verapamil (Isoptin)", "Vesiker (Solifenacina)", "Vigamox", "Vimpat (Lacosamide)", 
+            "Visanne", "Vitamina B12 (Dobetin)", "Vitamina C (Cevion)", "Vitamina D3 (Dibase)", 
+            "Voltaren (Diclofenac fiale/cpr/gel)", "Warfarin (Coumadin)", "Xanax (Alprazolam gtt/cpr)", 
+            "Xarelto (Rivaroxaban)", "Xatral (Alfuzosina)", "Xeristar (Duloxetina)", 
+            "Zanidip (Lercanidipina)", "Zantac (Ranitidina)", "Zestril (Lisinopril)", 
+            "Zimox (Amoxicillina)", "Zirtec (Cetirizina)", "Zitromax (Azitromicina)", 
+            "Zocor (Simvastatina)", "Zofran (Ondansetron)", "Zoloft (Sertralina)", 
+            "Zolpidem (Stilnox)", "Zyloric (Allopurinolo)", "Zyprexa (Olanzapina)"
+        ];
+
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
+        window.getInitials = (n) => { if(!n) return ""; return n.replace(/Inf\.|Dr\.|OSS/gi,'').trim().split(' ').map(x=>x[0].toUpperCase()).join('.')+'.'; };
+        window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
+        window.getTodayString = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
+        window.formatDateSafe = (d) => { if (!d) return '-'; if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/'); return d; };
+        window.navigaA = (url) => { window.location.href = url; };
+
+        // BANNER OSPITE ATTIVO IN ALTO
+        window.renderGlobalPatientBanner = () => {
+            const n = window.globalSelectedPatient;
+            const bannerNome = document.getElementById('gapNome');
+            const bannerDet = document.getElementById('gapDettagli');
+            const bannerBadges = document.getElementById('gapBadges');
+            const bannerAv = document.getElementById('gapAvatar');
+
+            if(!n) {
+                bannerNome.innerText = "NESSUN OSPITE SELEZIONATO";
+                bannerNome.style.color = "#64748b";
+                bannerDet.innerText = "Stanza: - | CF: -";
+                bannerBadges.innerHTML = `<span style="color:#64748b; font-size:0.85em;">Seleziona un paziente dal menu per caricare il piano terapeutico.</span>`;
+                bannerAv.innerHTML = `👤`;
+                return;
+            }
+
+            const g = window.dbOspiti.find(x => x.name === n) || {};
+            const pD = window.dbClinica[n] || {};
+
+            bannerNome.innerText = n;
+            bannerNome.style.color = "var(--text-main)";
+            bannerDet.innerHTML = `Stanza: <strong>${g.room || '-'}</strong> | CF: <strong>${g.cf || '-'}</strong> | Nato il: <strong>${window.formatDateSafe(g.dob)}</strong>`;
+            bannerAv.innerHTML = g.photo ? `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">` : `👤`;
+
+            let badges = '';
+            if(pD.disfagia) badges += `<div class="badge-disfagia">🥣 Disfagico</div>`;
+            if(pD.infezione) badges += `<div class="badge-infezione">☣ ${pD.infezione}</div>`;
+            
+            const hasCont = window.dbContenzioni.some(c => c.ospite === n && c.stato === 'ATTIVA');
+            if(hasCont) badges += `<div class="badge-contenzione">🔒 Contenzione Attiva</div>`;
+
+            bannerBadges.innerHTML = badges || `<span style="color:#15803d; font-size:0.85em; font-weight:bold;">✅ Nessun alert clinico attivo</span>`;
+        };
+
+        window.loadGuestSelector = () => {
+            const s = document.getElementById('terapiaGuestSelect');
+            if(!s) return;
+            s.innerHTML = '<option value="" disabled selected>Seleziona un paziente...</option>';
+            window.dbOspiti.filter(g => !g.decesso && !g.dimissione).sort((a,b) => a.name.localeCompare(b.name)).forEach(g => {
+                s.innerHTML += `<option value="${g.name}">${g.name}</option>`;
+            });
+            if(window.globalSelectedPatient) {
+                s.value = window.globalSelectedPatient;
+                window.handlePatientSelect(window.globalSelectedPatient);
+            }
+        };
+
+        window.handlePatientSelect = (n) => {
+            if(!n) return;
+            window.globalSelectedPatient = n;
+            sessionStorage.setItem("globalSelectedPatient", n);
+            document.getElementById('terapiaContent').style.display = 'block';
+
+            window.renderGlobalPatientBanner();
+
+            let d = window.dbClinica[n] || {terapiaList:[], terapiaFirmeMensili:{}};
+            window.renderTerapiaTable(n, d);
+        };
+
+        window.changeTerapiaMonth = (delta) => { 
+            curTerMonth += delta; 
+            if(curTerMonth > 11){ curTerMonth = 0; curTerYear++; } 
+            if(curTerMonth < 0){ curTerMonth = 11; curTerYear--; } 
+            const n = window.globalSelectedPatient; 
+            if(n) window.renderTerapiaTable(n, window.dbClinica[n] || {}); 
+        };
+
+        window.addTerapiaItem = async () => { 
+            const n = window.globalSelectedPatient; 
+            if(!n) return window.showToast("⚠️ Seleziona prima un paziente!"); 
+            const f = document.getElementById('terapiaFarmaco').value.trim(); 
+            const p = document.getElementById('terapiaPosologia').value.trim(); 
+            const o = document.getElementById('terapiaOrario').value; 
+            const nt = document.getElementById('terapiaNote').value.trim(); 
+            if(!f) return window.showToast("⚠️ Inserisci il nome del farmaco"); 
+
+            let d = window.dbClinica[n] || {}; 
+            if(!d.terapiaList) d.terapiaList = []; 
+            d.terapiaList.push({ farmaco: f, posologia: p, orario: o, note: nt, signatures: {} }); 
+
+            await setDoc(doc(db, "cartelle_cliniche", n), d, { merge: true }); 
+            document.getElementById('terapiaFarmaco').value = ''; 
+            document.getElementById('terapiaPosologia').value = ''; 
+            document.getElementById('terapiaNote').value = ''; 
+            window.renderTerapiaTable(n, d); 
+            window.showToast("✅ Terapia prescritta!"); 
+        };
+
+        window.deleteTerapiaItem = async (i) => { 
+            if(window.activeOperatorQualifica !== 'Medico' && window.activeOperatorQualifica !== 'Direttore Sanitario' && window.activeOperatorRole !== 'admin') {
+                return window.showToast("⚠️ Azione riservata al Medico.");
+            }
+            if(!confirm("Cancellare definitivamente questo farmaco dalla terapia?")) return; 
+            const n = window.globalSelectedPatient; 
+            let d = window.dbClinica[n]; 
+            d.terapiaList.splice(i, 1); 
+            await setDoc(doc(db, "cartelle_cliniche", n), d, { merge: true }); 
+            window.renderTerapiaTable(n, d); 
+        };
+
+        window.signTerapia = async (i, dStr, slot) => { 
+            const n = window.globalSelectedPatient; 
+            let d = window.dbClinica[n]; 
+            let item = d.terapiaList[i]; 
+            if(!item.signatures) item.signatures = {}; 
+            let sk = `${dStr}_${slot}`; 
+
+            if((item.signatures[sk] && item.signatures[sk].op) || (item.signatures[dStr] && item.signatures[dStr].op)) { 
+                if(window.activeOperatorQualifica === 'Medico' || window.activeOperatorQualifica === 'Direttore Sanitario' || window.activeOperatorRole === 'admin') { 
+                    if(confirm("Revocare la firma di somministrazione?")) { 
+                        if(item.signatures[sk]) delete item.signatures[sk]; 
+                        if(item.signatures[dStr]) delete item.signatures[dStr]; 
+                        await setDoc(doc(db, "cartelle_cliniche", n), d, { merge: true }); 
+                        window.renderTerapiaTable(n, d); 
+                    } 
+                } else { 
+                    window.showToast("🔒 Solo il Medico o Dir. Sanitario può revocare una somministrazione"); 
+                } 
+                return; 
+            } 
+
+            if(window.activeOperatorQualifica !== 'Direttore Sanitario' && window.activeOperatorQualifica !== 'Infermiere' && window.activeOperatorQualifica !== 'Medico' && window.activeOperatorRole !== 'admin') {
+                return window.showToast("🚫 Solo Personale Sanitario autorizzato"); 
+            }
+            if(dStr !== window.getTodayString()) return window.showToast("⚠️ Puoi firmare solo la somministrazione di oggi"); 
+
+            item.signatures[sk] = { op: window.activeOperator, time: new Date().toLocaleTimeString('it-IT') }; 
+            await setDoc(doc(db, "cartelle_cliniche", n), d, { merge: true }); 
+            window.renderTerapiaTable(n, d); 
+        };
+
+        window.renderTerapiaTable = (n, d) => { 
+            document.getElementById('terapiaMonthLabel').innerText = `${monthNames[curTerMonth]} ${curTerYear}`; 
+            const th = document.getElementById('terapiaGridHead'); 
+            const tb = document.querySelector('#terapiaGridTable tbody'); 
+            if(!th || !tb) return; 
+
+            let dIM = new Date(curTerYear, curTerMonth + 1, 0).getDate(); 
+            let hh = `<th class="farmaco-col">Farmaco / Posologia</th>`; 
+            for(let i = 1; i <= dIM; i++) hh += `<th>${i}</th>`; 
+            hh += `<th class="only-medico">Az.</th>`; 
+            th.innerHTML = hh; 
+            tb.innerHTML = ''; 
+
+            let monthKey = `${curTerYear}-${String(curTerMonth + 1).padStart(2,'0')}`;
+            let firmaMese = d.terapiaFirmeMensili ? d.terapiaFirmeMensili[monthKey] : null;
+
+            if(firmaMese && firmaMese.op) {
+                document.getElementById('terapiaFirmaGlobaleStatus').innerHTML = `✅ Validato da <strong>${firmaMese.op}</strong> il ${firmaMese.data}`;
+                document.getElementById('btnFirmaTerapiaPiano').style.display = 'none'; 
+            } else {
+                document.getElementById('terapiaFirmaGlobaleStatus').innerHTML = `⏳ In attesa di validazione medica per ${monthNames[curTerMonth]} ${curTerYear}`;
+                document.getElementById('btnFirmaTerapiaPiano').style.display = 'block';
+            }
+
+            if(!d.terapiaList || d.terapiaList.length === 0){ 
+                tb.innerHTML = `<tr><td colspan="${dIM + 2}" style="padding:15px; color:#64748b;">Nessuna prescrizione farmacologica attiva.</td></tr>`; 
+                return; 
+            } 
+
+            let tS = window.getTodayString(); 
+            let rows = ""; 
+            d.terapiaList.forEach((t, i) => { 
+                let fC = `<strong>${t.farmaco}</strong><br><span style="color:var(--terapia-color);">${t.posologia || ''}</span><br><small>🕒 ${t.orario || ''}</small>${t.note ? '<br><small><em>' + t.note + '</em></small>' : ''}`; 
+                rows += `<tr><td class="farmaco-col">${fC}</td>`; 
+                let oA = (t.orario && t.orario !== 'Firma') ? t.orario.split('-').map(s=>s.trim()) : ["Firma"]; 
+
+                for(let day = 1; day <= dIM; day++){ 
+                    let dStr = `${curTerYear}-${String(curTerMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; 
+                    let cC = ""; 
+                    oA.forEach(sl => { 
+                        let sig = t.signatures ? (t.signatures[`${dStr}_${sl}`] || t.signatures[dStr]) : null; 
+                        if(sig) cC += `<div class="signature-text" onclick="window.signTerapia(${i},'${dStr}','${sl}')">${window.getInitials(sig.op)}</div>`; 
+                        else cC += `<div class="shift-btn single-btn ${dStr !== tS ? 'disabled' : ''}" onclick="window.signTerapia(${i},'${dStr}','${sl}')">${sl}</div>`; 
+                    }); 
+                    rows += `<td><div class="micro-shifts">${cC}</div></td>`; 
+                } 
+                rows += `<td class="only-medico"><button class="btn-danger" style="padding:3px 7px;" onclick="window.deleteTerapiaItem(${i})">X</button></td></tr>`; 
+            }); 
+            tb.innerHTML = rows; 
+        };
+
+        window.firmaTerapiaPiano = () => {
+            if(window.activeOperatorQualifica !== 'Medico' && window.activeOperatorQualifica !== 'Direttore Sanitario' && window.activeOperatorRole !== 'admin') {
+                return window.showToast("🚫 Azione riservata a Medico o Direttore Sanitario.");
+            }
+            window.openSignatureModal(`Validazione Piano Terapeutico: ${monthNames[curTerMonth]} ${curTerYear}`, async (b64) => {
+                const n = window.globalSelectedPatient;
+                let d = window.dbClinica[n] || {};
+                if(!d.terapiaFirmeMensili) d.terapiaFirmeMensili = {};
+                let monthKey = `${curTerYear}-${String(curTerMonth+1).padStart(2,'0')}`;
+                d.terapiaFirmeMensili[monthKey] = { op: window.activeOperator, data: window.getTimestamp(), b64: b64 };
+                await setDoc(doc(db, "cartelle_cliniche", n), d, { merge: true });
+                window.showToast("✅ Piano validato e bloccato con successo!");
+                window.renderTerapiaTable(n, d);
+            });
+        };
+
+        // GESTIONE STUPEFACENTI DPR 309/90
+        window.handleNarcBarcode = (e) => { 
+            if(e.key === 'Enter') { 
+                e.preventDefault(); 
+                const c = e.target.value.trim(); 
+                if(c){ 
+                    let f = window.dbStupefacentiInv.find(i => i.barcode === c); 
+                    if(f){ 
+                        document.getElementById('narcNome').value = f.nome; 
+                        document.getElementById('narcQta').focus(); 
+                    } 
+                } 
+            } 
+        };
+
+        window.addNarcoticMovement = async () => { 
+            const bc = document.getElementById('narcBarcode').value.trim(); 
+            const nm = document.getElementById('narcNome').value.trim() || bc; 
+            const tp = document.getElementById('narcTipoOp').value; 
+            const qta = parseFloat(document.getElementById('narcQta').value); 
+            const rf = document.getElementById('narcRif').value.trim(); 
+
+            if(!nm || isNaN(qta) || qta <= 0 || !rf) return window.showToast("⚠️ Compila nome farmaco, quantità e causale/ricetta."); 
+
+            let itm = window.dbStupefacentiInv.find(i => i.nome.toLowerCase() === nm.toLowerCase() || (bc && i.barcode === bc)); 
+
+            if(itm){ 
+                if(bc && !itm.barcode) await updateDoc(doc(db, "stupefacenti_inv", itm.id), { barcode: bc }); 
+                if(tp === 'CARICO') {
+                    await updateDoc(doc(db, "stupefacenti_inv", itm.id), { qta: itm.qta + qta }); 
+                } else { 
+                    if(itm.qta < qta) return window.showToast("❌ Giacenza insufficiente nell'armadio"); 
+                    await updateDoc(doc(db, "stupefacenti_inv", itm.id), { qta: itm.qta - qta }); 
+                } 
+            } else { 
+                if(tp !== 'CARICO') return window.showToast("❌ Farmaco non presente in inventario"); 
+                await addDoc(collection(db, "stupefacenti_inv"), { nome: nm, barcode: bc, qta: qta }); 
+            } 
+
+            await addDoc(collection(db, "stupefacenti_log"), { nome: nm, tipo: tp, qta: qta, rif: rf, op: window.activeOperator, date: window.getTimestamp() }); 
+            document.getElementById('narcBarcode').value = ''; 
+            document.getElementById('narcNome').value = ''; 
+            document.getElementById('narcRif').value = ''; 
+            window.showToast("💊 Movimento 309/90 Registrato"); 
+        };
+
+        window.loadNarcoticsTable = () => { 
+            const iTb = document.querySelector('#narcoticInvTable tbody'); 
+            const th = parseInt(document.getElementById('narcThreshold')?.value || 5); 
+            if(iTb){ 
+                iTb.innerHTML = ''; 
+                window.dbStupefacentiInv.sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(i => { 
+                    let bg = i.qta === 0 ? '#fef2f2' : (i.qta <= th ? '#fffbeb' : ''); 
+                    iTb.innerHTML += `<tr style="background:${bg}"><td><strong>${i.nome}</strong></td><td>${i.qta === 0 ? '🔴' : (i.qta <= th ? '🟡' : '🟢')}</td><td style="font-weight:bold;text-align:center;">${i.qta}</td><td>${i.barcode || '-'}</td></tr>`; 
+                }); 
+            } 
+            const lTb = document.querySelector('#narcoticTable tbody'); 
+            if(lTb){ 
+                lTb.innerHTML = ''; 
+                window.dbStupefacentiLog.sort((a,b)=>new Date(b.date.replace(' alle ','T')) - new Date(a.date.replace(' alle ','T'))).forEach(i => 
+                { 
+                    let c = i.tipo === 'CARICO' ? 'var(--success-color)' : (i.tipo === 'SCARTO' ? 'var(--error-color)' : 'var(--secondary-color)'); 
+                    lTb.innerHTML += `<tr><td>${i.date}</td><td><strong>${i.nome}</strong></td><td><span style="color:${c};font-weight:bold;">${i.tipo}</span></td><td>${i.qta}</td><td>${i.rif} <small>(${window.getInitials(i.op)})</small></td></tr>`; 
+                }); 
+            } 
+        };
+
+        // STAMPE
+        window.printTerapia = () => {
+            const n = window.globalSelectedPatient;
+            if(!n) return window.showToast("⚠️ Seleziona un paziente");
+            let d = window.dbClinica[n] || {};
+            let dIM = new Date(curTerYear, curTerMonth + 1, 0).getDate(); 
+            let h = `<th>Farmaco / Posologia</th>`; 
+            for(let i = 1; i <= dIM; i++) h += `<th>${i}</th>`; 
+            let rows = ""; 
+            (d.terapiaList || []).forEach(t => { 
+                let fC = `<strong>${t.farmaco}</strong><br>${t.posologia || ''} (${t.orario || ''})`; 
+                let r2 = `<tr><td style="text-align:left; padding:4px;">${fC}</td>`; 
+                let oArr = (t.orario && t.orario !== 'Firma') ? t.orario.split('-').map(s=>s.trim()) : ["Firma"]; 
+                for(let day = 1; day <= dIM; day++){ 
+                    let dS = `${curTerYear}-${String(curTerMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; 
+                    let cH = ""; 
+                    oArr.forEach(sl => { 
+                        let sig = t.signatures ? (t.signatures[`${dS}_${sl}`] || t.signatures[dS]) : null; 
+                        let v = sig ? window.getInitials(sig.op) : '-'; 
+                        cH += `<div>${sl}: ${v}</div>`; 
+                    }); 
+                    r2 += `<td>${cH}</td>`; 
+                } 
+                rows += r2 + `</tr>`; 
+            }); 
+            let html = `
+                <div style="text-align:center; font-family:sans-serif;">
+                    <h2>NUOVA VILLA SILVANA - PROSPETTO TERAPIA</h2>
+                    <h3>Paziente: ${n} - Mese: ${monthNames[curTerMonth]} ${curTerYear}</h3>
+                    <table class="print-terapia-table"><thead><tr>${h}</tr></thead><tbody>${rows}</tbody></table>
+                </div>
+            `;
+            document.getElementById('printArea').innerHTML = html;
+            window.print();
+        };
+
+        window.printStupefacentiInv = () => {
+            let html = `<h2>REGISTRO GIACENZE ARMADIO STUPEFACENTI</h2><table border="1" style="width:100%; border-collapse:collapse;"><tr><th>Farmaco</th><th>Q.tà</th><th>Barcode</th></tr>`;
+            window.dbStupefacentiInv.forEach(i => { html += `<tr><td>${i.nome}</td><td>${i.qta}</td><td>${i.barcode||'-'}</td></tr>`; });
+            html += `</table>`;
+            document.getElementById('printArea').innerHTML = html;
+            window.print();
+        };
+
+        window.printStupefacentiRegistry = () => {
+            let html = `<h2>REGISTRO MOVIMENTI STUPEFACENTI DPR 309/90</h2><table border="1" style="width:100%; border-collapse:collapse;"><tr><th>Data</th><th>Farmaco</th><th>Operazione</th><th>Q.tà</th><th>Riferimento</th><th>Operatore</th></tr>`;
+            window.dbStupefacentiLog.forEach(i => { html += `<tr><td>${i.date}</td><td>${i.nome}</td><td>${i.tipo}</td><td>${i.qta}</td><td>${i.rif}</td><td>${i.op}</td></tr>`; });
+            html += `</table>`;
+            document.getElementById('printArea').innerHTML = html;
+            window.print();
+        };
+
+        // CANVAS TOUCH FIRMA
+        window.activeSignatureCallback = null;
+        window.openSignatureModal = (desc, cb) => {
+            document.getElementById('sig-action-desc').innerText = desc;
+            document.getElementById('signatureModal').style.display = 'flex';
+            window.clearModalSignature();
+            window.activeSignatureCallback = cb;
+        };
+        window.closeSignatureModal = () => { document.getElementById('signatureModal').style.display = 'none'; };
+        window.clearModalSignature = () => {
+            const cv = document.getElementById('modalSignaturePad');
+            cv.getContext('2d').clearRect(0,0,cv.width,cv.height);
+        };
+        window.confirmModalSignature = () => {
+            const cv = document.getElementById('modalSignaturePad');
+            const b64 = cv.toDataURL('image/png');
+            if(window.activeSignatureCallback) window.activeSignatureCallback(b64);
+            window.closeSignatureModal();
+        };
+
+        const canvas = document.getElementById('modalSignaturePad');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        const getPos = (e) => {
+            const r = canvas.getBoundingClientRect();
+            let cx = e.clientX, cy = e.clientY;
+            if(e.touches && e.touches.length > 0) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
+            return { x: cx - r.left, y: cy - r.top };
+        };
+        canvas.addEventListener('mousedown', (e)=>{ isDrawing=true; let p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+        canvas.addEventListener('mousemove', (e)=>{ if(!isDrawing) return; let p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); });
+        window.addEventListener('mouseup', ()=>isDrawing=false);
+        canvas.addEventListener('touchstart', (e)=>{ isDrawing=true; let p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); e.preventDefault(); }, {passive:false});
+        canvas.addEventListener('touchmove', (e)=>{ if(!isDrawing) return; let p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); e.preventDefault(); }, {passive:false});
+        canvas.addEventListener('touchend', ()=>isDrawing=false);
+
+        // LISTENERS REALTIME
+        onSnapshot(collection(db, "ospiti"), snap => {
+            window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.loadGuestSelector();
+        });
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => {
+            window.dbClinica = {};
+            snap.forEach(d => { window.dbClinica[d.id] = d.data(); });
+            if(window.globalSelectedPatient) window.handlePatientSelect(window.globalSelectedPatient);
+        });
+        onSnapshot(collection(db, "contenzioni"), snap => {
+            window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.renderGlobalPatientBanner();
+        });
+        onSnapshot(collection(db, "stupefacenti_inv"), snap => {
+            window.dbStupefacentiInv = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.loadNarcoticsTable();
+        });
+        onSnapshot(collection(db, "stupefacenti_log"), snap => {
+            window.dbStupefacentiLog = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.loadNarcoticsTable();
+        });
+
+        window.onload = () => {
+            document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
+            document.body.setAttribute('data-qualifica', window.activeOperatorQualifica);
+            if(['Medico','Direttore Sanitario'].includes(window.activeOperatorQualifica) || window.activeOperatorRole === 'admin') {
+                document.body.setAttribute('data-med-access', 'true');
+            }
+
+            // POPOLA IL DATALIST CON IL PRONTUARIO AMPLIATO
+            const dl = document.getElementById('listaFarmaciAifa');
+            if(dl) {
+                dl.innerHTML = '';
+                prontuario.forEach(f => {
+                    let opt = document.createElement('option');
+                    opt.value = f;
+                    dl.appendChild(opt);
+                });
+            }
+
+            let savedPatient = sessionStorage.getItem("globalSelectedPatient");
+            if(savedPatient) {
+                window.globalSelectedPatient = savedPatient;
+                window.renderGlobalPatientBanner();
+            }
+        };
+    </script>
+</body>
+</html>

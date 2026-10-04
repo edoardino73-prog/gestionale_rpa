@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - Modulistica, Consensi & Trattamento Dati</title>
+
+    <style>
+        :root {
+            --bg-color: #f1f5f9;         
+            --box-bg: #ffffff;
+            --primary-color: #0d9488; 
+            --secondary-color: #0f766e;  
+            --cons-color: #4f46e5;
+            --cons-dark: #3730a3;
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --input-bg: #ffffff;
+            --border-color: #cbd5e1;     
+            --error-color: #e11d48; 
+            --warning-color: #d97706; 
+            --success-color: #059669; 
+            --terapia-color: #0284c7;
+            --base-font-size: 14px;      
+            --radius: 6px;               
+            --transition: all 0.2s ease;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; min-height: 100vh; }
+
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+        body:not([data-role="admin"]) .req-admin { display: none !important; }
+
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1em; }
+        .nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 14px; border-radius: var(--radius); cursor: pointer; text-decoration:none; font-weight: 600; display:inline-flex; align-items:center; }
+        .nav-btn:hover { background: rgba(255,255,255,0.25); }
+        .current-op-badge { background: #ffffff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+
+        .container { max-width: 1300px; width: 96%; margin: 15px auto; flex-grow: 1; }
+        .card { background: var(--box-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--cons-color); padding-bottom: 8px; flex-wrap: wrap; gap:10px; }
+        .card-header h3 { margin: 0; color: var(--cons-color); font-size: 1.1em; text-transform: uppercase; }
+
+        /* CARD OSPITE ATTIVO IN ALTO */
+        .global-active-patient-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-left: 8px solid var(--cons-color);
+            border-radius: var(--radius);
+            padding: 12px 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .gap-info-left { display: flex; align-items: center; gap: 14px; }
+        .gap-avatar { width: 52px; height: 52px; border-radius: 6px; object-fit: cover; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 1.8em; border: 1px solid var(--border-color); overflow: hidden; flex-shrink: 0; }
+        .gap-name-block h2 { margin: 0; font-size: 1.25em; color: var(--text-main); letter-spacing: 0.5px; }
+        .gap-sub { font-size: 0.85em; color: var(--text-light); margin-top: 3px; }
+        .gap-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        .badge-disfagia { background: var(--warning-color); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+        .badge-infezione { background: var(--error-color); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+        .badge-contenzione { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85em; color: var(--text-main); }
+        input[type="text"], select { width: 100%; padding: 8px; border: 1px solid #94a3b8; border-radius: 4px; box-sizing: border-box; background-color: var(--input-bg); color: var(--text-main); font-family: inherit; font-size: 0.95em; }
+        input:focus, select:focus { border-color: var(--cons-color); outline: none; background-color: #f5f3ff; }
+
+        .btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-doc { color: white; border: none; padding: 8px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.9em; transition: 0.2s; }
+        .btn-primary { background: var(--cons-color); }
+        .btn-primary:hover { background: var(--cons-dark); }
+        .btn-success { background: var(--success-color); }
+        .btn-danger { background: var(--error-color); }
+        .btn-warning { background: var(--warning-color); }
+        .btn-doc { background: #475569; }
+
+        .check-item { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.88em; cursor:pointer;}
+        .check-item input[type="checkbox"] { transform: scale(1.2); accent-color: var(--cons-color); }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
+        .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
+        .toast.show { opacity: 1; }
+
+        #printArea { display: none; }
+        @media print {
+            body * { visibility: hidden; } 
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 25px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+            .print-header { text-align: center; border-bottom: 2px solid #4f46e5; padding-bottom: 15px; margin-bottom: 20px; }
+            .print-header h1 { margin: 0; color: #3730a3; font-size: 18pt; text-transform: uppercase; }
+            .print-header h2 { margin: 5px 0 0 0; font-size: 12pt; color: #334155; }
+            .print-section { margin-bottom: 18px; }
+            .print-section h3 { margin: 0 0 8px 0; font-size: 11pt; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; text-transform: uppercase; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 8.5pt; } 
+            .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 5px 8px; text-align: left; } 
+            .print-table th { background: #f1f5f9 !important; font-weight: bold; -webkit-print-color-adjust: exact; }
+            .print-signature-box { margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    <div id="printArea"></div>
+
+    <!-- MODALE FIRMA TOUCH -->
+    <div id="signatureModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:30000; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:25px; border-radius:8px; width:95%; max-width:500px; text-align:center;">
+            <h3 id="sigModalTitle" style="color:var(--cons-color); margin-top:0;">Acquisisci Firma Elettronica</h3>
+            <p style="font-size:0.85em; color:var(--text-light); margin-bottom:15px;" id="sig-action-desc">Firma nel riquadro sottostante con dito o pennino.</p>
+            <canvas id="modalSignaturePad" width="400" height="200" style="border:2px dashed #cbd5e1; border-radius:6px; background:#f8fafc; touch-action:none; max-width:100%; width:100%; box-sizing:border-box; cursor:crosshair;"></canvas>
+            <div style="display:flex; gap:10px; margin-top:20px; justify-content:center;">
+                <button class="btn-doc" onclick="window.clearModalSignature()">🔄 Cancella</button>
+                <button class="btn-danger" onclick="window.closeSignatureModal()">❌ Annulla</button>
+                <button class="btn-success" onclick="window.confirmModalSignature()">✅ Conferma Firma</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVBAR SATELLITE -->
+    <div class="navbar">
+        <div class="navbar-brand">
+            <span>✍️ NVS Masterpiece - Modulistica, Consensi & Trattamento Dati</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+            <button class="nav-btn" onclick="window.navigaA('cartella_clinica.html')">⚕️ Fascicolo Clinico ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('terapia.html')">💊 Terapia ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('cup_appuntamenti.html')">📅 CUP ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('lettere_dimissioni.html')">📄 Lettere & Dimissioni ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('anagrafica.html')">🛏️ Anagrafica ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('index.html')">🏠 Torna al Reparto (Home)</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <!-- CARD OSPITE ATTIVO IN ALTO PERSISTENTE -->
+        <div id="globalActivePatientBanner" class="global-active-patient-card">
+            <div class="gap-info-left">
+                <div id="gapAvatar" class="gap-avatar">👤</div>
+                <div class="gap-name-block">
+                    <h2 id="gapNome">NESSUN OSPITE SELEZIONATO</h2>
+                    <div class="gap-sub" id="gapDettagli">Stanza: - | CF: -</div>
+                </div>
+            </div>
+            <div class="gap-badges" id="gapBadges">
+                <span style="color:#64748b; font-size:0.85em;">Seleziona un paziente dal menu sottostante per visualizzare o acquisire i consensi.</span>
+            </div>
+        </div>
+
+        <!-- SELEZIONE PAZIENTE -->
+        <div class="card" style="padding:15px;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:0.95em; color:var(--cons-color); font-weight:bold;">Seleziona Fascicolo Paziente per Modulistica</label>
+                <select id="consensiGuestSelect" onchange="window.selectPatientGlobal(this.value)" style="padding:9px; font-weight:bold; border-color:var(--cons-color);">
+                    <option value="" disabled selected>Scegli ospite...</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- MODULO CONSENSI, DICHIARAZIONI & PRIVACY -->
+        <div class="card" style="border-top: 4px solid var(--cons-color);">
+            <div class="card-header">
+                <h3>📝 Modulistica Istituzionale di Consenso Informato & Privacy (L. 219/2017 & GDPR)</h3>
+            </div>
+            
+            <div id="consensiArea">
+                <!-- BANNER STATO BLOCCATO/SIGILLATO -->
+                <div id="consensiLockBanner" style="display:none; padding:12px 15px; border-radius:6px; margin-bottom:15px; font-weight:bold; font-size:0.95em;"></div>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:12px; margin-bottom:18px;">
+                    <label class="check-item"><input type="checkbox" id="consPrivacy"> <span><strong>1. GDPR Privacy (Reg. UE 2016/679):</strong> Trattamento dei dati personali, sensibili, sanitari e biometrici.</span></label>
+                    <label class="check-item"><input type="checkbox" id="consInfo"> <span><strong>2. Consenso Informato Sanitario (L. 219/2017):</strong> Accettazione delle prestazioni assistenziali e sanitarie ordinarie.</span></label>
+                    <label class="check-item"><input type="checkbox" id="consFoto"> <span><strong>3. Documentazione Immagini Cliniche:</strong> Riprese fotografiche ad uso diagnostico interno per monitoraggio lesioni cutanee.</span></label>
+                    <label class="check-item"><input type="checkbox" id="consReg"> <span><strong>4. Regolamento Interno:</strong> Ricezione, piena conoscenza e adesione alla Carta dei Servizi della Struttura.</span></label>
+                    <label class="check-item"><input type="checkbox" id="consUscite"> <span><strong>5. Uscite e Visite:</strong> Autorizzazione a uscite temporanee, visite e permessi con familiari registrati.</span></label>
+                    <label class="check-item"><input type="checkbox" id="consVaccini"> <span><strong>6. Profilassi e Vaccinazioni:</strong> Somministrazione di profilassi antinfluenzale, vaccini stagionali e screening.</span></label>
+                    <label class="check-item"><input type="checkbox" id="consPresidi"> <span><strong>7. Gestione Protesi ed Ausili:</strong> Custodia e uso di protesi dentarie, acustiche e presidi ortopedici personali.</span></label>
+                    <label class="check-item"><input type="checkbox" id="consTerapia"> <span><strong>8. Presa in Carico Terapia:</strong> Custodia centralizzata dei farmaci ed erogazione secondo prescrizione medica.</span></label>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:18px; border-radius:6px;">
+                    <div class="form-group" style="margin-bottom:12px;">
+                        <label>Nome, Cognome e Titolo del Firmatario</label>
+                        <input type="text" id="nomeFirmatarioModulo" placeholder="Es. Rossi Mario (Figlio / Amministratore di Sostegno / Ospite)">
+                    </div>
+                    
+                    <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:240px;">
+                            <label style="font-weight:600; font-size:0.85em; display:block; margin-bottom:4px;">Firma Elettronica Autografa Acquisita</label>
+                            <div id="moduloSignaturePreview" style="height:85px; border:1px dashed #94a3b8; background:#fff; border-radius:4px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                                <span style="color:#94a3b8; font-size:0.85em;">Nessuna firma acquisita</span>
+                            </div>
+                            <div id="moduloFirmaMeta" style="font-size:0.8em; color:var(--text-light); margin-top:4px;"></div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:8px; min-width:210px;">
+                            <button id="btnAvviaFirmaModulo" class="btn-primary" onclick="window.avviaFirmaConsensi()">✍️ Acquisisci Firma (Tablet)</button>
+                            <button id="btnSalvaConsensi" class="btn-success" onclick="window.salvaConsensi()">💾 Salva e Blocca Modulo</button>
+                            <button id="btnSbloccaConsensi" class="btn-warning req-admin" style="display:none;" onclick="window.sbloccaConsensi()">🔓 Sblocca Modulo (Admin)</button>
+                            <button class="btn-doc" onclick="window.stampaConsensi()">🖨️ Stampa Modulo Firmato da Consegnare</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LOGICHE JAVASCRIPT & FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        try {
+            initializeAppCheck(app, { 
+                provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), 
+                isTokenAutoRefreshEnabled: true 
+            });
+        } catch(e) { console.warn("AppCheck bypassato."); }
+        const db = getFirestore(app);
+
+        window.dbOspiti = [];
+        window.dbClinica = {};
+        window.dbContenzioni = [];
+
+        window.globalSelectedPatient = sessionStorage.getItem("globalSelectedPatient") || "";
+        window.activeOperator = sessionStorage.getItem("activeOperator") || "Operatore";
+        window.activeOperatorRole = sessionStorage.getItem("activeRole") || "user";
+        window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica") || "";
+        window.currentModuloFirma = "";
+
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
+        window.formatDateSafe = (d) => { if (!d) return '-'; if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/'); return d; };
+        window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
+        window.getTodayString = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
+        window.navigaA = (url) => { window.location.href = url; };
+
+        // BANNER OSPITE ATTIVO IN ALTO
+        window.renderGlobalPatientBanner = () => {
+            const n = window.globalSelectedPatient;
+            const bannerNome = document.getElementById('gapNome');
+            const bannerDet = document.getElementById('gapDettagli');
+            const bannerBadges = document.getElementById('gapBadges');
+            const bannerAv = document.getElementById('gapAvatar');
+
+            if(!n) {
+                bannerNome.innerText = "NESSUN OSPITE SELEZIONATO";
+                bannerNome.style.color = "#64748b";
+                bannerDet.innerText = "Stanza: - | CF: -";
+                bannerBadges.innerHTML = `<span style="color:#64748b; font-size:0.85em;">Seleziona un paziente dal menu per verificare o acquisire le dichiarazioni di consenso.</span>`;
+                bannerAv.innerHTML = `👤`;
+                return;
+            }
+
+            const g = window.dbOspiti.find(x => x.name === n) || {};
+            const pD = window.dbClinica[n] || {};
+
+            bannerNome.innerText = n;
+            bannerNome.style.color = "var(--text-main)";
+            bannerDet.innerHTML = `Stanza: <strong>${g.room || '-'}</strong> | CF: <strong>${g.cf || '-'}</strong> | Nato il: <strong>${window.formatDateSafe(g.dob)}</strong>`;
+            bannerAv.innerHTML = g.photo ? `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">` : `👤`;
+
+            let badges = '';
+            if(pD.disfagia) badges += `<div class="badge-disfagia">🥣 Disfagico</div>`;
+            if(pD.infezione) badges += `<div class="badge-infezione">☣ ${pD.infezione}</div>`;
+            
+            const hasCont = window.dbContenzioni.some(c => c.ospite === n && c.stato === 'ATTIVA');
+            if(hasCont) badges += `<div class="badge-contenzione">🔒 Contenzione Attiva</div>`;
+
+            bannerBadges.innerHTML = badges || `<span style="color:#15803d; font-size:0.85em; font-weight:bold;">✅ Nessun alert clinico attivo</span>`;
+        };
+
+        window.loadGuestSelector = () => {
+            const s = document.getElementById('consensiGuestSelect');
+            if(!s) return;
+            s.innerHTML = '<option value="" disabled selected>Scegli ospite...</option>';
+            
+            let att = window.dbOspiti.filter(g => !g.decesso && !g.dimissione).sort((a,b) => a.name.localeCompare(b.name));
+            let arc = window.dbOspiti.filter(g => g.decesso || g.dimissione).sort((a,b) => a.name.localeCompare(b.name));
+
+            let o1 = document.createElement('optgroup'); o1.label = "Ospiti Presenti";
+            att.forEach(g => o1.innerHTML += `<option value="${g.name}">${g.name}</option>`);
+            s.appendChild(o1);
+
+            let o2 = document.createElement('optgroup'); o2.label = "Archivio Usciti / Deceduti";
+            arc.forEach(g => o2.innerHTML += `<option value="${g.name}">${g.name}</option>`);
+            s.appendChild(o2);
+
+            if(window.globalSelectedPatient) {
+                s.value = window.globalSelectedPatient;
+                window.loadConsensiOspite();
+                window.renderGlobalPatientBanner();
+            }
+        };
+
+        window.selectPatientGlobal = (n) => {
+            window.globalSelectedPatient = n;
+            sessionStorage.setItem("globalSelectedPatient", n);
+            const s = document.getElementById('consensiGuestSelect');
+            if(s) s.value = n;
+            window.renderGlobalPatientBanner();
+            window.loadConsensiOspite();
+            window.showToast(`👤 Fascicolo Consensi: ${n}`);
+        };
+
+        // GESTIONE CONSENSI, BLOCCO & SBLOCCO
+        window.loadConsensiOspite = () => {
+            const n = window.globalSelectedPatient; if(!n) return;
+            const g = window.dbOspiti.find(x => x.name === n); if(!g) return;
+            let c = g.consensi || {};
+
+            const checkIds = ['consPrivacy','consInfo','consFoto','consReg','consUscite','consVaccini','consPresidi','consTerapia'];
+            checkIds.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.checked = !!c[id];
+            });
+
+            document.getElementById('nomeFirmatarioModulo').value = c.firmatoDa || '';
+            const preview = document.getElementById('moduloSignaturePreview');
+            const meta = document.getElementById('moduloFirmaMeta');
+            const banner = document.getElementById('consensiLockBanner');
+            const btnFirma = document.getElementById('btnAvviaFirmaModulo');
+            const btnSalva = document.getElementById('btnSalvaConsensi');
+            const btnSblocca = document.getElementById('btnSbloccaConsensi');
+
+            preview.innerHTML = '';
+            window.currentModuloFirma = c.firmaB64 || "";
+
+            const isBloccato = !!c.bloccato;
+
+            if(isBloccato && c.firmaB64) {
+                checkIds.forEach(id => document.getElementById(id).disabled = true);
+                document.getElementById('nomeFirmatarioModulo').disabled = true;
+                
+                banner.style.display = 'block';
+                banner.style.background = '#ecfdf5';
+                banner.style.border = '1px solid #a7f3d0';
+                banner.style.color = '#065f46';
+                banner.innerHTML = `🔒 <strong>DOCUMENTO FIRMATO E BLOCCATO</strong> il ${c.dataFirma||'-'} da <u>${c.firmatoDa||'Firmatario'}</u>`;
+
+                const img = document.createElement('img');
+                img.style.maxHeight = '70px';
+                img.src = c.firmaB64;
+                preview.appendChild(img);
+                meta.innerText = `Registrato con valore legale da: ${c.firmatoDa}`;
+
+                btnFirma.style.display = 'none';
+                btnSalva.style.display = 'none';
+                if(window.activeOperatorRole === 'admin') btnSblocca.style.display = 'block';
+            } else {
+                checkIds.forEach(id => document.getElementById(id).disabled = false);
+                document.getElementById('nomeFirmatarioModulo').disabled = false;
+                banner.style.display = 'none';
+
+                if(c.firmaB64) {
+                    const img = document.createElement('img');
+                    img.style.maxHeight = '70px';
+                    img.src = c.firmaB64;
+                    preview.appendChild(img);
+                    meta.innerText = 'Firma presente in memoria (non ancora sigillata)';
+                } else {
+                    preview.innerHTML = '<span style="color:#94a3b8; font-size:0.85em;">Nessuna firma acquisita</span>';
+                    meta.innerText = '';
+                }
+
+                btnFirma.style.display = 'block';
+                btnSalva.style.display = 'block';
+                btnSblocca.style.display = 'none';
+            }
+        };
+
+        window.avviaFirmaConsensi = () => {
+            const firmatario = document.getElementById('nomeFirmatarioModulo').value.trim();
+            if(!firmatario) return window.showToast("⚠️ Inserisci prima Nome, Cognome e Titolo del Firmatario");
+            window.openSignatureModal(`Firma Modulistica: ${firmatario}`, (sig) => {
+                window.currentModuloFirma = sig;
+                const preview = document.getElementById('moduloSignaturePreview');
+                preview.innerHTML = '';
+                const img = document.createElement('img');
+                img.style.maxHeight = '70px';
+                img.src = sig;
+                preview.appendChild(img);
+                document.getElementById('moduloFirmaMeta').innerText = 'Firma pronta per il salvataggio definitivo';
+            });
+        };
+
+        window.salvaConsensi = async () => {
+            const n = window.globalSelectedPatient;
+            const g = window.dbOspiti.find(x => x.name === n); if(!g) return;
+            const firmatario = document.getElementById('nomeFirmatarioModulo').value.trim();
+            
+            if(!firmatario) return window.showToast("⚠️ Inserisci Nome e Cognome di chi firma");
+            if(!window.currentModuloFirma) return window.showToast("⚠️ Acquisisci prima la firma sul tablet!");
+
+            if(!confirm("Confermi il salvataggio? Dopo la registrazione il modulo sarà SIGILLATO e non più modificabile.")) return;
+
+            let c = {
+                consPrivacy: document.getElementById('consPrivacy').checked,
+                consInfo: document.getElementById('consInfo').checked,
+                consFoto: document.getElementById('consFoto').checked,
+                consReg: document.getElementById('consReg').checked,
+                consUscite: document.getElementById('consUscite').checked,
+                consVaccini: document.getElementById('consVaccini').checked,
+                consPresidi: document.getElementById('consPresidi').checked,
+                consTerapia: document.getElementById('consTerapia').checked,
+                firmatoDa: firmatario,
+                firmaB64: window.currentModuloFirma,
+                dataFirma: window.getTimestamp(),
+                bloccato: true,
+                operatoreRegistrazione: window.activeOperator
+            };
+
+            await updateDoc(doc(db, "ospiti", g.id), { consensi: c });
+            window.showToast("✅ Modulo Consensi Firmato e Bloccato!");
+            window.loadConsensiOspite();
+        };
+
+        window.sbloccaConsensi = async () => {
+            if(window.activeOperatorRole !== 'admin') return window.showToast("🚫 Solo Admin può sbloccare il modulo");
+            if(!confirm("Vuoi davvero sbloccare questo modulo per consentire modifiche?")) return;
+            const n = window.globalSelectedPatient;
+            const g = window.dbOspiti.find(x => x.name === n); if(!g) return;
+            
+            let c = g.consensi || {};
+            c.bloccato = false;
+            await updateDoc(doc(db, "ospiti", g.id), { consensi: c });
+            window.showToast("🔓 Modulo Sbloccato");
+            window.loadConsensiOspite();
+        };
+
+        window.stampaConsensi = () => {
+            const n = window.globalSelectedPatient;
+            const g = window.dbOspiti.find(x => x.name === n);
+            if(!g) return window.showToast("⚠️ Seleziona un paziente");
+            let c = g.consensi || {};
+            if(!c.firmaB64) return window.showToast("⚠️ Il modulo non è ancora stato firmato!");
+
+            let html = `
+                <div class="print-header">
+                    <h1>NUOVA VILLA SILVANA</h1>
+                    <h2>Residenza Protetta per Anziani - Regione Umbria</h2>
+                    <p style="font-size:9.5pt; margin-top:4px;">Modulo Istituzionale di Consenso Informato, Privacy e Trattamenti Assistenziali</p>
+                </div>
+                
+                <div class="print-section">
+                    <h3>Dati dell'Ospite & Firmatario</h3>
+                    <p>Ospite: <strong>${g.name}</strong> | CF: <strong>${g.cf||'-'}</strong> | Stanza: <strong>${g.room||'-'}</strong></p>
+                    <p>Dichiarazione resa e sottoscritta da: <strong>${c.firmatoDa || 'Parente/AdS/Ospite'}</strong> in data: <strong>${c.dataFirma || window.getTimestamp()}</strong></p>
+                </div>
+
+                <div class="print-section">
+                    <h3>Dichiarazioni e Consensi Acquisiti</h3>
+                    <table class="print-table">
+                        <tr><th style="width:75%;">Tipologia di Consenso / Trattamento</th><th>Esito</th></tr>
+                        <tr><td>1. Trattamento Dati Personali e Sensibili Sanitari (GDPR Reg. UE 2016/679)</td><td><strong>${c.consPrivacy ? 'ACCONSENTE' : 'NON ACCONSENTE'}</strong></td></tr>
+                        <tr><td>2. Consenso Informato Sanitario e Prestazioni Assistenziali (L. 219/2017)</td><td><strong>${c.consInfo ? 'ACCONSENTE' : 'NON ACCONSENTE'}</strong></td></tr>
+                        <tr><td>3. Acquisizione Immagini Cliniche interne (monitoraggio piaghe da decubito e lesioni)</td><td><strong>${c.consFoto ? 'ACCONSENTE' : 'NON ACCONSENTE'}</strong></td></tr>
+                        <tr><td>4. Ricezione e Adesione al Regolamento di Struttura e Carta dei Servizi</td><td><strong>${c.consReg ? 'ACCETTA' : 'NON ACCETTA'}</strong></td></tr>
+                        <tr><td>5. Autorizzazione a uscite temporanee, visite e permessi con familiari registrati</td><td><strong>${c.consUscite ? 'AUTORIZZA' : 'NON AUTORIZZA'}</strong></td></tr>
+                        <tr><td>6. Somministrazione Profilassi, Vaccinazioni stagionali e Screening</td><td><strong>${c.consVaccini ? 'ACCONSENTE' : 'NON ACCONSENTE'}</strong></td></tr>
+                        <tr><td>7. Custodia e Gestione Protesi, Ausili e Dispositivi personali</td><td><strong>${c.consPresidi ? 'AUTORIZZA' : 'NON AUTORIZZA'}</strong></td></tr>
+                        <tr><td>8. Presa in Carico, Custodia Farmaci e Somministrazione Terapia programmata</td><td><strong>${c.consTerapia ? 'ACCONSENTE' : 'NON ACCONSENTE'}</strong></td></tr>
+                    </table>
+                </div>
+
+                <div class="print-signature-box">
+                    <div>
+                        <p style="font-size:9pt; margin:0;">Luogo e Data:<br><strong>Terni, ${c.dataFirma || window.getTodayString()}</strong></p>
+                        <p style="font-size:8pt; color:#64748b; margin-top:4px;">Operatore Struttura: ${c.operatoreRegistrazione || window.activeOperator}</p>
+                    </div>
+                    <div style="text-align:center;">
+                        <p style="font-size:9pt; margin:0 0 5px 0;"><strong>Firma Elettronica Autografa Acquisita:</strong></p>
+                        <img src="${c.firmaB64}" style="max-height:80px; border-bottom:1px solid #000; padding-bottom:5px;"><br>
+                        <small style="font-size:8pt;">${c.firmatoDa}</small>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('printArea').innerHTML = html;
+            setTimeout(() => window.print(), 300);
+        };
+
+        // CANVAS TOUCH FIRMA
+        window.activeSignatureCallback = null;
+        window.openSignatureModal = (desc, cb) => {
+            document.getElementById('sig-action-desc').innerText = desc;
+            document.getElementById('signatureModal').style.display = 'flex';
+            window.clearModalSignature();
+            window.activeSignatureCallback = cb;
+        };
+        window.closeSignatureModal = () => { document.getElementById('signatureModal').style.display = 'none'; };
+        window.clearModalSignature = () => {
+            const cv = document.getElementById('modalSignaturePad'); const ctx = cv.getContext('2d');
+            ctx.clearRect(0,0,cv.width,cv.height);
+        };
+        window.confirmModalSignature = () => {
+            const cv = document.getElementById('modalSignaturePad');
+            const b64 = cv.toDataURL('image/png');
+            if(window.activeSignatureCallback) window.activeSignatureCallback(b64);
+            window.closeSignatureModal();
+        };
+
+        const canvas = document.getElementById('modalSignaturePad');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        const getPos = (e) => {
+            const r = canvas.getBoundingClientRect();
+            let cx = e.clientX, cy = e.clientY;
+            if(e.touches && e.touches.length>0) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
+            return { x: cx - r.left, y: cy - r.top };
+        };
+        canvas.addEventListener('mousedown', (e)=>{ isDrawing=true; let p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+        canvas.addEventListener('mousemove', (e)=>{ if(!isDrawing) return; let p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); });
+        window.addEventListener('mouseup', ()=>isDrawing=false);
+        canvas.addEventListener('touchstart', (e)=>{ isDrawing=true; let p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); e.preventDefault(); }, {passive:false});
+        canvas.addEventListener('touchmove', (e)=>{ if(!isDrawing) return; let p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); e.preventDefault(); }, {passive:false});
+        canvas.addEventListener('touchend', ()=>isDrawing=false);
+
+        // REAL-TIME LISTENERS
+        onSnapshot(collection(db, "ospiti"), snap => {
+            window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.loadGuestSelector();
+        });
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => {
+            window.dbClinica = {};
+            snap.forEach(d => { window.dbClinica[d.id] = d.data(); });
+            window.renderGlobalPatientBanner();
+        });
+        onSnapshot(collection(db, "contenzioni"), snap => {
+            window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.renderGlobalPatientBanner();
+        });
+
+        window.onload = () => {
+            document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
+            document.body.setAttribute('data-qualifica', window.activeOperatorQualifica);
+            document.body.setAttribute('data-role', window.activeOperatorRole);
+
+            let savedPatient = sessionStorage.getItem("globalSelectedPatient");
+            if(savedPatient) {
+                window.globalSelectedPatient = savedPatient;
+                window.renderGlobalPatientBanner();
+            }
+        };
+    </script>
+</body>
+</html>

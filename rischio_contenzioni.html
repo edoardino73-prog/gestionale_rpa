@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - Rischio Clinico & Registro Contenzioni</title>
+
+    <style>
+        :root {
+            --bg-color: #f1f5f9; --box-bg: #ffffff;
+            --primary-color: #0d9488; --secondary-color: #0f766e;
+            --error-color: #e11d48; --warning-color: #d97706; --success-color: #059669;
+            --text-main: #0f172a; --text-light: #475569;
+            --border-color: #cbd5e1; --radius: 6px;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-color); margin: 0; color: var(--text-main); font-size: 14px; min-height: 100vh; display: flex; flex-direction: column; }
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { font-weight: bold; font-size: 1.1em; display: flex; align-items: center; gap: 15px; }
+        .nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: var(--radius); cursor: pointer; text-decoration: none; font-weight: 600; }
+        .current-op-badge { background: #fff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
+
+        .container { max-width: 1400px; width: 96%; margin: 15px auto; flex-grow: 1; }
+        .global-active-patient-card { background: #fff; border: 1px solid var(--border-color); border-left: 8px solid var(--error-color); border-radius: var(--radius); padding: 12px 18px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+        .gap-avatar { width: 50px; height: 50px; border-radius: 6px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 1.8em; overflow: hidden; border: 1px solid var(--border-color); }
+        .badge-disfagia { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.8em; }
+        .badge-infezione { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.8em; }
+        .badge-contenzione { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.8em; }
+
+        .card { background: var(--box-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-color); }
+        .card-header h3 { margin: 0; text-transform: uppercase; font-size: 1.05em; }
+
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85em; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #94a3b8; border-radius: 4px; box-sizing: border-box; font-family: inherit; font-size: 0.95em; }
+
+        .btn-primary, .btn-danger, .btn-warning, .btn-doc { color: white; border: none; padding: 8px 14px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.88em; }
+        .btn-primary { background: var(--secondary-color); }
+        .btn-danger { background: var(--error-color); }
+        .btn-warning { background: var(--warning-color); }
+        .btn-doc { background: #475569; }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.85em; background: #fff; }
+        .data-table th, .data-table td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
+        .data-table th { background: var(--secondary-color); color: white; font-weight: normal; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
+        .toast { background: var(--text-main); color: #fff; padding: 12px 20px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <div class="navbar">
+        <div class="navbar-brand"><span>⚠️ NVS Masterpiece - Rischio Clinico & Contenzioni</span></div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+            <button class="nav-btn" onclick="window.navigaA('diari_clinici.html')">📝 Diari ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('consegne.html')">📖 Consegne ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('index.html')">🏠 Torna al Reparto (Home)</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- BANNER OSPITE ATTIVO -->
+        <div id="globalActivePatientBanner" class="global-active-patient-card">
+            <div style="display:flex; align-items:center; gap:14px;">
+                <div id="gapAvatar" class="gap-avatar">👤</div>
+                <div>
+                    <h2 id="gapNome" style="margin:0; font-size:1.2em;">NESSUN OSPITE SELEZIONATO</h2>
+                    <div id="gapDettagli" style="font-size:0.85em; color:var(--text-light); margin-top:3px;">Stanza: - | CF: -</div>
+                </div>
+            </div>
+            <div id="gapBadges" style="display:flex; gap:8px; align-items:center;"></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap:20px; align-items:start;">
+            
+            <!-- COLONNA 1: REGISTRO CONTENZIONI FISICHE -->
+            <div class="card" style="border-top: 4px solid var(--error-color);">
+                <div class="card-header"><h3 style="color:var(--error-color);">🔒 Registro Contenzioni Fisiche</h3></div>
+                
+                <div class="restrict-oss" style="background:#fff1f2; border:1px solid #fecdd3; padding:12px; border-radius:6px; margin-bottom:15px;">
+                    <div style="background:#fff; border-left:4px solid var(--error-color); padding:8px 12px; border-radius:4px; margin-bottom:10px;">
+                        <small style="color:var(--error-color); font-weight:bold; display:block;">PAZIENTE PRESO IN CARICO:</small>
+                        <strong id="contOspiteLabel" style="font-size:1.05em;">-</strong>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+                        <div class="form-group" style="margin:0;">
+                            <label>Presidio *</label>
+                            <select id="contTipo">
+                                <option value="Spondine letto bilaterali">Spondine letto bilaterali</option>
+                                <option value="Spondina singola">Spondina singola</option>
+                                <option value="Cintura pelvica carrozzina">Cintura pelvica carrozzina</option>
+                                <option value="Cintura pettorale">Cintura pettorale</option>
+                                <option value="Pettorina di contenimento">Pettorina di contenimento</option>
+                                <option value="Guanti / Manopole protettive">Guanti / Manopole protettive</option>
+                                <option value="Tavolino per carrozzina">Tavolino per carrozzina</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;"><label>Data Inizio</label><input type="date" id="contDataInizio"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Cadenza Controllo Cutaneo</label>
+                        <select id="contCadenza">
+                            <option value="Ogni 2 ore">Ogni 2 ore (Standard di sicurezza)</option>
+                            <option value="Ad ogni turno">Ad ogni turno di servizio</option>
+                            <option value="Continuo">Monitoraggio continuo a vista</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Motivazione Clinica / Rischio</label>
+                        <input type="text" id="contMotivo" placeholder="Rischio cadute, agitazione psicomotoria, auto-rimozione presidi...">
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <label style="font-size:0.85em; font-weight:600;"><input type="checkbox" id="contConsenso"> Consenso Familiare/AdS</label>
+                        <button class="btn-danger" onclick="window.addContenzione()">🔒 Prescrivi Contenzione</button>
+                    </div>
+                </div>
+
+                <h4 style="margin:10px 0 8px 0;">Prescrizioni Attive & Storico</h4>
+                <div style="overflow-x:auto;">
+                    <table class="data-table" id="contenzioniTable">
+                        <thead><tr><th>Ospite</th><th>Presidio</th><th>Inizio / Cadenza</th><th>Stato</th><th class="restrict-oss">Azione</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- COLONNA 2: INCIDENT REPORTING -->
+            <div class="card" style="border-top: 4px solid var(--warning-color);">
+                <div class="card-header"><h3 style="color:var(--warning-color);">⚠️ Incident Reporting (Rischio Clinico)</h3></div>
+
+                <div class="restrict-oss" style="background:#fffbeb; border:1px solid #fde68a; padding:12px; border-radius:6px; margin-bottom:15px;">
+                    <div style="background:#fff; border-left:4px solid var(--warning-color); padding:8px 12px; border-radius:4px; margin-bottom:10px;">
+                        <small style="color:var(--warning-color); font-weight:bold; display:block;">PAZIENTE COINVOLTO:</small>
+                        <strong id="rischioOspiteLabel" style="font-size:1.05em;">-</strong>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+                        <div class="form-group" style="margin:0;"><label>Data Evento *</label><input type="date" id="newRischioData"></div>
+                        <div class="form-group" style="margin:0;"><label>Ora Evento</label><input type="time" id="newRischioOra"></div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+                        <div class="form-group" style="margin:0;">
+                            <label>Tipologia Evento *</label>
+                            <select id="newRischioTipo">
+                                <option value="Caduta senza danno apparente">Caduta accidentale (senza danno apparente)</option>
+                                <option value="Caduta con trauma/lesione">Caduta accidentale con lesione/trauma</option>
+                                <option value="Errore Terapia / Farmaco">Errore Terapia (somministrazione/orario)</option>
+                                <option value="Lesione cutanea acuta">Lesione cutanea acuta / ematoma</option>
+                                <option value="Smarrimento / Allontanamento">Smarrimento / Tentativo di allontanamento</option>
+                                <option value="Ingestione impropria / Soffocamento">Ingestione impropria / Rischio soffocamento</option>
+                                <option value="Aggressione / Conflitto">Aggressione / Conflitto verbale/fisico</option>
+                                <option value="Quasi Evento (Near Miss)">Quasi Evento (Near Miss - nessun danno)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Luogo Evento</label>
+                            <select id="newRischioLuogo">
+                                <option value="Camera da letto">Camera da letto</option>
+                                <option value="Bagno camera">Bagno camera</option>
+                                <option value="Corridoio / Reparto">Corridoio / Reparto</option>
+                                <option value="Sala da pranzo / Soggiorno">Sala da pranzo / Soggiorno</option>
+                                <option value="Giardino / Esterno">Giardino / Esterno</option>
+                                <option value="Altro locale">Altro locale</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1.5fr; gap:8px; margin-bottom:8px;">
+                        <div class="form-group" style="margin:0;">
+                            <label>Gravità / Esito</label>
+                            <select id="newRischioGravita">
+                                <option value="Lieve">Lieve (Nessun danno o medicazione semplice)</option>
+                                <option value="Moderata">Moderata (Visita medica urgente / trauma medio)</option>
+                                <option value="Grave">Grave (Invio in Pronto Soccorso / 118)</option>
+                                <option value="Near Miss">Near Miss (Danno evitato)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Notifiche Immediate</label>
+                            <input type="text" id="newRischioNotifiche" placeholder="Es. Avvisato MMG e Figlio ore 11:30">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Dinamica Dettagliata dell'Evento</label>
+                        <textarea id="newRischioDinamica" rows="2" placeholder="Descrivi circostanze, fattori ambientali, ausili in uso e stato dell'ospite..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Azioni Correttive Immediate Intraprese</label>
+                        <input type="text" id="newRischioAzioni" placeholder="Es. Parametri rilevati, ghiaccio, potenziamento sorveglianza...">
+                    </div>
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button class="btn-warning" onclick="window.addEventoRischio()">⚠️️ Registra Incident Report</button>
+                    </div>
+                </div>
+
+                <h4 style="margin:10px 0 8px 0;">Registro Segnalazioni Incidenti</h4>
+                <div style="overflow-x:auto;">
+                    <table class="data-table" id="rischioTable">
+                        <thead><tr><th>Data/Ora</th><th>Ospite</th><th>Tipo / Luogo</th><th>Gravità</th><th>Dinamica</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- FIREBASE LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.dbOspiti = []; window.dbClinica = {}; window.dbContenzioni = []; window.dbRischio = [];
+        window.globalSelectedPatient = sessionStorage.getItem("globalSelectedPatient") || "";
+        window.activeOperator = sessionStorage.getItem("activeOperator") || "Operatore";
+        window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica") || "";
+
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
+        window.formatDateSafe = (d) => { if (!d) return '-'; if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/'); return d; };
+        window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
+        window.getTodayString = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
+        window.navigaA = (url) => { window.location.href = url; };
+
+        window.renderGlobalPatientBanner = () => {
+            const n = window.globalSelectedPatient;
+            const bannerNome = document.getElementById('gapNome');
+            const bannerDet = document.getElementById('gapDettagli');
+            const bannerBadges = document.getElementById('gapBadges');
+            const bannerAv = document.getElementById('gapAvatar');
+            const contLbl = document.getElementById('contOspiteLabel');
+            const riscLbl = document.getElementById('rischioOspiteLabel');
+
+            if(!n) {
+                bannerNome.innerText = "NESSUN OSPITE SELEZIONATO";
+                bannerDet.innerText = "Seleziona un paziente dalla barra di reparto.";
+                if(contLbl) contLbl.innerText = "Nessun ospite selezionato";
+                if(riscLbl) riscLbl.innerText = "Nessun ospite selezionato";
+                return;
+            }
+
+            const g = window.dbOspiti.find(x => x.name === n) || {};
+            const pD = window.dbClinica[n] || {};
+
+            bannerNome.innerText = n;
+            bannerDet.innerHTML = `Stanza: <strong>${g.room || '-'}</strong> | CF: <strong>${g.cf || '-'}</strong>`;
+            bannerAv.innerHTML = g.photo ? `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">` : `👤`;
+
+            if(contLbl) contLbl.innerText = n;
+            if(riscLbl) riscLbl.innerText = n;
+
+            let badges = '';
+            if(pD.disfagia) badges += `<span class="badge-disfagia">🥣 Disfagico</span>`;
+            if(pD.infezione) badges += `<span class="badge-infezione">☣ ${pD.infezione}</span>`;
+            const hasCont = window.dbContenzioni.some(c => c.ospite === n && c.stato === 'ATTIVA');
+            if(hasCont) badges += `<span class="badge-contenzione">🔒 Contenzione Attiva</span>`;
+            bannerBadges.innerHTML = badges;
+        };
+
+        window.addContenzione = async () => {
+            const o = window.globalSelectedPatient;
+            if(!o) return window.showToast("⚠️ Seleziona prima un paziente");
+            const m = document.getElementById('contMotivo').value.trim();
+            if(!m) return window.showToast("⚠️ Inserisci la motivazione clinica");
+
+            await addDoc(collection(db, "contenzioni"), {
+                ospite: o,
+                tipo: document.getElementById('contTipo').value,
+                dataInizio: document.getElementById('contDataInizio').value || window.getTodayString(),
+                cadenza: document.getElementById('contCadenza').value,
+                motivo: m,
+                consenso: document.getElementById('contConsenso').checked,
+                stato: "ATTIVA",
+                opPrescrizione: window.activeOperator,
+                ts: window.getTimestamp()
+            });
+
+            document.getElementById('contMotivo').value = '';
+            document.getElementById('contConsenso').checked = false;
+            window.showToast("🔒 Contenzione prescritta!");
+        };
+
+        window.revocaContenzione = async (id, nome) => {
+            if(!confirm(`Confermi la REVOCA della contenzione per ${nome}?`)) return;
+            await updateDoc(doc(db, "contenzioni", id), {
+                stato: "REVOCATA",
+                dataFine: window.getTodayString(),
+                opRevoca: window.activeOperator,
+                tsRevoca: window.getTimestamp()
+            });
+            window.showToast("🔓 Contenzione revocata!");
+        };
+
+        window.loadContenzioni = () => {
+            const tb = document.querySelector('#contenzioniTable tbody'); if(!tb) return;
+            tb.innerHTML = '';
+            const sel = window.globalSelectedPatient;
+            const filtered = sel ? window.dbContenzioni.filter(c => c.ospite === sel) : window.dbContenzioni;
+
+            if(filtered.length === 0) {
+                tb.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">Nessuna contenzione registrata.</td></tr>';
+                return;
+            }
+
+            filtered.sort((a,b) => (b.dataInizio || '').localeCompare(a.dataInizio || '')).forEach(c => {
+                const badgeStato = c.stato === 'ATTIVA' ? `<span style="color:#b91c1c; font-weight:bold;">ATTIVA</span>` : `<span style="color:#64748b;">REVOCATA</span>`;
+                const actBtn = c.stato === 'ATTIVA' ? `<button class="btn-warning restrict-oss" style="padding:2px 6px; font-size:0.75em;" onclick="window.revocaContenzione('${c.id}', '${c.ospite}')">Revoca</button>` : `<small style="color:#64748b;">Revocata</small>`;
+                tb.innerHTML += `
+                    <tr>
+                        <td><strong>${c.ospite}</strong></td>
+                        <td>${c.tipo}<br><small style="color:#64748b;">${c.motivo}</small></td>
+                        <td>${window.formatDateSafe(c.dataInizio)}<br><small>${c.cadenza}</small></td>
+                        <td>${badgeStato}</td>
+                        <td class="restrict-oss">${actBtn}</td>
+                    </tr>`;
+            });
+        };
+
+        window.addEventoRischio = async () => {
+            const o = window.globalSelectedPatient;
+            if(!o) return window.showToast("⚠️ Seleziona prima un paziente");
+            const din = document.getElementById('newRischioDinamica').value.trim();
+            if(!din) return window.showToast("⚠️ Descrivi la dinamica dell'evento");
+
+            await addDoc(collection(db, "rischio"), {
+                ospite: o,
+                data: document.getElementById('newRischioData').value || window.getTodayString(),
+                ora: document.getElementById('newRischioOra').value || '',
+                tipo: document.getElementById('newRischioTipo').value,
+                luogo: document.getElementById('newRischioLuogo').value,
+                gravita: document.getElementById('newRischioGravita').value,
+                notifiche: document.getElementById('newRischioNotifiche').value.trim(),
+                din: din,
+                azioni: document.getElementById('newRischioAzioni').value.trim(),
+                op: window.activeOperator,
+                ts: window.getTimestamp()
+            });
+
+            document.getElementById('newRischioDinamica').value = '';
+            document.getElementById('newRischioAzioni').value = '';
+            document.getElementById('newRischioNotifiche').value = '';
+            window.showToast("⚠️ Incident Report registrato!");
+        };
+
+        window.loadRischio = () => {
+            const tb = document.querySelector('#rischioTable tbody'); if(!tb) return;
+            tb.innerHTML = '';
+            const sel = window.globalSelectedPatient;
+            const f = sel ? window.dbRischio.filter(r => r.ospite === sel) : window.dbRischio;
+
+            if(f.length === 0) {
+                tb.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">Nessun evento segnalato.</td></tr>';
+                return;
+            }
+
+            f.sort((a,b) => (b.data || '').localeCompare(a.data || '')).forEach(r => {
+                tb.innerHTML += `
+                    <tr>
+                        <td>${window.formatDateSafe(r.data)} ${r.ora||''}</td>
+                        <td><strong>${r.ospite}</strong></td>
+                        <td>${r.tipo}<br><small style="color:#64748b;">📍 ${r.luogo}</small></td>
+                        <td><strong>${r.gravita}</strong></td>
+                        <td><small>${r.din}</small>${r.azioni ? '<br><small style="color:#059669;">Az: '+r.azioni+'</small>' : ''}</td>
+                    </tr>`;
+            });
+        };
+
+        onSnapshot(collection(db, "ospiti"), snap => { window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderGlobalPatientBanner(); });
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => { window.dbClinica = {}; snap.forEach(d => { window.dbClinica[d.id] = d.data(); }); window.renderGlobalPatientBanner(); });
+        onSnapshot(collection(db, "contenzioni"), snap => { window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadContenzioni(); window.renderGlobalPatientBanner(); });
+        onSnapshot(collection(db, "rischio"), snap => { window.dbRischio = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadRischio(); });
+
+        window.onload = () => {
+            document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
+            document.body.setAttribute('data-qualifica', window.activeOperatorQualifica);
+            document.getElementById('contDataInizio').value = window.getTodayString();
+            document.getElementById('newRischioData').value = window.getTodayString();
+            window.renderGlobalPatientBanner();
+        };
+    </script>
+</body>
+</html>

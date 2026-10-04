@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - Elenco Ospiti & Presidi di Reparto</title>
+
+    <style>
+        :root {
+            --bg-color: #f1f5f9;         
+            --box-bg: #ffffff;
+            --primary-color: #0d9488; 
+            --secondary-color: #0f766e;  
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --input-bg: #ffffff;
+            --border-color: #cbd5e1;     
+            --error-color: #e11d48; 
+            --warning-color: #d97706; 
+            --success-color: #059669; 
+            --dir-color: #4f46e5;
+            --terapia-color: #0284c7; 
+            --cup-color: #10b981;
+            --pres-color: #d97706;
+            --base-font-size: 14px;      
+            --radius: 6px;               
+            --transition: all 0.2s ease;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; min-height: 100vh; }
+
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1em; }
+        .nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 14px; border-radius: var(--radius); cursor: pointer; text-decoration:none; font-weight: 600; display:inline-flex; align-items:center; }
+        .nav-btn:hover { background: rgba(255,255,255,0.25); }
+        .current-op-badge { background: #ffffff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+
+        .container { max-width: 1400px; width: 96%; margin: 15px auto; flex-grow: 1; }
+        .card { background: var(--box-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--primary-color); padding-bottom: 8px; flex-wrap: wrap; gap:10px; }
+        .card-header h3 { margin: 0; color: var(--primary-color); font-size: 1.15em; text-transform: uppercase; }
+
+        .btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-doc { color: white; border: none; padding: 7px 14px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.85em; transition: 0.2s; }
+        .btn-primary { background: var(--secondary-color); }
+        .btn-success { background: var(--success-color); } 
+        .btn-danger { background: var(--error-color); } 
+        .btn-warning { background: var(--warning-color); } 
+        .btn-doc { background: #475569; }
+
+        /* GRIGLIA E CARD OSPITE */
+        .guest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; margin-top: 15px; }
+        .guest-card { background: #ffffff; border: 1px solid var(--border-color); padding: 16px; border-radius: var(--radius); display: flex; flex-direction: column; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: transform 0.15s, box-shadow 0.15s; }
+        .guest-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        
+        /* DIFFERENZIAZIONE CROMATICA DI GENERE NELLE CARD */
+        .guest-card.gender-m {
+            border-left: 6px solid #0284c7;
+            background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 18%);
+        }
+        .guest-card.gender-f {
+            border-left: 6px solid #db2777;
+            background: linear-gradient(180deg, #fdf2f8 0%, #ffffff 18%);
+        }
+
+        .guest-card-top { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        .guest-avatar { width: 56px; height: 56px; border-radius: 6px; object-fit: cover; background: #e2e8f0; border: 2px solid var(--border-color); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 2em; flex-shrink: 0; }
+        .guest-avatar.avatar-m { border-color: #0284c7; }
+        .guest-avatar.avatar-f { border-color: #db2777; }
+
+        /* EVIDENZIAZIONE CAMERA E LETTO IN GRASSETTO */
+        .camera-letto-box { background: #f0fdfa; border: 1px solid #ccfbf1; padding: 7px 11px; border-radius: 4px; font-size: 0.88em; color: #0f766e; }
+        .camera-letto-box strong { font-size: 1.05em; color: #115e59; font-weight: 800; }
+
+        .guest-details { font-size: 0.85em; color: var(--text-main); line-height: 1.5; }
+        .guest-contacts-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 10px; border-radius: 4px; font-size: 0.83em; line-height: 1.45; }
+        .guest-badge-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+
+        /* BADGES CLINICI */
+        .badge-disfagia { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-size: 0.75em; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .badge-infezione { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; font-size: 0.75em; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .badge-contenzione { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; font-size: 0.75em; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        
+        /* ALERT SCADENZA PRESIDI */
+        .badge-presidio-scaduto { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; font-size: 0.78em; padding: 3px 7px; border-radius: 4px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; }
+        .badge-presidio-scadenza { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 0.78em; padding: 3px 7px; border-radius: 4px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
+        .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <!-- NAVBAR SATELLITE -->
+    <div class="navbar">
+        <div class="navbar-brand">
+            <span>👥 NVS Masterpiece - Elenco Ospiti & Presidi</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+            <button class="nav-btn" onclick="window.navigaA('cartella_clinica.html')">⚕️ Fascicolo Clinico ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('presidi.html')">📦 Presidi & Piani ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('terapia.html')">💊 Terapia ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('anagrafica.html')">🛏️ Anagrafica ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('index.html')">🏠 Torna al Reparto (Home)</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div class="card">
+            <div class="card-header">
+                <h3>👥 Elenco Generale Ospiti in Struttura</h3>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button class="btn-success" onclick="window.navigaA('anagrafica.html')">➕ Nuovo Ingresso (Anagrafica)</button>
+                </div>
+            </div>
+
+            <!-- BARRA DI RICERCA E FILTRI VELOCI -->
+            <div style="display:flex; gap:12px; margin-bottom:15px; flex-wrap:wrap; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0; align-items:center;">
+                <input type="text" id="searchOspiti" placeholder="🔍 Cerca per Cognome, Nome, Stanza, CF o MMG..." onkeyup="window.renderGuestGrid()" style="flex:2; min-width:240px; padding:9px; border:1px solid #94a3b8; border-radius:4px; font-size:0.95em;">
+                <select id="filterAlerts" onchange="window.renderGuestGrid()" style="flex:1; min-width:180px; padding:9px; border:1px solid #94a3b8; border-radius:4px;">
+                    <option value="tutti">Tutti gli ospiti presenti</option>
+                    <option value="maschi">🔵 Solo Uomini (M)</option>
+                    <option value="femmine">🌸 Solo Donne (F)</option>
+                    <option value="presidi">📦 Con Presidi in Scadenza / Scaduti</option>
+                    <option value="disfagia">🥣 Solo Disfagici</option>
+                    <option value="ica">☣ Solo Isolamento ICA</option>
+                    <option value="contenzioni">🔒 Solo con Contenzione</option>
+                </select>
+                <span id="totaleOspitiBadge" style="font-size:0.85em; font-weight:bold; color:var(--primary-color); background:#fff; padding:6px 12px; border:1px solid #cbd5e1; border-radius:4px;">Presenti: 0</span>
+            </div>
+
+            <!-- GRIGLIA CARD OSPITI -->
+            <div class="guest-grid" id="guestGrid">
+                <p style="color:#64748b; padding:20px; text-align:center;">Caricamento elenco ospiti in corso...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT FIREBASE E LOGICA DI RENDERING -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        try {
+            initializeAppCheck(app, { 
+                provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), 
+                isTokenAutoRefreshEnabled: true 
+            });
+        } catch(e) { console.warn("AppCheck bypassato."); }
+        const db = getFirestore(app);
+
+        window.dbOspiti = [];
+        window.dbClinica = {};
+        window.dbContenzioni = [];
+        window.dbPresidi = [];
+
+        window.activeOperator = sessionStorage.getItem("activeOperator") || "Operatore";
+        window.activeOperatorRole = sessionStorage.getItem("activeRole") || "user";
+        window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica") || "";
+
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
+        window.formatDateSafe = (d) => { if (!d) return '-'; if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/'); return d; };
+        window.navigaA = (url) => { window.location.href = url; };
+
+        window.selezionaOspiteEReindirizza = (nomeOspite, destinazione = 'index.html') => {
+            sessionStorage.setItem("globalSelectedPatient", nomeOspite);
+            window.location.href = destinazione;
+        };
+
+        // PARSER FORMATTAZIONE CAMERA E LETTO IN GRASSETTO
+        window.formatCameraLettoHTML = (roomStr) => {
+            if(!roomStr || roomStr.trim() === '') {
+                return `🚪 Camera: <strong>Non assegnata</strong> | 🛏️ Letto: <strong>-</strong>`;
+            }
+            let s = roomStr.trim();
+            if(s.includes('-')) {
+                let parts = s.split('-');
+                return `🚪 Camera: <strong>${parts[0].trim()}</strong> | 🛏️ Letto: <strong>${parts[1].trim()}</strong>`;
+            } else if(s.includes('/')) {
+                let parts = s.split('/');
+                return `🚪 Camera: <strong>${parts[0].trim()}</strong> | 🛏️ Letto: <strong>${parts[1].trim()}</strong>`;
+            } else if(s.toLowerCase().includes('letto')) {
+                let idx = s.toLowerCase().indexOf('letto');
+                let cam = s.substring(0, idx).trim();
+                let letPart = s.substring(idx).trim();
+                return `🚪 Camera: <strong>${cam || 'N/A'}</strong> | 🛏️ <strong>${letPart}</strong>`;
+            }
+            return `🚪 Camera: <strong>${s}</strong> | 🛏️ Letto: <strong>Principale</strong>`;
+        };
+
+        // RENDERING GRIGLIA OSPITI CON GENERE, ALERT PRESIDI & CAMERA/LETTO
+        window.renderGuestGrid = () => {
+            const container = document.getElementById('guestGrid');
+            if(!container) return;
+            const searchVal = document.getElementById('searchOspiti')?.value.toLowerCase().trim() || '';
+            const alertFilter = document.getElementById('filterAlerts')?.value || 'tutti';
+
+            const activeGuests = window.dbOspiti.filter(g => !g.decesso && !g.dimissione).sort((a,b) => a.name.localeCompare(b.name));
+            document.getElementById('totaleOspitiBadge').innerText = `Presenti: ${activeGuests.length}`;
+
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            let html = '';
+            let visibili = 0;
+
+            activeGuests.forEach(g => {
+                const pD = window.dbClinica[g.name] || {};
+                const hasCont = window.dbContenzioni.some(c => c.ospite === g.name && c.stato === 'ATTIVA');
+
+                let sesso = (g.sesso || '').trim().toUpperCase();
+                let isMaschio = (sesso === 'M' || sesso === 'MASCHIO');
+                let isFemmina = (sesso === 'F' || sesso === 'FEMMINA');
+
+                let genderClass = isMaschio ? 'gender-m' : (isFemmina ? 'gender-f' : '');
+                let avatarClass = isMaschio ? 'avatar-m' : (isFemmina ? 'avatar-f' : '');
+                let genderIcon = isMaschio 
+                    ? '<span style="color:#0284c7; font-weight:800; font-size:1.1em; margin-right:4px;" title="Uomo">♂</span>' 
+                    : (isFemmina ? '<span style="color:#db2777; font-weight:800; font-size:1.1em; margin-right:4px;" title="Donna">♀</span>' : '');
+
+                // Calcolo Presidi per questo ospite
+                const presidiOspite = (window.dbPresidi || []).filter(p => p.ospite === g.name && p.dataScadenza);
+                let presidiBadges = '';
+                let hasPresidioScaduto = false;
+                let hasPresidioInScadenza = false;
+
+                presidiOspite.forEach(pr => {
+                    const exp = new Date(pr.dataScadenza + 'T00:00:00');
+                    const diffDays = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
+                    if(diffDays < 0) {
+                        presidiBadges += `<span class="badge-presidio-scaduto">📦 SCADUTO: ${pr.categoria || pr.descrizione} (${window.formatDateSafe(pr.dataScadenza)})</span>`;
+                        hasPresidioScaduto = true;
+                    } else if(diffDays <= 30) {
+                        presidiBadges += `<span class="badge-presidio-scadenza">📦 In Scadenza: ${pr.categoria || pr.descrizione} (${diffDays} gg)</span>`;
+                        hasPresidioInScadenza = true;
+                    }
+                });
+
+                // Filtro per ricerca testuale
+                const matchSearch = !searchVal || 
+                    g.name.toLowerCase().includes(searchVal) || 
+                    (g.cf && g.cf.toLowerCase().includes(searchVal)) || 
+                    (g.room && g.room.toLowerCase().includes(searchVal)) ||
+                    (g.mmg && g.mmg.toLowerCase().includes(searchVal)) ||
+                    (g.ref && g.ref.toLowerCase().includes(searchVal));
+
+                if(!matchSearch) return;
+
+                // Filtro per tipo di alert o genere
+                if(alertFilter === 'maschi' && !isMaschio) return;
+                if(alertFilter === 'femmine' && !isFemmina) return;
+                if(alertFilter === 'presidi' && !hasPresidioScaduto && !hasPresidioInScadenza) return;
+                if(alertFilter === 'disfagia' && !pD.disfagia) return;
+                if(alertFilter === 'ica' && !pD.infezione) return;
+                if(alertFilter === 'contenzioni' && !hasCont) return;
+
+                visibili++;
+
+                let av = g.photo 
+                    ? `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">` 
+                    : `${isFemmina ? '🌸' : (isMaschio ? '👤' : '👤')}`;
+
+                let clinicalBadges = '';
+                if(pD.infezione) clinicalBadges += `<span class="badge-infezione">☣️ Isolamento ICA: ${pD.infezione}</span>`;
+                if(pD.disfagia) clinicalBadges += `<span class="badge-disfagia">🥣 Disfagico</span>`;
+                if(hasCont) clinicalBadges += `<span class="badge-contenzione">🔒 Contenzione Attiva</span>`;
+
+                let refInfo = g.ref ? `<strong>📞 Famiglia:</strong> ${g.ref} (${g.refParentela||'Parente'}) ${g.refTel ? '• <a href="tel:'+g.refTel+'">'+g.refTel+'</a>' : ''}` : '<em>Nessun familiare registrato</em>';
+                let mmgInfo = g.mmg ? `<strong>🩺 MMG:</strong> ${g.mmg} ${g.mmgTel ? '• <a href="tel:'+g.mmgTel+'">'+g.mmgTel+'</a>' : ''}` : '<em>MMG non assegnato</em>';
+                let tutInfo = g.tutore ? `<strong>⚖️ AdS:</strong> ${g.tutore} ${g.tutoreTel ? '• '+g.tutoreTel : ''} ${g.tutoreScadenza ? '(Scad: '+window.formatDateSafe(g.tutoreScadenza)+')' : ''}` : null;
+
+                html += `
+                    <div class="guest-card ${genderClass}">
+                        <div class="guest-card-top">
+                            <div class="guest-avatar ${avatarClass}">${av}</div>
+                            <div style="flex:1; overflow:hidden;">
+                                <h4 style="margin:0; font-size:1.1em; color:var(--text-main); display:flex; align-items:center;">
+                                    ${genderIcon}${g.name}
+                                </h4>
+                                <small style="color:var(--text-light);">CF: <strong>${g.cf||'-'}</strong></small>
+                            </div>
+                        </div>
+
+                        <!-- CAMERA E LETTO IN GRASSETTO -->
+                        <div class="camera-letto-box">
+                            ${window.formatCameraLettoHTML(g.room)}
+                        </div>
+                        
+                        <div class="guest-details">
+                            <div>Nato il: <strong>${window.formatDateSafe(g.dob)}</strong> a ${g.pob||'-'}</div>
+                            <div>Ingresso in struttura: <strong>${window.formatDateSafe(g.ingresso)}</strong></div>
+                        </div>
+
+                        <div class="guest-contacts-box">
+                            <div>${refInfo}</div>
+                            <div style="margin-top:2px;">${mmgInfo}</div>
+                            ${tutInfo ? '<div style="margin-top:2px; color:#4338ca;">'+tutInfo+'</div>' : ''}
+                        </div>
+
+                        <!-- RIGA ALERT CLINICI E SCADENZE PRESIDI -->
+                        ${(clinicalBadges || presidiBadges) ? `<div class="guest-badge-row">${clinicalBadges}${presidiBadges}</div>` : ''}
+
+                        <div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
+                            <button class="btn-primary" style="flex:1; min-width:130px;" onclick="window.selezionaOspiteEReindirizza('${g.name}', 'index.html')">Seleziona in Reparto</button>
+                            <button class="btn-doc" onclick="window.selezionaOspiteEReindirizza('${g.name}', 'cartella_clinica.html')">Fascicolo ↗</button>
+                            <button class="btn-warning" onclick="window.selezionaOspiteEReindirizza('${g.name}', 'presidi.html')">Presidi ↗</button>
+                            <button class="btn-doc" onclick="window.selezionaOspiteEReindirizza('${g.name}', 'anagrafica.html')">Anagrafica ↗</button>
+                        </div>
+                    </div>`;
+            });
+
+            if(visibili === 0) {
+                container.innerHTML = '<p style="color:#64748b; padding:20px; text-align:center; grid-column: 1 / -1;">Nessun ospite trovato per i filtri selezionati.</p>';
+            } else {
+                container.innerHTML = html;
+            }
+        };
+
+        // LISTENERS REALTIME
+        onSnapshot(collection(db, "ospiti"), snap => {
+            window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.renderGuestGrid();
+        });
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => {
+            window.dbClinica = {};
+            snap.forEach(d => { window.dbClinica[d.id] = d.data(); });
+            window.renderGuestGrid();
+        });
+        onSnapshot(collection(db, "contenzioni"), snap => {
+            window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.renderGuestGrid();
+        });
+        onSnapshot(collection(db, "presidi"), snap => {
+            window.dbPresidi = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.renderGuestGrid();
+        });
+
+        window.onload = () => {
+            document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
+            document.body.setAttribute('data-qualifica', window.activeOperatorQualifica);
+        };
+    </script>
+</body>
+</html>

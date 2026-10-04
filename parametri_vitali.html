@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - Rilevazione Parametri Vitali & Dolore</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #f1f5f9;         
+            --box-bg: #ffffff;
+            --primary-color: #0d9488; 
+            --secondary-color: #0f766e;  
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --input-bg: #ffffff;
+            --border-color: #cbd5e1;     
+            --error-color: #e11d48; 
+            --warning-color: #d97706; 
+            --success-color: #059669; 
+            
+            /* COLORI COORDINATI PARAMETRI VITALI */
+            --col-pa: #e11d48;
+            --col-fc: #c026d3;
+            --col-spo2: #0284c7;
+            --col-tc: #ea580c;
+            --col-gli: #8b5cf6;
+            --col-nrs: #d97706;
+
+            --base-font-size: 14px;      
+            --radius: 6px;               
+            --transition: all 0.2s ease;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; min-height: 100vh; }
+
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1em; }
+        .nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 14px; border-radius: var(--radius); cursor: pointer; text-decoration:none; font-weight: 600; display:inline-flex; align-items:center; }
+        .nav-btn:hover { background: rgba(255,255,255,0.25); }
+        .current-op-badge { background: #ffffff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+
+        .container { max-width: 1350px; width: 96%; margin: 15px auto; flex-grow: 1; }
+        .card { background: var(--box-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--col-pa); padding-bottom: 8px; flex-wrap: wrap; gap:10px; }
+        .card-header h3 { margin: 0; color: var(--col-pa); font-size: 1.1em; text-transform: uppercase; }
+
+        /* CARD OSPITE ATTIVO IN ALTO */
+        .global-active-patient-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-left: 8px solid var(--col-pa);
+            border-radius: var(--radius);
+            padding: 12px 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .gap-info-left { display: flex; align-items: center; gap: 14px; }
+        .gap-avatar { width: 52px; height: 52px; border-radius: 6px; object-fit: cover; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 1.8em; border: 1px solid var(--border-color); overflow: hidden; flex-shrink: 0; }
+        .gap-name-block h2 { margin: 0; font-size: 1.25em; color: var(--text-main); letter-spacing: 0.5px; }
+        .gap-sub { font-size: 0.85em; color: var(--text-light); margin-top: 3px; }
+        .gap-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        .badge-disfagia { background: var(--warning-color); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+        .badge-infezione { background: var(--error-color); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+        .badge-contenzione { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85em; }
+        input[type="text"], input[type="number"], select { width: 100%; padding: 8px; border: 1px solid #94a3b8; border-radius: 4px; box-sizing: border-box; background-color: var(--input-bg); color: var(--text-main); font-family: inherit; font-size: 0.95em; }
+
+        .btn-danger, .btn-doc, .btn-primary { color: white; border: none; padding: 8px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.9em; transition: 0.2s; }
+        .btn-danger { background: var(--error-color); }
+        .btn-doc { background: #475569; }
+        .btn-primary { background: var(--secondary-color); }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.88em; background: #ffffff; }
+        .data-table th, .data-table td { border: 1px solid var(--border-color); padding: 8px; text-align: left; vertical-align: middle; }
+        .data-table th { background-color: var(--primary-color); color: white; font-weight: normal; text-transform: uppercase; font-size: 0.82em; }
+        .data-table tr:nth-child(even) { background-color: #f8fafc; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
+        .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
+        .toast.show { opacity: 1; }
+
+        #printArea { display: none; }
+        @media print {
+            body * { visibility: hidden; } 
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 25px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 9pt; }
+            .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; }
+            .print-table th { background: #f1f5f9 !important; font-weight: bold; }
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    <div id="printArea"></div>
+
+    <!-- NAVBAR SATELLITE -->
+    <div class="navbar">
+        <div class="navbar-brand">
+            <span>❤️ NVS Masterpiece - Rilevazione Parametri Vitali & Dolore</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+            <button class="nav-btn" onclick="window.navigaA('cartella_clinica.html')">⚕️ Fascicolo Clinico ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('terapia.html')">💊 Terapia ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('diari_clinici.html')">📝 Diari ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('index.html')">🏠 Torna al Reparto (Home)</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <!-- CARD OSPITE ATTIVO IN ALTO -->
+        <div id="globalActivePatientBanner" class="global-active-patient-card">
+            <div class="gap-info-left">
+                <div id="gapAvatar" class="gap-avatar">👤</div>
+                <div class="gap-name-block">
+                    <h2 id="gapNome">NESSUN OSPITE SELEZIONATO</h2>
+                    <div class="gap-sub" id="gapDettagli">Stanza: - | CF: -</div>
+                </div>
+            </div>
+            <div class="gap-badges" id="gapBadges"></div>
+        </div>
+
+        <!-- SELETTORE OSPITE -->
+        <div class="card" style="padding:15px;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:0.95em; color:var(--col-pa); font-weight:bold;">Seleziona Fascicolo Paziente per i Parametri Vitali</label>
+                <select id="vitalGuestSelect" onchange="window.selectPatientGlobal(this.value)" style="padding:9px; font-weight:bold; border-color:var(--col-pa);">
+                    <option value="" disabled selected>Scegli ospite...</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- SCHEDA PARAMETRI VITALI & GRAFICO -->
+        <div class="card" style="border-top: 4px solid var(--col-pa);">
+            <div class="card-header">
+                <h3>🩺 Nuova Rilevazione Parametri & Andamento Grafico</h3>
+                <button class="btn-doc" onclick="window.stampaFoglioParametri()">🖨️ Stampa Foglio Parametri</button>
+            </div>
+
+            <!-- FORM INSERIMENTO CON ICONE E COLORI COORDINATI -->
+            <div class="restrict-oss" style="display:flex; gap:10px; flex-wrap:wrap; background:#fff1f2; padding:15px; border-radius:6px; margin-bottom:15px; border:1px solid #fecdd3;">
+                <div class="form-group" style="flex:1; min-width:110px; margin:0;">
+                    <label style="color:var(--col-pa);">🩸 P.A. (Max/Min)</label>
+                    <input type="text" id="rap-vitPA" placeholder="Es. 120/80" style="border-color:var(--col-pa);">
+                </div>
+                <div class="form-group" style="flex:1; min-width:90px; margin:0;">
+                    <label style="color:var(--col-fc);">❤️ FC (bpm)</label>
+                    <input type="number" id="rap-vitFC" placeholder="bpm" style="border-color:var(--col-fc);">
+                </div>
+                <div class="form-group" style="flex:1; min-width:90px; margin:0;">
+                    <label style="color:var(--col-spo2);">🫁 SpO2 (%)</label>
+                    <input type="number" id="rap-vitSPO2" placeholder="%" style="border-color:var(--col-spo2);">
+                </div>
+                <div class="form-group" style="flex:1; min-width:90px; margin:0;">
+                    <label style="color:var(--col-tc);">🌡️ TC (°C)</label>
+                    <input type="number" step="0.1" id="rap-vitTC" placeholder="°C" style="border-color:var(--col-tc);">
+                </div>
+                <div class="form-group" style="flex:1; min-width:90px; margin:0;">
+                    <label style="color:var(--col-gli);">🍬 Glicemia</label>
+                    <input type="number" id="rap-vitGLI" placeholder="mg/dl" style="border-color:var(--col-gli);">
+                </div>
+                <div class="form-group" style="flex:1; min-width:90px; margin:0;">
+                    <label style="color:var(--col-nrs);">⚡ Dolore (0-10)</label>
+                    <input type="number" id="rap-vitNRS" min="0" max="10" placeholder="NRS" style="border-color:var(--col-nrs);">
+                </div>
+                <div style="display:flex; align-items:flex-end;">
+                    <button class="btn-danger" onclick="window.addRapVitals()">Registra Parametri</button>
+                </div>
+            </div>
+
+            <!-- TABELLA STORICA E GRAFICO MULTI-PARAMETRICO -->
+            <div style="display:flex; gap:18px; flex-wrap:wrap;">
+                <div style="flex:1.2; min-width:340px;">
+                    <h4 style="margin:0 0 8px 0; color:var(--text-main); font-size:0.95em;">Ultime Rilevazioni Registrate</h4>
+                    <div style="max-height:360px; overflow-y:auto; border:1px solid var(--border-color); border-radius:4px;">
+                        <table class="data-table" id="rapVitalsTable">
+                            <thead>
+                                <tr>
+                                    <th>Data/Ora</th><th>Op</th>
+                                    <th style="color:#fee2e2;">🩸 P.A.</th>
+                                    <th style="color:#fbcfe8;">❤️ FC</th>
+                                    <th style="color:#bae6fd;">🫁 SpO2</th>
+                                    <th style="color:#ffedd5;">🌡️ TC</th>
+                                    <th style="color:#ede9fe;">🍬 Gli</th>
+                                    <th style="color:#fef3c7;">⚡ NRS</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div style="flex:1.5; min-width:360px; height:360px; background:#fff; padding:12px; border:1px solid var(--border-color); border-radius:6px;">
+                    <h4 style="margin:0 0 8px 0; color:var(--text-main); font-size:0.95em;">Andamento Grafico Parametri</h4>
+                    <div style="position:relative; width:100%; height:310px;">
+                        <canvas id="vitalsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT FIREBASE E LOGICA VITALI -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        const app = initializeApp(firebaseConfig);
+        try {
+            initializeAppCheck(app, { 
+                provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), 
+                isTokenAutoRefreshEnabled: true 
+            });
+        } catch(e) { console.warn("AppCheck bypassato."); }
+        const db = getFirestore(app);
+
+        window.dbOspiti = []; window.dbClinica = {}; window.dbContenzioni = [];
+        window.globalSelectedPatient = sessionStorage.getItem("globalSelectedPatient") || "";
+        window.activeOperator = sessionStorage.getItem("activeOperator") || "Operatore";
+        window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica") || "";
+        window.vitalsChartInstance = null;
+
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
+        window.formatDateSafe = (d) => { if (!d) return '-'; if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/'); return d; };
+        window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
+        window.navigaA = (url) => { window.location.href = url; };
+
+        window.renderGlobalPatientBanner = () => {
+            const n = window.globalSelectedPatient;
+            const bannerNome = document.getElementById('gapNome');
+            const bannerDet = document.getElementById('gapDettagli');
+            const bannerBadges = document.getElementById('gapBadges');
+            const bannerAv = document.getElementById('gapAvatar');
+
+            if(!n) {
+                bannerNome.innerText = "NESSUN OSPITE SELEZIONATO";
+                bannerDet.innerText = "Seleziona un paziente dal menu sottostante.";
+                bannerBadges.innerHTML = '';
+                bannerAv.innerHTML = `👤`;
+                return;
+            }
+
+            const g = window.dbOspiti.find(x => x.name === n) || {};
+            const pD = window.dbClinica[n] || {};
+
+            bannerNome.innerText = n;
+            bannerDet.innerHTML = `Stanza: <strong>${g.room || '-'}</strong> | CF: <strong>${g.cf || '-'}</strong>`;
+            bannerAv.innerHTML = g.photo ? `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">` : `👤`;
+
+            let badges = '';
+            if(pD.disfagia) badges += `<span class="badge-disfagia">🥣 Disfagico</span>`;
+            if(pD.infezione) badges += `<span class="badge-infezione">☣ ${pD.infezione}</span>`;
+            const hasCont = window.dbContenzioni.some(c => c.ospite === n && c.stato === 'ATTIVA');
+            if(hasCont) badges += `<span class="badge-contenzione">🔒 Contenzione Attiva</span>`;
+            bannerBadges.innerHTML = badges;
+        };
+
+        window.loadGuestSelector = () => {
+            const s = document.getElementById('vitalGuestSelect');
+            if(!s) return;
+            s.innerHTML = '<option value="" disabled selected>Scegli ospite...</option>';
+            window.dbOspiti.filter(g => !g.decesso && !g.dimissione).sort((a,b) => a.name.localeCompare(b.name)).forEach(g => {
+                s.innerHTML += `<option value="${g.name}">${g.name}</option>`;
+            });
+            if(window.globalSelectedPatient) {
+                s.value = window.globalSelectedPatient;
+                window.renderGlobalPatientBanner();
+                window.renderVitals();
+            }
+        };
+
+        window.selectPatientGlobal = (n) => {
+            window.globalSelectedPatient = n;
+            sessionStorage.setItem("globalSelectedPatient", n);
+            const s = document.getElementById('vitalGuestSelect');
+            if(s) s.value = n;
+            window.renderGlobalPatientBanner();
+            window.renderVitals();
+            window.showToast(`👤 Paziente Attivo: ${n}`);
+        };
+
+        window.addRapVitals = async () => {
+            const n = window.globalSelectedPatient;
+            if(!n) return window.showToast("⚠️ Seleziona prima un paziente dal menu!");
+
+            let d = window.dbClinica[n] || {};
+            if(!d.vitals) d.vitals = [];
+
+            d.vitals.unshift({
+                date: window.getTimestamp(),
+                op: window.activeOperator,
+                pa: document.getElementById('rap-vitPA').value.trim(),
+                fc: document.getElementById('rap-vitFC').value.trim(),
+                spo2: document.getElementById('rap-vitSPO2').value.trim(),
+                tc: document.getElementById('rap-vitTC').value.trim(),
+                gli: document.getElementById('rap-vitGLI').value.trim(),
+                nrs: document.getElementById('rap-vitNRS').value.trim()
+            });
+
+            await setDoc(doc(db, "cartelle_cliniche", n), d, { merge: true });
+            window.renderVitals();
+            ['rap-vitPA','rap-vitFC','rap-vitSPO2','rap-vitTC','rap-vitGLI','rap-vitNRS'].forEach(id => document.getElementById(id).value = '');
+            window.showToast("✅ Parametri Vitali Registrati!");
+        };
+
+        window.renderVitals = () => {
+            const n = window.globalSelectedPatient;
+            const tb = document.querySelector('#rapVitalsTable tbody');
+            if(!tb) return;
+            tb.innerHTML = '';
+
+            const d = window.dbClinica[n] || {};
+            const vitals = d.vitals || [];
+
+            if(vitals.length === 0) {
+                tb.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#64748b; padding:15px;">Nessun parametro registrato per questo ospite.</td></tr>';
+            } else {
+                vitals.forEach(v => {
+                    tb.innerHTML += `
+                        <tr>
+                            <td><strong>${v.date}</strong></td><td>${v.op}</td>
+                            <td style="color:var(--col-pa); font-weight:bold;">${v.pa||'-'}</td>
+                            <td style="color:var(--col-fc); font-weight:bold;">${v.fc||'-'}</td>
+                            <td style="color:var(--col-spo2); font-weight:bold;">${v.spo2||'-'}%</td>
+                            <td style="color:var(--col-tc); font-weight:bold;">${v.tc||'-'}°</td>
+                            <td style="color:var(--col-gli); font-weight:bold;">${v.gli||'-'}</td>
+                            <td style="color:var(--col-nrs); font-weight:bold;">${v.nrs||'-'}</td>
+                        </tr>`;
+                });
+            }
+
+            const ctx = document.getElementById('vitalsChart');
+            if(!ctx) return;
+            if(window.vitalsChartInstance) window.vitalsChartInstance.destroy();
+
+            let rev = [...vitals].reverse().slice(-14);
+            const paData = rev.map(v => {
+                if(!v.pa) return null;
+                const p = v.pa.split('/')[0];
+                return parseFloat(p) || null;
+            });
+
+            window.vitalsChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: rev.map(v => v.date.split(' alle ')[0].substring(0,5)),
+                    datasets: [
+                        { label: '🩸 PA Sistolica', data: paData, borderColor: '#e11d48', backgroundColor: '#e11d48', tension: 0.2, pointRadius: 4 },
+                        { label: '❤️ FC (bpm)', data: rev.map(v => parseFloat(v.fc)||null), borderColor: '#c026d3', backgroundColor: '#c026d3', tension: 0.2, pointRadius: 4 },
+                        { label: '🫁 SpO2 (%)', data: rev.map(v => parseFloat(v.spo2)||null), borderColor: '#0284c7', backgroundColor: '#0284c7', tension: 0.2, pointRadius: 4 },
+                        { label: '🌡️ TC (°C)', data: rev.map(v => parseFloat(v.tc)||null), borderColor: '#ea580c', backgroundColor: '#ea580c', tension: 0.2, pointRadius: 4 },
+                        { label: '🍬 Glicemia', data: rev.map(v => parseFloat(v.gli)||null), borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', tension: 0.2, pointRadius: 4 },
+                        { label: '⚡ NRS (0-10)', data: rev.map(v => parseFloat(v.nrs)||null), borderColor: '#d97706', backgroundColor: '#d97706', tension: 0.2, pointRadius: 4 }
+                    ]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } } },
+                    scales: { y: { beginAtZero: false, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } }
+                }
+            });
+        };
+
+        window.stampaFoglioParametri = () => {
+            const n = window.globalSelectedPatient;
+            if(!n) return window.showToast("⚠️ Seleziona prima un paziente!");
+            const g = window.dbOspiti.find(x => x.name === n) || {};
+            const d = window.dbClinica[n] || {};
+            const vitals = d.vitals || [];
+
+            let html = `
+                <div style="text-align:center; border-bottom:2px solid #e11d48; padding-bottom:12px;">
+                    <h2 style="margin:0; color:#e11d48;">NUOVA VILLA SILVANA</h2>
+                    <h3 style="margin:4px 0 0 0;">FOGLIO CLINICO RILEVAZIONE PARAMETRI VITALI & DOLORE</h3>
+                </div>
+                <div style="margin:15px 0; font-size:10pt;">
+                    Ospite: <strong>${n}</strong> | Stanza: <strong>${g.room || '-'}</strong> | CF: <strong>${g.cf || '-'}</strong> | Medico Curante: <strong>${g.mmg || '-'}</strong>
+                </div>
+                <table class="print-table">
+                    <thead>
+                        <tr><th>Data e Ora</th><th>Operatore</th><th>P.A. (mmHg)</th><th>F.C. (bpm)</th><th>SpO2 (%)</th><th>T.C. (°C)</th><th>Glicemia</th><th>Dolore NRS</th></tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            vitals.forEach(v => {
+                html += `<tr><td>${v.date}</td><td>${v.op}</td><td>${v.pa||'-'}</td><td>${v.fc||'-'}</td><td>${v.spo2||'-'}%</td><td>${v.tc||'-'}°C</td><td>${v.gli||'-'}</td><td>${v.nrs||'-'}/10</td></tr>`;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+                <div style="margin-top:30px; display:flex; justify-content:space-between; font-size:9pt;">
+                    <div>Stampato il: ${window.getTimestamp()} da ${window.activeOperator}</div>
+                    <div>Firma Infermiere: ___________________________</div>
+                </div>
+            `;
+
+            document.getElementById('printArea').innerHTML = html;
+            setTimeout(() => window.print(), 300);
+        };
+
+        onSnapshot(collection(db, "ospiti"), snap => { window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadGuestSelector(); });
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => { window.dbClinica = {}; snap.forEach(d => { window.dbClinica[d.id] = d.data(); }); if(window.globalSelectedPatient) { window.renderVitals(); window.renderGlobalPatientBanner(); } });
+        onSnapshot(collection(db, "contenzioni"), snap => { window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderGlobalPatientBanner(); });
+
+        window.onload = () => {
+            document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
+            document.body.setAttribute('data-qualifica', window.activeOperatorQualifica);
+            let saved = sessionStorage.getItem("globalSelectedPatient");
+            if(saved) window.globalSelectedPatient = saved;
+            window.renderGlobalPatientBanner();
+        };
+    </script>
+</body>
+</html>

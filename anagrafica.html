@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - Anagrafica Ospiti & Cartella Documenti</title>
+
+    <!-- MOTORE OCR CLIENT-SIDE TESSERACT.JS -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #f1f5f9;         
+            --box-bg: #ffffff;
+            --primary-color: #0d9488; 
+            --secondary-color: #0f766e;  
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --input-bg: #ffffff;
+            --border-color: #cbd5e1;     
+            --error-color: #e11d48; 
+            --warning-color: #d97706; 
+            --success-color: #059669; 
+            --dir-color: #4f46e5;
+            --base-font-size: 14px;      
+            --radius: 6px;               
+            --transition: all 0.2s ease;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; min-height: 100vh; }
+
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1em; }
+        .nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 14px; border-radius: var(--radius); cursor: pointer; text-decoration:none; font-weight: 600; display:inline-flex; align-items:center; }
+        .nav-btn:hover { background: rgba(255,255,255,0.25); }
+        .current-op-badge { background: #ffffff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+
+        .container { max-width: 1250px; width: 95%; margin: 20px auto; flex-grow: 1; }
+        .card { background: var(--box-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--primary-color); padding-bottom: 8px; flex-wrap: wrap; gap:10px; }
+        .card-header h3 { margin: 0; color: var(--primary-color); font-size: 1.1em; text-transform: uppercase; }
+
+        .section-box { background: #f8fafc; border: 1px solid var(--border-color); padding: 15px; margin-bottom: 15px; border-radius: 4px; }
+        .section-box h4 { margin: 0 0 10px 0; color: var(--primary-color); font-size: 1em; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85em; color: var(--text-main); }
+        input[type="text"], input[type="date"], input[type="time"], input[type="number"], select, textarea { width: 100%; padding: 8px; border: 1px solid #94a3b8; border-radius: 4px; box-sizing: border-box; background-color: var(--input-bg); color: var(--text-main); font-family: inherit; font-size: 0.95em; transition: background-color 0.4s ease; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-color); outline: none; background-color: #f0fdfa; }
+        input[readonly] { background-color: #f1f5f9; cursor: not-allowed; }
+
+        .alloggiati-obbligatorio { border: 2px solid var(--error-color) !important; background-color: #fff1f2 !important; }
+        .alloggiati-obbligatorio:focus { box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.2) !important; }
+
+        .btn-primary, .btn-success, .btn-danger, .btn-doc { color: white; border: none; padding: 8px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.9em; transition: 0.2s; }
+        .btn-primary { background: var(--secondary-color); }
+        .btn-success { background: var(--success-color); }
+        .btn-danger { background: var(--error-color); }
+        .btn-doc { background: #475569; }
+
+        /* GALLERIA DOCUMENTI ALLEGATI (MINIATURE) */
+        .docs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-top: 12px; }
+        .doc-thumb-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: flex; flex-direction: column; transition: transform 0.15s; }
+        .doc-thumb-card:hover { transform: translateY(-2px); border-color: var(--primary-color); }
+        .doc-thumb-img { width: 100%; height: 125px; object-fit: cover; background: #f8fafc; cursor: pointer; border-bottom: 1px solid #e2e8f0; }
+        .doc-thumb-body { padding: 8px 10px; font-size: 0.8em; line-height: 1.35; flex-grow: 1; }
+        .doc-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; font-weight: bold; margin-bottom: 4px; background: #e0f2fe; color: #0369a1; }
+
+        /* FOTO PROFILO BOX */
+        .avatar-preview-box { width: 75px; height: 75px; border-radius: 6px; object-fit: cover; background: #e2e8f0; border: 2px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 2.2em; overflow: hidden; flex-shrink: 0; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
+        .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
+        .toast.show { opacity: 1; }
+
+        #printArea { display: none; }
+        @media print {
+            body * { visibility: hidden; } 
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 25px; box-sizing: border-box; }
+            .print-doc-img { max-width: 100%; max-height: 800px; display: block; margin: 20px auto; border: 1px solid #cbd5e1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    <div id="printArea"></div>
+
+    <!-- MODALE FOTOCAMERA OCR MIRINO PER RETRO CIE -->
+    <div id="mrzCameraModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:36000; align-items:center; justify-content:center; flex-direction:column; padding:15px; box-sizing:border-box;">
+        <div style="background:#fff; border-radius:8px; max-width:550px; width:100%; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 25px rgba(0,0,0,0.4);">
+            <div style="padding:12px 18px; background:#0f172a; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+                <h4 style="margin:0; font-size:1.05em;">📷 Inquadra le 3 righe MRZ (Retro della CIE)</h4>
+                <button onclick="window.chiudiCameraMRZ()" style="background:transparent; border:none; color:#fff; font-size:1.4em; cursor:pointer;">&times;</button>
+            </div>
+            
+            <!-- FEED VIDEO CON RETICOLO GUIDA -->
+            <div style="position:relative; width:100%; height:280px; background:#000; overflow:hidden;">
+                <video id="mrzVideoFeed" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
+                <!-- Reticolo guida per allineare la banda MRZ -->
+                <div style="position:absolute; top:50%; left:5%; width:90%; height:80px; transform:translateY(-50%); border:2px dashed #38bdf8; border-radius:6px; box-shadow:0 0 0 9999px rgba(0,0,0,0.45); pointer-events:none; display:flex; align-items:center; justify-content:center;">
+                    <span style="background:rgba(15,23,42,0.75); color:#38bdf8; padding:3px 8px; border-radius:3px; font-size:11px; font-weight:bold; letter-spacing:0.5px;">ALLINEA LE 3 RIGHE MRZ QUI</span>
+                </div>
+            </div>
+
+            <div style="padding:12px 18px; background:#f8fafc; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <span id="ocrStatusMsg" style="font-size:0.85em; color:var(--text-light);">Tieni ferma la carta ed evita riflessi di luce.</span>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-doc" onclick="window.chiudiCameraMRZ()">Annulla</button>
+                    <button class="btn-success" id="btnScattaOCR" onclick="window.scattaERiconosciMRZ()">📸 Scatta e Leggi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE ANTEPRIMA DOCUMENTO (LIGHTBOX) -->
+    <div id="docLightboxModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:35000; align-items:center; justify-content:center; padding:20px; box-sizing:border-box;">
+        <div style="background:#fff; border-radius:8px; max-width:750px; width:100%; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+            <div style="padding:12px 18px; background:#0f172a; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+                <h4 id="lightboxDocTitle" style="margin:0; font-size:1.1em;">Documento Allegato</h4>
+                <button onclick="document.getElementById('docLightboxModal').style.display='none'" style="background:transparent; border:none; color:#fff; font-size:1.4em; cursor:pointer;">&times;</button>
+            </div>
+            <div style="padding:15px; text-align:center; background:#1e293b; max-height:550px; overflow-y:auto;">
+                <img id="lightboxDocImg" src="" style="max-height:500px; max-width:100%; object-fit:contain; border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+            </div>
+            <div style="padding:12px 18px; font-size:0.88em; background:#f8fafc; border-top:1px solid #e2e8f0;" id="lightboxDocMeta"></div>
+            <div style="padding:10px 18px; background:#fff; border-top:1px solid #cbd5e1; display:flex; justify-content:space-between; align-items:center;">
+                <button class="btn-danger" id="lightboxBtnDelete">🗑️ Elimina Documento</button>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-doc" onclick="window.stampaSingoloDocumento()">🖨️ Stampa Documento A4</button>
+                    <button class="btn-primary" onclick="document.getElementById('docLightboxModal').style.display='none'">Chiudi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVBAR INDIPENDENTE -->
+    <div class="navbar">
+        <div class="navbar-brand">
+            <span>🛏️ NVS Masterpiece - Anagrafica Ospiti & Cartella Sociale</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+            <button class="nav-btn" style="background:#0284c7;" onclick="window.navigaA('flussi_portali.html')">📤 Flussi & Portali ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('cartella_clinica.html')">⚕️ Fascicolo Clinico ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('index.html')">🏠 Torna al Reparto (Home)</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <!-- SCHEDA ANAGRAFICA COMPLETA -->
+        <div class="card restrict-oss">
+            <div class="card-header">
+                <h3 id="anagraficaFormTitle">Nuovo Ingresso / Anagrafica Ospite</h3>
+                <button class="btn-doc" onclick="window.resetAnagraficaForm()">🔄 Svuota Campi / Nuovo Ospite</button>
+            </div>
+
+            <div class="form-group" style="background:#e0f2fe; padding:10px; border:1px solid #bae6fd; border-radius:4px; margin-bottom:15px;">
+                <label style="color:#0284c7; font-weight:bold;">✏ Seleziona Ospite Esistente per Modifica o Consultazione Documenti</label>
+                <select id="editAnagraficaSelect" onchange="window.loadAnagraficaForEdit()" style="border-color:#0284c7;">
+                    <option value="">-- ➕ Crea Nuovo Ospite (Svuota Campi) --</option>
+                </select>
+            </div>
+            
+            <!-- ACQUISIZIONE RAPIDA DA TESSERA SANITARIA & CIE CON FOTOCAMERA OCR -->
+            <div style="background: #fef9c3; border: 1px solid #fde68a; padding: 15px; border-radius: 4px; margin-bottom: 15px;">
+                <label style="color: #854d0e; font-weight: bold; margin-bottom: 6px; display:block;">
+                    ⚡ Acquisizione Rapida da Tessera Sanitaria (TEAM) & Carta d'Identità Elettronica (CIE)
+                </label>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                    <input type="text" id="tsBarcodeScanner" placeholder="Spara Barcode retro TS o retro CIE (CF)..." onkeypress="window.handleTSBarcode(event)" style="border-color:#fde047; background:#fff; flex:1.2; min-width:200px;">
+                    <input type="text" id="cieMrzScanner" placeholder="Incolla o spara le 3 righe MRZ della CIE..." oninput="window.parseCIE_MRZ(this.value)" onpaste="setTimeout(()=>window.parseCIE_MRZ(document.getElementById('cieMrzScanner').value), 50)" style="border-color:#fde047; background:#fff; flex:1.5; min-width:220px;" autocomplete="off">
+                    
+                    <button type="button" class="btn-primary" style="background:#0284c7; white-space:nowrap; padding:10px 14px;" onclick="window.apriCameraMRZ()">
+                        📷 Inquadra Retro CIE (OCR)
+                    </button>
+                    <button type="button" class="btn-success" onclick="window.leggiSmartCardTS()" style="white-space: nowrap; padding: 10px 14px;">
+                        💳 Smart Card / NFC
+                    </button>
+                </div>
+                <small style="color:#713f12; margin-top:6px; display:block;">
+                    💡 <strong>Opzioni CIE:</strong> Puoi usare la fotocamera del tablet per inquadrare le 3 righe, oppure sparare il barcode 1D sul retro per il solo Codice Fiscale, o incollare direttamente la stringa MRZ.
+                </small>
+            </div>
+
+            <!-- SEZIONE 1: DATI GENERALI E FOTO PROFILO -->
+            <div class="section-box">
+                <h4>1. Dati Generali e Foto Profilo</h4>
+                
+                <div style="display:flex; gap:18px; margin-bottom:12px; align-items:center; flex-wrap:wrap;">
+                    <div id="avatarPreviewContainer" class="avatar-preview-box">👤</div>
+                    <div style="flex:1; min-width:220px;">
+                        <label style="font-weight:bold; font-size:0.85em; display:block; margin-bottom:4px;">Fototessera / Foto Profilo Ospite</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="file" id="newGuestPhotoInput" accept="image/*" capture="user" onchange="window.processAvatarUpload(event)" style="background:#fff; flex:1;">
+                            <button type="button" class="btn-doc" style="padding:6px 12px; font-size:0.8em;" onclick="document.getElementById('newGuestPhotoInput').click()">📷 Scatta / Carica</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                    <div class="form-group" style="flex:1.5;"><label>Cognome *</label><input type="text" id="newGuestCognome" class="alloggiati-obbligatorio"></div>
+                    <div class="form-group" style="flex:1.5;"><label>Nome *</label><input type="text" id="newGuestNome" class="alloggiati-obbligatorio"></div>
+                    <div class="form-group" style="flex:0.6;"><label>Sesso *</label><select id="newGuestSesso" class="alloggiati-obbligatorio"><option value="M">M</option><option value="F">F</option></select></div>
+                    <div class="form-group" style="flex:1;"><label>Data Nascita *</label><input type="date" id="newGuestDob" class="alloggiati-obbligatorio"></div>
+                    <div class="form-group" style="flex:1.5;"><label>Codice Fiscale *</label><input type="text" id="newGuestCF" style="text-transform:uppercase;"></div>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <div class="form-group" style="flex:2;"><label>Comune o Stato Estero di Nascita *</label><input type="text" id="newGuestPob" class="alloggiati-obbligatorio" list="comuniList" onchange="window.fillComune('Pob')" placeholder="Inizia a digitare..."></div>
+                    <div class="form-group" style="flex:0.5;"><label>Prov.</label><input type="text" id="newGuestPobProv" maxlength="2" readonly></div>
+                    <div class="form-group" style="flex:1.5;"><label>Codice Alloggiati Nascita</label><input type="text" id="newGuestPobCod" placeholder="Calcolo Auto..." readonly></div>
+                    <div class="form-group" style="flex:1.5;"><label>Cod. Cittadinanza *</label><input type="text" id="newGuestCittadinanza" class="alloggiati-obbligatorio" value="100000100"></div>
+                </div>
+            </div>
+
+            <!-- SEZIONE 2: RESIDENZA E INGRESSO -->
+            <div class="section-box">
+                <h4>2. Residenza e Dati Ingresso</h4>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                    <div class="form-group" style="flex:2;"><label>Indirizzo di Residenza (Via/Piazza e Civico)</label><input type="text" id="newGuestResInd"></div>
+                    <div class="form-group" style="flex:2;"><label>Comune di Residenza *</label><input type="text" id="newGuestResCom" list="comuniList" onchange="window.fillComune('Res')" placeholder="Inizia a digitare..."></div>
+                    <div class="form-group" style="flex:0.5;"><label>Prov.</label><input type="text" id="newGuestResProv" maxlength="2" readonly></div>
+                    <div class="form-group" style="flex:1.5;"><label>Codice Alloggiati Resid.</label><input type="text" id="newGuestResCod" placeholder="Calcolo Auto..." readonly></div>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <div class="form-group" style="flex:1;"><label>Data Ingresso in Struttura *</label><input type="date" id="newGuestIngresso" class="alloggiati-obbligatorio"></div>
+                    <div class="form-group" style="flex:1;"><label>Stanza Assegnata</label><input type="text" id="newGuestRoom" placeholder="Es. Stanza 12 - Letto B"></div>
+                </div>
+            </div>
+
+            <!-- SEZIONE 3: ESTREMI DOCUMENTO IDENTITÀ -->
+            <div class="section-box">
+                <h4>3. Estremi Documento d'Identità in Corso di Validità</h4>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Tipo Documento *</label>
+                        <select id="newGuestDocTipo" class="alloggiati-obbligatorio">
+                            <option value="IDENT">Carta d'Identità (Cartacea o Elettronica CIE)</option>
+                            <option value="PASSP">Passaporto</option>
+                            <option value="PATEN">Patente di Guida</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:1.5;"><label>Numero Documento *</label><input type="text" id="newGuestDocNum" class="alloggiati-obbligatorio" style="text-transform:uppercase;"></div>
+                    <div class="form-group" style="flex:2;"><label>Comune o Ente di Rilascio *</label><input type="text" id="newGuestDocRilascioNome" class="alloggiati-obbligatorio" list="comuniList" onchange="window.fillComune('Doc')"></div>
+                    <div class="form-group" style="flex:1.5;"><label>Codice Alloggiati Rilascio *</label><input type="text" id="newGuestDocRilascioCod" placeholder="Calcolo Auto..." readonly></div>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <div class="form-group" style="flex:1;"><label>Data Rilascio</label><input type="date" id="newGuestDocDataRil"></div>
+                    <div class="form-group" style="flex:1;"><label>Data Scadenza</label><input type="date" id="newGuestDocDataScad"></div>
+                </div>
+            </div>
+
+            <!-- SEZIONE 4: RECAPITI, MMG, TUTELA LEGALE E UVM -->
+            <div class="section-box">
+                <h4>4. Riferimenti Familiari, MMG, Amministratore di Sostegno & U.V.M.</h4>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                    <div class="form-group" style="flex:2;"><label>Referente Familiare</label><input type="text" id="newGuestRef" placeholder="Es. Rossi Marco"></div>
+                    <div class="form-group" style="flex:1;"><label>Parentela</label><select id="newGuestRefParentela"><option value="Figlio/a">Figlio/a</option><option value="Coniuge">Coniuge</option><option value="Fratello/Sorella">Fratello/Sorella</option><option value="Nipote">Nipote</option><option value="Altro">Altro</option></select></div>
+                    <div class="form-group" style="flex:1.5;"><label>Recapito Telefonico Familiare</label><input type="text" id="newGuestRefTel" placeholder="Es. 333 1234567"></div>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                    <div class="form-group" style="flex:2;"><label>Medico Curante (MMG)</label><input type="text" id="newGuestMMG" placeholder="Es. Dott. Bianchi Franco"></div>
+                    <div class="form-group" style="flex:1;"><label>Telefono MMG</label><input type="text" id="newGuestMMGTel"></div>
+                    <div class="form-group" style="flex:1.5;"><label>Email / PEC MMG</label><input type="text" id="newGuestMMGEmail"></div>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; border-bottom:1px dashed #cbd5e1; padding-bottom:10px;">
+                    <div class="form-group" style="flex:2;"><label>Tutore / Amministratore di Sostegno (AdS)</label><input type="text" id="newGuestTutore" placeholder="Es. Avv. Verdi Luca"></div>
+                    <div class="form-group" style="flex:1.5;"><label>Recapito AdS (Tel / Mail)</label><input type="text" id="newGuestTutoreTel"></div>
+                    <div class="form-group" style="flex:1;"><label>Scadenza Decreto Nomina</label><input type="date" id="newGuestTutoreScadenza"></div>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <div class="form-group" style="flex:1;"><label>Data Verbale U.V.M. Distrettuale</label><input type="date" id="newGuestUVMData"></div>
+                    <div class="form-group" style="flex:1;"><label>Punteggio / Livello Assistenziale U.V.M.</label><input type="text" id="newGuestUVMPunteggio" placeholder="Es. Livello 3 / Non autosufficiente"></div>
+                </div>
+            </div>
+            
+            <button id="anagraficaSaveBtn" class="btn-primary" style="width:100%; padding:13px; font-size:1.1em; background:var(--primary-color);" onclick="window.saveAnagrafica()">💾 Registra / Aggiorna Anagrafica Ospite</button>
+        </div>
+
+        <!-- SEZIONE 5: DOCUMENTI DIGITALIZZATI & FOTO (DOCUMENTO D'IDENTITÀ, CF, ALLEGATI) -->
+        <div class="card restrict-oss" style="border-top: 4px solid var(--dir-color);">
+            <div class="card-header" style="border-bottom-color:var(--dir-color);">
+                <h3 style="color:var(--dir-color);">📁 Documenti di Identità, Tessera Sanitaria & Fascicolo Digitale</h3>
+                <span id="activeDocGuestLabel" style="font-size:0.85em; font-weight:bold; color:var(--text-light); background:#f1f5f9; padding:4px 8px; border-radius:4px;">Nessun ospite selezionato</span>
+            </div>
+
+            <!-- FORM CARICAMENTO/SCATTO DOCUMENTO -->
+            <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:6px; margin-bottom:15px;">
+                <label style="font-weight:bold; font-size:0.9em; display:block; margin-bottom:8px;">Scatta Foto o Carica Scansione Documento:</label>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:10px;">
+                    <div class="form-group" style="margin:0;">
+                        <label>Tipologia Documento *</label>
+                        <select id="docUploadTipo">
+                            <option value="Carta Identità - Fronte">Carta d'Identità (Fronte)</option>
+                            <option value="Carta Identità - Retro (CIE)">Carta d'Identità (Retro con Barcode/MRZ)</option>
+                            <option value="Codice Fiscale / Tessera Sanitaria">Tessera Sanitaria / Codice Fiscale</option>
+                            <option value="Decreto Nomina Tutore / AdS">Decreto Nomina Tutore / AdS</option>
+                            <option value="Verbale U.V.M. / Invalidità">Verbale U.V.M. / Certificato Invalidità</option>
+                            <option value="Esenzione Ticket / ASL">Attestato Esenzione Ticket ASL</option>
+                            <option value="Altro Documento">Altro Documento Rilevante</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Note o Descrizione Documento</label>
+                        <input type="text" id="docUploadNote" placeholder="Es. Scadenza 2030, copia fronte/retro...">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>File Immagine / Fotocamera *</label>
+                        <input type="file" id="docUploadFile" accept="image/*" capture="environment" style="background:#fff;">
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end;">
+                    <button class="btn-primary" style="background:var(--dir-color);" onclick="window.salvaDocumentoAllegato()">📷 Acquisisci e Salva Documento</button>
+                </div>
+            </div>
+
+            <!-- GALLERIA DELLE MINIATURE APRIBILI E STAMPABILI -->
+            <h4 style="margin:10px 0 6px 0; font-size:0.95em; color:var(--text-main);">Archivio Miniature Documenti Digitalizzati</h4>
+            <div id="documentiGallery" class="docs-grid">
+                <p style="color:#64748b; font-size:0.85em;">Seleziona un ospite per visualizzare i documenti scansionati.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT FIREBASE E LOGICA ANAGRAFICA COMPLETA -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        try {
+            initializeAppCheck(app, { 
+                provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), 
+                isTokenAutoRefreshEnabled: true 
+            });
+        } catch(e) { console.warn("AppCheck bypassato."); }
+        const db = getFirestore(app);
+
+        window.dbOspiti = [];
+        window.editingGuestId = null;
+        window.currentAvatarBase64 = "";
+        window.currentLightboxDocId = null;
+        window.mrzStream = null;
+
+        window.activeOperator = sessionStorage.getItem("activeOperator") || "Operatore";
+        window.activeOperatorRole = sessionStorage.getItem("activeRole") || "user";
+        window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica") || "";
+
+        window.statiEsteri = {
+            "ALBANIA": "100000201", "ARGENTINA": "100000402", "AUSTRALIA": "100000602", "AUSTRIA": "100000205", 
+            "BELGIO": "100000206", "BRASILE": "100000406", "BULGARIA": "100000207", "CANADA": "100000409", 
+            "CINA": "100000511", "COLOMBIA": "100000411", "CROAZIA": "100000256", "CUBA": "100000413", 
+            "FRANCIA": "100000215", "GERMANIA": "100000216", "REGNO UNITO": "100000219", "ROMANIA": "100000235", 
+            "SPAGNA": "100000236", "SVIZZERA": "100000239", "UCRAINA": "100000254"
+        };
+
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
+        window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
+        window.checkOssRestriction = () => { if(window.activeOperatorQualifica==='OSS' && window.activeOperatorRole!=='admin') { window.showToast("🚫 Azione non consentita al profilo OSS"); return true; } return false; };
+        window.navigaA = (url) => { window.location.href = url; };
+
+        // COMPRESSIONE IMMAGINI VIA CANVAS (Leggero & Nitido per Firestore)
+        window.comprimiImmagineCanvas = (file, maxDim, quality) => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width;
+                        let h = img.height;
+                        if(w > maxDim || h > maxDim) {
+                            if(w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                            else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        };
+
+        // GESTIONE FOTOTESSERA PROFILO
+        window.processAvatarUpload = async (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const b64 = await window.comprimiImmagineCanvas(file, 400, 0.75);
+            window.currentAvatarBase64 = b64;
+            const box = document.getElementById('avatarPreviewContainer');
+            box.innerHTML = `<img src="${b64}" style="width:100%;height:100%;object-fit:cover;">`;
+            window.showToast("📷 Fototessera acquisita");
+        };
+
+        // ==========================================
+        // FOTOCAMERA OCR & DECODER MRZ CIE (ICAO 9303)
+        // ==========================================
+        window.apriCameraMRZ = async () => {
+            const modal = document.getElementById('mrzCameraModal');
+            const video = document.getElementById('mrzVideoFeed');
+            try {
+                modal.style.display = 'flex';
+                document.getElementById('ocrStatusMsg').innerText = "Allinea le 3 righe nel mirino ed evita riflessi";
+                document.getElementById('btnScattaOCR').disabled = false;
+                
+                window.mrzStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } },
+                    audio: false
+                });
+                video.srcObject = window.mrzStream;
+            } catch(err) {
+                console.error(err);
+                window.showToast("❌ Impossibile accedere alla fotocamera");
+                window.chiudiCameraMRZ();
+            }
+        };
+
+        window.chiudiCameraMRZ = () => {
+            if(window.mrzStream) {
+                window.mrzStream.getTracks().forEach(track => track.stop());
+                window.mrzStream = null;
+            }
+            document.getElementById('mrzCameraModal').style.display = 'none';
+        };
+
+        window.scattaERiconosciMRZ = async () => {
+            const video = document.getElementById('mrzVideoFeed');
+            const statusMsg = document.getElementById('ocrStatusMsg');
+            const btn = document.getElementById('btnScattaOCR');
+
+            btn.disabled = true;
+            statusMsg.innerText = "⏳ Acquisizione e riconoscimento OCR in corso...";
+
+            // 1. Ritaglio mirino centrale dal flusso video
+            const canvas = document.createElement('canvas');
+            const vw = video.videoWidth || 640;
+            const vh = video.videoHeight || 480;
+            
+            const cropX = vw * 0.05;
+            const cropW = vw * 0.90;
+            const cropH = vh * 0.35;
+            const cropY = (vh - cropH) / 2;
+
+            canvas.width = cropW;
+            canvas.height = cropH;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+            // 2. Binarizzazione per isolare i caratteri OCR-B
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const d = imgData.data;
+            for (let i = 0; i < d.length; i += 4) {
+                let v = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114);
+                let b = v < 125 ? 0 : 255; 
+                d[i] = d[i+1] = d[i+2] = b;
+            }
+            ctx.putImageData(imgData, 0, 0);
+
+            try {
+                // 3. Riconoscimento con Tesseract locale
+                const worker = await Tesseract.createWorker('eng');
+                await worker.setParameters({
+                    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<',
+                    tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK
+                });
+
+                const res = await worker.recognize(canvas);
+                await worker.terminate();
+
+                const rawText = res.data.text || "";
+                window.chiudiCameraMRZ();
+
+                // 4. Passa la stringa riconosciuta al parser MRZ
+                window.parseCIE_MRZ(rawText);
+
+            } catch (e) {
+                console.error(e);
+                statusMsg.innerText = "❌ Riconoscimento non riuscito. Riprova con luce uniforme.";
+                btn.disabled = false;
+            }
+        };
+
+        // PARSER MRZ STANDARD ICAO 9303 (TD1 - 3 RIGHE DA 30 CARATTERI)
+        window.parseCIE_MRZ = (rawMrz) => {
+            if(!rawMrz) return;
+            
+            let clean = rawMrz.toUpperCase().replace(/[\s\r\n]/g, '');
+            if(clean.length < 90) return;
+
+            try {
+                const riga1 = clean.substring(0, 30);
+                const riga2 = clean.substring(30, 60);
+                const riga3 = clean.substring(60, 90);
+
+                // Riga 1: I<ITACA12345AA4<<<<<<<<<<<<<<< (num doc pos 5..14)
+                let numDoc = riga1.substring(5, 14).replace(/</g, '').trim();
+
+                // Riga 2: 3802157M2802154ITA<<<<<<<<<<<8 (dob pos 0..5, sesso pos 7, scadenza pos 8..13)
+                let dobRaw = riga2.substring(0, 6);
+                let sesso = riga2.charAt(7);
+                let scadRaw = riga2.substring(8, 14);
+
+                let yyDob = parseInt(dobRaw.substring(0, 2), 10);
+                let currentYearShort = new Date().getFullYear() % 100;
+                let fullYyDob = yyDob > currentYearShort ? (1900 + yyDob) : (2000 + yyDob);
+                if (yyDob > 25 && fullYyDob > 2000) fullYyDob -= 100; 
+                let dobIso = `${fullYyDob}-${dobRaw.substring(2, 4)}-${dobRaw.substring(4, 6)}`;
+
+                let yyScad = 2000 + parseInt(scadRaw.substring(0, 2), 10);
+                let scadIso = `${yyScad}-${scadRaw.substring(2, 4)}-${scadRaw.substring(4, 6)}`;
+
+                // Riga 3: PASTORI<<EDOARDO<<<<<<<<<<<<<<
+                let nameParts = riga3.split('<<');
+                let cognome = (nameParts[0] || '').replace(/</g, ' ').trim();
+                let nome = (nameParts[1] || '').replace(/</g, ' ').trim();
+
+                const setAndHighlight = (id, val) => {
+                    const el = document.getElementById(id);
+                    if(el && val) {
+                        el.value = val;
+                        el.style.backgroundColor = '#dcfce7'; 
+                        setTimeout(() => el.style.backgroundColor = '', 2000);
+                    }
+                };
+
+                setAndHighlight('newGuestCognome', cognome);
+                setAndHighlight('newGuestNome', nome);
+                setAndHighlight('newGuestSesso', (sesso === 'M' || sesso === 'F') ? sesso : 'M');
+                setAndHighlight('newGuestDob', dobIso);
+                setAndHighlight('newGuestDocNum', numDoc);
+                setAndHighlight('newGuestDocDataScad', scadIso);
+                setAndHighlight('newGuestDocTipo', 'IDENT');
+                setAndHighlight('newGuestCittadinanza', '100000100');
+
+                document.getElementById('cieMrzScanner').value = '';
+                window.showToast(`✅ CIE Decodificata: ${cognome} ${nome}`);
+
+            } catch (err) {
+                console.error("Errore decodifica MRZ:", err);
+                window.showToast("❌ Errore durante l'elaborazione del codice MRZ");
+            }
+        };
+
+        // GESTIONE DOCUMENTI DIGITALIZZATI (ALLEGATI)
+        window.salvaDocumentoAllegato = async () => {
+            const guestId = window.editingGuestId;
+            if(!guestId) return window.showToast("⚠️ Seleziona prima un ospite esistente dall'elenco in alto!");
+
+            const tipo = document.getElementById('docUploadTipo').value;
+            const note = document.getElementById('docUploadNote').value.trim();
+            const fileInput = document.getElementById('docUploadFile');
+
+            if(!fileInput.files || fileInput.files.length === 0) {
+                return window.showToast("⚠️ Seleziona o scatta una fotografia del documento!");
+            }
+
+            const file = fileInput.files[0];
+            const base64 = await window.comprimiImmagineCanvas(file, 1000, 0.70);
+
+            const g = window.dbOspiti.find(x => x.id === guestId);
+            if(!g) return;
+
+            let docs = g.documentiAllegati || [];
+            docs.push({
+                id: 'doc_' + Date.now(),
+                tipo: tipo,
+                note: note,
+                data: window.getTimestamp(),
+                op: window.activeOperator,
+                imgBase64: base64
+            });
+
+            await updateDoc(doc(db, "ospiti", guestId), { documentiAllegati: docs });
+            fileInput.value = '';
+            document.getElementById('docUploadNote').value = '';
+            window.showToast("✅ Documento archiviato con successo!");
+            window.renderDocumentiGallery(docs);
+        };
+
+        window.renderDocumentiGallery = (docs) => {
+            const gallery = document.getElementById('documentiGallery');
+            if(!gallery) return;
+
+            if(!docs || docs.length === 0) {
+                gallery.innerHTML = '<p style="color:#64748b; font-size:0.85em;">Nessun documento digitalizzato presente nel fascicolo.</p>';
+                return;
+            }
+
+            gallery.innerHTML = '';
+            docs.forEach((d) => {
+                const card = document.createElement('div');
+                card.className = 'doc-thumb-card';
+                card.innerHTML = `
+                    <img src="${d.imgBase64}" class="doc-thumb-img" onclick="window.apriLightboxDoc('${d.id}')" title="Clicca per ingrandire e stampare">
+                    <div class="doc-thumb-body">
+                        <span class="doc-badge">${d.tipo}</span><br>
+                        <strong>${d.note || 'Documento'}</strong><br>
+                        <small style="color:#64748b;">${d.data.split(' alle ')[0]} (${window.getInitials(d.op)})</small>
+                        <div style="margin-top:6px; display:flex; justify-content:space-between;">
+                            <button class="btn-doc" style="padding:2px 6px; font-size:0.75em;" onclick="window.apriLightboxDoc('${d.id}')">🔍 Apri</button>
+                            <button class="btn-danger restrict-oss" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaDocumentoAllegato('${d.id}')">🗑️</button>
+                        </div>
+                    </div>
+                `;
+                gallery.appendChild(card);
+            });
+        };
+
+        window.apriLightboxDoc = (docId) => {
+            const guestId = window.editingGuestId;
+            const g = window.dbOspiti.find(x => x.id === guestId);
+            if(!g) return;
+            const docObj = (g.documentiAllegati || []).find(d => d.id === docId);
+            if(!docObj) return;
+
+            window.currentLightboxDocId = docId;
+            document.getElementById('lightboxDocTitle').innerText = `${docObj.tipo} - ${g.name}`;
+            document.getElementById('lightboxDocImg').src = docObj.imgBase64;
+            document.getElementById('lightboxDocMeta').innerHTML = `
+                Ospite: <strong>${g.name}</strong> (CF: ${g.cf||'-'}) | Acquisito il: <strong>${docObj.data}</strong> da: <strong>${docObj.op}</strong><br>
+                Note: <em>${docObj.note || 'Nessuna nota registrata'}</em>
+            `;
+
+            document.getElementById('lightboxBtnDelete').onclick = () => window.eliminaDocumentoAllegato(docId);
+            document.getElementById('docLightboxModal').style.display = 'flex';
+        };
+
+        window.eliminaDocumentoAllegato = async (docId) => {
+            if(window.checkOssRestriction()) return;
+            if(!confirm("Eliminare definitivamente questo documento digitalizzato dal fascicolo?")) return;
+
+            const guestId = window.editingGuestId;
+            const g = window.dbOspiti.find(x => x.id === guestId);
+            if(!g) return;
+
+            let docs = (g.documentiAllegati || []).filter(d => d.id !== docId);
+            await updateDoc(doc(db, "ospiti", guestId), { documentiAllegati: docs });
+            document.getElementById('docLightboxModal').style.display = 'none';
+            window.showToast("Documento eliminato");
+            window.renderDocumentiGallery(docs);
+        };
+
+        window.stampaSingoloDocumento = () => {
+            const guestId = window.editingGuestId;
+            const g = window.dbOspiti.find(x => x.id === guestId) || {};
+            const docId = window.currentLightboxDocId;
+            const docObj = (g.documentiAllegati || []).find(d => d.id === docId);
+            if(!docObj) return;
+
+            let html = `
+                <div style="text-align:center; font-family:'Segoe UI', sans-serif;">
+                    <h2 style="margin:0; color:#0f766e;">NUOVA VILLA SILVANA - FASCICOLO OSPITE</h2>
+                    <h3 style="margin:4px 0 15px 0;">Allegato Documentale: ${docObj.tipo}</h3>
+                    <p style="font-size:10pt;">Paziente: <strong>${g.name}</strong> | CF: <strong>${g.cf||'-'}</strong> | Acquisito il: ${docObj.data}</p>
+                    <img src="${docObj.imgBase64}" class="print-doc-img">
+                </div>
+            `;
+            document.getElementById('printArea').innerHTML = html;
+            setTimeout(() => window.print(), 300);
+        };
+
+        // CARICAMENTO E SALVATAGGIO ANAGRAFICA
+        window.loadGuests = () => {
+            const editSel = document.getElementById('editAnagraficaSelect');
+            if(editSel) {
+                editSel.innerHTML = '<option value="">-- ➕ Crea Nuovo Ospite (Svuota Campi) --</option>';
+                window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione).sort((a,b)=>a.name.localeCompare(b.name)).forEach(g => {
+                    editSel.innerHTML += `<option value="${g.name}">${g.name}</option>`;
+                });
+            }
+        };
+
+        window.resetAnagraficaForm = () => { 
+            window.editingGuestId=null; 
+            window.currentAvatarBase64 = "";
+            document.getElementById('anagraficaFormTitle').innerText='Nuovo Ingresso / Anagrafica Ospite'; 
+            document.getElementById('anagraficaSaveBtn').innerText='💾 Registra Nuovo Ospite'; 
+            document.getElementById('newGuestCognome').readOnly=false; 
+            document.getElementById('newGuestNome').readOnly=false; 
+            document.getElementById('newGuestCognome').style.backgroundColor='#fff'; 
+            document.getElementById('newGuestNome').style.backgroundColor='#fff'; 
+            document.getElementById('editAnagraficaSelect').value=""; 
+            document.getElementById('avatarPreviewContainer').innerHTML = `👤`;
+            document.getElementById('activeDocGuestLabel').innerText = 'Nessun ospite selezionato';
+
+            ['newGuestCognome','newGuestNome','newGuestCF','newGuestPob','newGuestPobProv','newGuestPobCod','newGuestResInd','newGuestResCom','newGuestResProv','newGuestResCod','newGuestRoom','newGuestRef','newGuestRefTel','newGuestMMG','newGuestMMGTel','newGuestMMGEmail','newGuestTutore','newGuestTutoreTel','newGuestTutoreScadenza','newGuestUVMData','newGuestUVMPunteggio','newGuestDocNum','newGuestDocRilascioNome','newGuestDocRilascioCod','newGuestDocDataRil','newGuestDocDataScad','newGuestIngresso'].forEach(id=>{
+                const el=document.getElementById(id); if(el) el.value='';
+            }); 
+            ['newGuestPobCod','newGuestResCod','newGuestDocRilascioCod'].forEach(id=>{
+                let el=document.getElementById(id); if(el){ el.readOnly=true; el.placeholder='Calcolo Auto...'; }
+            }); 
+            document.getElementById('newGuestCittadinanza').value = '100000100'; 
+            document.getElementById('documentiGallery').innerHTML = '<p style="color:#64748b; font-size:0.85em;">Seleziona un ospite per visualizzare i documenti scansionati.</p>';
+        };
+
+        window.loadAnagraficaForEdit = () => { 
+            const n=document.getElementById('editAnagraficaSelect').value; 
+            if(!n){ window.resetAnagraficaForm(); return; } 
+            const g=window.dbOspiti.find(x=>x.name===n); if(!g) return; 
+            window.editingGuestId=g.id; 
+            document.getElementById('anagraficaFormTitle').innerText='Modifica Anagrafica: ' + g.name; 
+            document.getElementById('anagraficaSaveBtn').innerText='💾 Aggiorna Dati Ospite'; 
+            document.getElementById('newGuestCognome').readOnly=true; 
+            document.getElementById('newGuestNome').readOnly=true; 
+            document.getElementById('newGuestCognome').style.backgroundColor='#f1f5f9'; 
+            document.getElementById('newGuestNome').style.backgroundColor='#f1f5f9'; 
+            document.getElementById('activeDocGuestLabel').innerText = `Ospite: ${g.name}`;
+            
+            const sV=(id,v)=>{if(document.getElementById(id))document.getElementById(id).value=v||'';}; 
+            let legacyNames = g.name.split(' '); 
+            sV('newGuestCognome', g.cognome || legacyNames[0] || ''); 
+            sV('newGuestNome', g.nome || legacyNames.slice(1).join(' ') || ''); 
+            sV('newGuestCittadinanza', g.cittadinanza || '100000100'); 
+            sV('newGuestSesso',g.sesso); sV('newGuestDob',g.dob); sV('newGuestCF',g.cf); sV('newGuestPob',g.pob); sV('newGuestPobProv',g.pobProv); sV('newGuestPobCod',g.pobCod); sV('newGuestResInd',g.resIndirizzo); sV('newGuestResCom',g.resComune); sV('newGuestResProv',g.resProv); sV('newGuestResCod',g.resCod); sV('newGuestIngresso',g.ingresso); sV('newGuestRoom',g.room); sV('newGuestDocTipo',g.docTipo||'IDENT'); sV('newGuestDocNum',g.docNum); sV('newGuestDocRilascioNome',g.docRilascioNome); sV('newGuestDocRilascioCod',g.docRilascioCod); sV('newGuestDocDataRil',g.docDataRil); sV('newGuestDocDataScad',g.docDataScad); sV('newGuestRef',g.ref); sV('newGuestRefParentela',g.refParentela); sV('newGuestRefTel',g.refTel); sV('newGuestMMG',g.mmg); sV('newGuestMMGTel',g.mmgTel); sV('newGuestMMGEmail',g.mmgEmail); sV('newGuestTutore',g.tutore); sV('newGuestTutoreTel',g.tutoreTel); sV('newGuestTutoreScadenza',g.tutoreScadenza); sV('newGuestUVMData',g.uvmData); sV('newGuestUVMPunteggio',g.uvmPunteggio); 
+            
+            window.currentAvatarBase64 = g.photo || "";
+            document.getElementById('avatarPreviewContainer').innerHTML = g.photo ? `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">` : `👤`;
+
+            window.renderDocumentiGallery(g.documentiAllegati || []);
+            window.showToast("Dati e documenti caricati per: " + g.name); 
+        };
+
+        window.saveAnagrafica = async () => { 
+            if(window.checkOssRestriction()) return; 
+            const v=id=>document.getElementById(id)?document.getElementById(id).value.trim():''; 
+            const cog=v('newGuestCognome').toUpperCase(); const nom=v('newGuestNome').toUpperCase(); 
+            const n=cog+(nom?' '+nom:''); const ing=v('newGuestIngresso'); 
+            if(!cog||!nom||!ing) return window.showToast("⚠️ Cognome, Nome e Data Ingresso sono obbligatori"); 
+
+            if(window.editingGuestId){ 
+                let up={ 
+                    cognome:cog, nome:nom, cittadinanza:v('newGuestCittadinanza'), sesso:v('newGuestSesso'), dob:v('newGuestDob'), 
+                    cf:v('newGuestCF').toUpperCase(), pob:v('newGuestPob'), pobProv:v('newGuestPobProv'), pobCod:v('newGuestPobCod'), 
+                    resIndirizzo:v('newGuestResInd'), resComune:v('newGuestResCom'), resProv:v('newGuestResProv'), resCod:v('newGuestResCod'), 
+                    ingresso:ing, room:v('newGuestRoom'), uvmData:v('newGuestUVMData'), uvmPunteggio:v('newGuestUVMPunteggio'), 
+                    ref:v('newGuestRef'), refParentela:v('newGuestRefParentela'), refTel:v('newGuestRefTel'), mmg:v('newGuestMMG'), 
+                    mmgTel:v('newGuestMMGTel'), mmgEmail:v('newGuestMMGEmail'), tutore:v('newGuestTutore'), tutoreTel:v('newGuestTutoreTel'), 
+                    tutoreScadenza:v('newGuestTutoreScadenza'), docTipo:v('newGuestDocTipo'), docNum:v('newGuestDocNum').toUpperCase(), 
+                    docRilascioNome:v('newGuestDocRilascioNome'), docRilascioCod:v('newGuestDocRilascioCod'), docDataRil:v('newGuestDocDataRil'), 
+                    docDataScad:v('newGuestDocDataScad') 
+                }; 
+                if(window.currentAvatarBase64) up.photo = window.currentAvatarBase64;
+                await updateDoc(doc(db,"ospiti",window.editingGuestId), up); 
+                window.showToast("✅ Anagrafica Ospite Aggiornata!"); 
+            } else { 
+                if(window.dbOspiti.find(x=>x.name===n)) return window.showToast("⚠️ Esiste già un ospite con questo nome e cognome"); 
+                const newDocRef = await addDoc(collection(db,"ospiti"), { 
+                    name:n, cognome:cog, nome:nom, cittadinanza:v('newGuestCittadinanza'), sesso:v('newGuestSesso'), dob:v('newGuestDob'), 
+                    cf:v('newGuestCF').toUpperCase(), pob:v('newGuestPob'), pobProv:v('newGuestPobProv'), pobCod:v('newGuestPobCod'), 
+                    resIndirizzo:v('newGuestResInd'), resComune:v('newGuestResCom'), resProv:v('newGuestResProv'), resCod:v('newGuestResCod'), 
+                    ingresso:ing, room:v('newGuestRoom'), uvmData:v('newGuestUVMData'), uvmPunteggio:v('newGuestUVMPunteggio'), 
+                    ref:v('newGuestRef'), refParentela:v('newGuestRefParentela'), refTel:v('newGuestRefTel'), mmg:v('newGuestMMG'), 
+                    mmgTel:v('newGuestMMGTel'), mmgEmail:v('newGuestMMGEmail'), tutore:v('newGuestTutore'), tutoreTel:v('newGuestTutoreTel'), 
+                    tutoreScadenza:v('newGuestTutoreScadenza'), docTipo:v('newGuestDocTipo'), docNum:v('newGuestDocNum').toUpperCase(), 
+                    docRilascioNome:v('newGuestDocRilascioNome'), docRilascioCod:v('newGuestDocRilascioCod'), docDataRil:v('newGuestDocDataRil'), 
+                    docDataScad:v('newGuestDocDataScad'), photo:window.currentAvatarBase64||"", documentiAllegati:[], ts:window.getTimestamp() 
+                }); 
+                window.editingGuestId = newDocRef.id;
+                document.getElementById('activeDocGuestLabel').innerText = `Ospite: ${n}`;
+                window.showToast("✅ Nuovo Ospite Creato! Ora puoi allegare i documenti."); 
+            } 
+        };
+
+        window.comuniData = [];
+        window.loadComuni = async () => { 
+            try { 
+                const res = await fetch('https://raw.githubusercontent.com/matteocontrini/comuni-json/master/comuni.json'); 
+                window.comuniData = await res.json(); 
+                let dl = document.createElement('datalist'); dl.id = 'comuniList'; let opts = ''; 
+                window.comuniData.forEach(c => { opts += `<option value="${c.nome}">`; }); 
+                Object.keys(window.statiEsteri).forEach(s => { opts += `<option value="${s}">`; }); 
+                dl.innerHTML = opts; document.body.appendChild(dl); 
+            } catch (e) { console.error(e); } 
+        };
+
+        window.fillComune = (type) => { 
+            let nId=type==='Pob'?'newGuestPob':(type==='Res'?'newGuestResCom':'newGuestDocRilascioNome'); 
+            let pId=type==='Pob'?'newGuestPobProv':'newGuestResProv'; 
+            let cId=type==='Pob'?'newGuestPobCod':(type==='Res'?'newGuestResCod':'newGuestDocRilascioCod'); 
+            const v = document.getElementById(nId)?.value.trim().toUpperCase(); if(!v) return; 
+            const com = window.comuniData.find(c => c.nome.toUpperCase() === v); 
+            if(com) { 
+                if(pId && document.getElementById(pId)) document.getElementById(pId).value = com.sigla; 
+                if(document.getElementById(cId)) { document.getElementById(cId).value = "100" + com.codice; document.getElementById(cId).readOnly = true; } 
+                if(type === 'Pob') document.getElementById('newGuestCittadinanza').value = "100000100";
+            } else if (window.statiEsteri[v]) {
+                if(pId && document.getElementById(pId)) document.getElementById(pId).value = 'EE'; 
+                if(document.getElementById(cId)) { document.getElementById(cId).value = window.statiEsteri[v]; document.getElementById(cId).readOnly = false; } 
+                if(type === 'Pob') document.getElementById('newGuestCittadinanza').value = window.statiEsteri[v];
+            }
+        };
+
+        window.handleTSBarcode = (e) => { 
+            if(e.key==='Enter') { 
+                e.preventDefault(); 
+                let m=e.target.value.trim().match(/[A-Z0-9]{16}/i); 
+                if(m){ document.getElementById('newGuestCF').value=m[0].toUpperCase(); window.showToast("✅ CF acquisito da barcode"); } 
+                e.target.value=''; 
+            } 
+        };
+
+        window.leggiSmartCardTS = async () => {
+            try {
+                window.showToast("⏳ Lettura smart card/NFC in corso...");
+                const response = await fetch('http://127.0.0.1:8080/api/leggi-tessera');
+                if (!response.ok) throw new Error("Middleware smart card non rilevato");
+                const data = await response.json();
+                if(data.codiceFiscale) document.getElementById('newGuestCF').value = data.codiceFiscale.toUpperCase();
+                if(data.nome) document.getElementById('newGuestNome').value = data.nome.toUpperCase();
+                if(data.cognome) document.getElementById('newGuestCognome').value = data.cognome.toUpperCase();
+                if(data.dataNascita) document.getElementById('newGuestDob').value = data.dataNascita;
+                if(data.sesso) document.getElementById('newGuestSesso').value = data.sesso.toUpperCase();
+                window.showToast("✅ Dati estratti da smart card");
+            } catch (error) { window.showToast("❌ Errore: smart card / chip NFC non rilevato."); }
+        };
+
+        // LISTENERS REALTIME
+        onSnapshot(collection(db, "ospiti"), snap => {
+            window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.loadGuests();
+        });
+
+        window.onload = () => {
+            document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
+            document.body.setAttribute('data-qualifica', window.activeOperatorQualifica);
+            window.loadComuni();
+        };
+    </script>
+</body>
+</html>

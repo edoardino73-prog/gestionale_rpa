@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - Lettere, Dimissioni & Trasferimenti</title>
+
+    <style>
+        :root {
+            --bg-color: #f1f5f9;         
+            --box-bg: #ffffff;
+            --primary-color: #0d9488; 
+            --secondary-color: #0f766e;  
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --input-bg: #ffffff;
+            --border-color: #cbd5e1;     
+            --error-color: #e11d48; 
+            --warning-color: #d97706; 
+            --success-color: #059669; 
+            --dir-color: #4f46e5;
+            --terapia-color: #0284c7; 
+            --cup-color: #10b981;
+            --base-font-size: 14px;      
+            --radius: 6px;               
+            --transition: all 0.2s ease;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; min-height: 100vh; }
+
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+        body:not([data-med-access="true"]) .only-medico { display: none !important; }
+
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1em; }
+        .nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 14px; border-radius: var(--radius); cursor: pointer; text-decoration:none; font-weight: 600; display:inline-flex; align-items:center; }
+        .nav-btn:hover { background: rgba(255,255,255,0.25); }
+        .current-op-badge { background: #ffffff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+
+        .container { max-width: 1350px; width: 96%; margin: 15px auto; flex-grow: 1; }
+        .card { background: var(--box-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--primary-color); padding-bottom: 8px; flex-wrap: wrap; gap:10px; }
+        .card-header h3 { margin: 0; color: var(--primary-color); font-size: 1.1em; text-transform: uppercase; }
+
+        /* CARD OSPITE ATTIVO IN ALTO */
+        .global-active-patient-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-left: 8px solid var(--primary-color);
+            border-radius: var(--radius);
+            padding: 12px 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .gap-info-left { display: flex; align-items: center; gap: 14px; }
+        .gap-avatar { width: 52px; height: 52px; border-radius: 6px; object-fit: cover; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 1.8em; border: 1px solid var(--border-color); overflow: hidden; flex-shrink: 0; }
+        .gap-name-block h2 { margin: 0; font-size: 1.25em; color: var(--text-main); letter-spacing: 0.5px; }
+        .gap-sub { font-size: 0.85em; color: var(--text-light); margin-top: 3px; }
+        .gap-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        .badge-disfagia { background: var(--warning-color); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+        .badge-infezione { background: var(--error-color); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+        .badge-contenzione { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85em; color: var(--text-main); }
+        input[type="text"], input[type="date"], input[type="time"], select, textarea { width: 100%; padding: 8px; border: 1px solid #94a3b8; border-radius: 4px; box-sizing: border-box; background-color: var(--input-bg); color: var(--text-main); font-family: inherit; font-size: 0.95em; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-color); outline: none; background-color: #f0fdfa; }
+
+        .btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-doc { color: white; border: none; padding: 8px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.9em; transition: 0.2s; }
+        .btn-primary { background: var(--secondary-color); }
+        .btn-success { background: var(--success-color); }
+        .btn-danger { background: var(--error-color); }
+        .btn-warning { background: var(--warning-color); }
+        .btn-doc { background: #475569; }
+
+        .check-item { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.85em; cursor:pointer;}
+        .check-item input[type="checkbox"] { transform: scale(1.15); accent-color: var(--primary-color); }
+
+        .guest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 16px; margin-top: 15px; }
+        .guest-card { background: #ffffff; border: 1px solid var(--border-color); padding: 14px; border-radius: var(--radius); display: flex; flex-direction: column; gap: 10px; border-left: 5px solid #64748b; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        .guest-card-top { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+        .guest-avatar { width: 52px; height: 52px; border-radius: 6px; object-fit: cover; background: #e2e8f0; border: 1px solid var(--border-color); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.8em; flex-shrink: 0; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
+        .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
+        .toast.show { opacity: 1; }
+
+        #printArea { display: none; }
+        @media print {
+            body * { visibility: hidden; } 
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 25px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+            .print-header { text-align: center; border-bottom: 2px solid #0d9488; padding-bottom: 15px; margin-bottom: 20px; }
+            .print-header h1 { margin: 0; color: #0d9488; font-size: 18pt; text-transform: uppercase; }
+            .print-header h2 { margin: 5px 0 0 0; font-size: 12pt; color: #334155; }
+            .print-section { margin-bottom: 18px; }
+            .print-section h3 { margin: 0 0 8px 0; font-size: 11pt; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; text-transform: uppercase; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 8.5pt; } 
+            .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 4px 6px; text-align: left; } 
+            .print-table th { background: #f1f5f9 !important; font-weight: bold; -webkit-print-color-adjust: exact; }
+            .print-signature-box { margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    <div id="printArea"></div>
+
+    <!-- NAVBAR SATELLITE -->
+    <div class="navbar">
+        <div class="navbar-brand">
+            <span>📄 NVS Masterpiece - Lettere, Dimissioni & Trasferimenti</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+            <button class="nav-btn" onclick="window.navigaA('cartella_clinica.html')">⚕️ Fascicolo Clinico ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('terapia.html')">💊 Terapia ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('cup_appuntamenti.html')">📅 CUP ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('anagrafica.html')">🛏️ Anagrafica ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('index.html')">🏠 Torna al Reparto (Home)</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <!-- CARD OSPITE ATTIVO IN ALTO PERSISTENTE -->
+        <div id="globalActivePatientBanner" class="global-active-patient-card">
+            <div class="gap-info-left">
+                <div id="gapAvatar" class="gap-avatar">👤</div>
+                <div class="gap-name-block">
+                    <h2 id="gapNome">NESSUN OSPITE SELEZIONATO</h2>
+                    <div class="gap-sub" id="gapDettagli">Stanza: - | CF: -</div>
+                </div>
+            </div>
+            <div class="gap-badges" id="gapBadges">
+                <span style="color:#64748b; font-size:0.85em;">Seleziona un paziente dal menu per redigere lettere o archiviare la cartella.</span>
+            </div>
+        </div>
+
+        <!-- SELEZIONE PAZIENTE -->
+        <div class="card" style="padding:15px;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:0.95em; color:var(--primary-color); font-weight:bold;">Seleziona Fascicolo Paziente</label>
+                <select id="lettereGuestSelect" onchange="window.selectPatientGlobal(this.value)" style="padding:9px; font-weight:bold; border-color:var(--primary-color);">
+                    <option value="" disabled selected>Scegli ospite...</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- FORM RELAZIONE CLINICA, DIMISSIONI & TRASFERIMENTI -->
+        <div class="card" style="border-top: 4px solid var(--primary-color);">
+            <div class="card-header">
+                <h3>📄 Redazione Documento di Uscita / Trasferimento Sanitario</h3>
+            </div>
+
+            <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:6px; margin-bottom:15px;">
+                <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
+                    <div class="form-group" style="flex:1.5; min-width:220px; margin:0;">
+                        <label>Tipologia Evento / Documento *</label>
+                        <select id="letTipoEvento" onchange="window.aggiornaUILettera()">
+                            <option value="RIENTRO_CASA">🏠 Rientro a Casa / Domicilio</option>
+                            <option value="PRONTO_SOCCORSO">🚑 Trasferimento in Pronto Soccorso (118)</option>
+                            <option value="ALTRA_STRUTTURA">🏥 Trasferimento Presso Altra Struttura (RSA/Osp)</option>
+                            <option value="DECESSO">✝️ Constatazione di Decesso</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:1; min-width:130px; margin:0;"><label>Data Evento *</label><input type="date" id="letData"></div>
+                    <div class="form-group" style="flex:1; min-width:110px; margin:0;"><label>Ora Evento *</label><input type="time" id="letOra"></div>
+                    <div class="form-group" style="flex:1.5; min-width:200px; margin:0;"><label>Destinazione / Presidio Ricevente</label><input type="text" id="letDestinazione" placeholder="Es. Domicilio, Ospedale Terni..."></div>
+                </div>
+
+                <div class="form-group">
+                    <label id="letLabelMotivo">Motivo / Diagnosi di Invio o Dimissione</label>
+                    <textarea id="letMotivo" rows="2" placeholder="Sintomatologia acuta, decorso clinico completato, accertamenti urgenti..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Relazione Clinica & Indicazioni Assistenziali</label>
+                    <textarea id="letRelazione" rows="4" placeholder="Riassunto del quadro clinico, decorso in struttura, raccomandazioni per caregiver o sanitari riceventi..."></textarea>
+                </div>
+
+                <!-- BLOCCO SELEZIONE ELEMENTI PER LA STAMPA -->
+                <div style="background:#fff; border:1px solid #cbd5e1; padding:15px; border-radius:6px; margin:15px 0;">
+                    <strong style="color:var(--primary-color); display:block; margin-bottom:10px;">📋 Seleziona gli Elementi da Includere nella Stampa Ufficiale:</strong>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:10px;">
+                        <label class="check-item"><input type="checkbox" id="pOptAnagrafica" checked> <span>Anagrafica & Tutore / AdS</span></label>
+                        <label class="check-item"><input type="checkbox" id="pOptAllergie" checked> <span>Alert ICA & Rischio Disfagia</span></label>
+                        <label class="check-item"><input type="checkbox" id="pOptVitali" checked> <span>Ultimi Parametri Vitali Registrati</span></label>
+                        <label class="check-item"><input type="checkbox" id="pOptTerapia" checked> <span>Terapia Farmacologica in Atto</span></label>
+                        <label class="check-item"><input type="checkbox" id="pOptDiari" checked> <span>Ultime Note Mediche / Inf.</span></label>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+                    <button class="btn-primary" onclick="window.salvaLettera()">💾 Salva Dati Lettera</button>
+                    <button class="btn-doc" onclick="window.generaStampaLettera()">🖨️ Stampa Lettera Ufficiale</button>
+                    <button class="btn-danger only-medico" onclick="window.eseguiChiusuraCartella()">📁 Archivia & Chiudi Ricovero</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ARCHIVIO STORICO DIMESSI E DECEDUTI -->
+        <div class="card">
+            <div class="card-header">
+                <h3>🗄️ Archivio Storico Dimessi, Trasferiti e Deceduti</h3>
+            </div>
+            <p style="color:var(--text-light); font-size:0.9em; margin-top:-5px; margin-bottom:15px;">Elenco degli ospiti la cui degenza è stata formalmente chiusa.</p>
+            <div class="guest-grid" id="storicoGrid"></div>
+        </div>
+
+    </div>
+
+    <!-- LOGICHE JAVASCRIPT & FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        try {
+            initializeAppCheck(app, { 
+                provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), 
+                isTokenAutoRefreshEnabled: true 
+            });
+        } catch(e) { console.warn("AppCheck bypassato."); }
+        const db = getFirestore(app);
+
+        window.dbOspiti = [];
+        window.dbClinica = {};
+        window.dbContenzioni = [];
+
+        window.globalSelectedPatient = sessionStorage.getItem("globalSelectedPatient") || "";
+        window.activeOperator = sessionStorage.getItem("activeOperator") || "Operatore";
+        window.activeOperatorRole = sessionStorage.getItem("activeRole") || "user";
+        window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica") || "";
+
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
+        window.formatDateSafe = (d) => { if (!d) return '-'; if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/'); return d; };
+        window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
+        window.getTodayString = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
+        window.checkOssRestriction = () => { if(window.activeOperatorQualifica==='OSS' && window.activeOperatorRole!=='admin') { window.showToast("🚫 Azione non consentita al profilo OSS"); return true; } return false; };
+        window.navigaA = (url) => { window.location.href = url; };
+
+        // BANNER OSPITE ATTIVO IN ALTO
+        window.renderGlobalPatientBanner = () => {
+            const n = window.globalSelectedPatient;
+            const bannerNome = document.getElementById('gapNome');
+            const bannerDet = document.getElementById('gapDettagli');
+            const bannerBadges = document.getElementById('gapBadges');
+            const bannerAv = document.getElementById('gapAvatar');
+
+            if(!n) {
+                bannerNome.innerText = "NESSUN OSPITE SELEZIONATO";
+                bannerNome.style.color = "#64748b";
+                bannerDet.innerText = "Stanza: - | CF: -";
+                bannerBadges.innerHTML = `<span style="color:#64748b; font-size:0.85em;">Seleziona un paziente dal menu per redigere le dimissioni.</span>`;
+                bannerAv.innerHTML = `👤`;
+                return;
+            }
+
+            const g = window.dbOspiti.find(x => x.name === n) || {};
+            const pD = window.dbClinica[n] || {};
+
+            bannerNome.innerText = n;
+            bannerNome.style.color = "var(--text-main)";
+            bannerDet.innerHTML = `Stanza: <strong>${g.room || '-'}</strong> | CF: <strong>${g.cf || '-'}</strong> | Nato il: <strong>${window.formatDateSafe(g.dob)}</strong>`;
+            bannerAv.innerHTML = g.photo ? `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">` : `👤`;
+
+            let badges = '';
+            if(pD.disfagia) badges += `<div class="badge-disfagia">🥣 Disfagico</div>`;
+            if(pD.infezione) badges += `<div class="badge-infezione">☣ ${pD.infezione}</div>`;
+            
+            const hasCont = window.dbContenzioni.some(c => c.ospite === n && c.stato === 'ATTIVA');
+            if(hasCont) badges += `<div class="badge-contenzione">🔒 Contenzione Attiva</div>`;
+
+            bannerBadges.innerHTML = badges || `<span style="color:#15803d; font-size:0.85em; font-weight:bold;">✅ Nessun alert clinico attivo</span>`;
+        };
+
+        window.loadGuestSelector = () => {
+            const s = document.getElementById('lettereGuestSelect');
+            if(!s) return;
+            s.innerHTML = '<option value="" disabled selected>Scegli ospite...</option>';
+            
+            let att = window.dbOspiti.filter(g => !g.decesso && !g.dimissione).sort((a,b) => a.name.localeCompare(b.name));
+            let arc = window.dbOspiti.filter(g => g.decesso || g.dimissione).sort((a,b) => a.name.localeCompare(b.name));
+
+            let o1 = document.createElement('optgroup'); o1.label = "Ospiti Presenti";
+            att.forEach(g => o1.innerHTML += `<option value="${g.name}">${g.name}</option>`);
+            s.appendChild(o1);
+
+            let o2 = document.createElement('optgroup'); o2.label = "Archivio Usciti / Deceduti";
+            arc.forEach(g => o2.innerHTML += `<option value="${g.name}">${g.name}</option>`);
+            s.appendChild(o2);
+
+            if(window.globalSelectedPatient) {
+                s.value = window.globalSelectedPatient;
+                window.caricaDatiLetteraOspite();
+                window.renderGlobalPatientBanner();
+            }
+        };
+
+        window.selectPatientGlobal = (n) => {
+            window.globalSelectedPatient = n;
+            sessionStorage.setItem("globalSelectedPatient", n);
+            const s = document.getElementById('lettereGuestSelect');
+            if(s) s.value = n;
+            window.renderGlobalPatientBanner();
+            window.caricaDatiLetteraOspite();
+            window.showToast(`👤 Fascicolo Selezionato: ${n}`);
+        };
+
+        window.aggiornaUILettera = () => {
+            const tipo = document.getElementById('letTipoEvento').value;
+            const destInput = document.getElementById('letDestinazione');
+            const labelMotivo = document.getElementById('letLabelMotivo');
+
+            if(tipo === 'PRONTO_SOCCORSO') {
+                destInput.placeholder = "Es. P.S. Ospedale S. Maria Terni";
+                labelMotivo.innerText = "Sintomatologia Acuta & Causa Trasferimento 118";
+            } else if(tipo === 'ALTRA_STRUTTURA') {
+                destInput.placeholder = "Es. RSA / Struttura Riabilitativa X";
+                labelMotivo.innerText = "Motivazione Trasferimento e Presidio Ricevente";
+            } else if(tipo === 'RIENTRO_CASA') {
+                destInput.placeholder = "Domicilio con Familiari / Caregiver";
+                labelMotivo.innerText = "Esito Degenza e Quadro Clinico alla Dimissione";
+            } else if(tipo === 'DECESSO') {
+                destInput.placeholder = "Struttura Nuova Villa Silvana";
+                labelMotivo.innerText = "Accertamento e Constatazione Medica del Decesso";
+            }
+        };
+
+        window.caricaDatiLetteraOspite = () => {
+            const n = window.globalSelectedPatient; if(!n) return;
+            const pD = window.dbClinica[n] || {};
+            const letData = pD.letteraRecente || {};
+
+            document.getElementById('letData').value = letData.data || window.getTodayString();
+            document.getElementById('letOra').value = letData.ora || new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'});
+            document.getElementById('letTipoEvento').value = letData.tipo || 'RIENTRO_CASA';
+            document.getElementById('letDestinazione').value = letData.destinazione || '';
+            document.getElementById('letMotivo').value = letData.motivo || '';
+            document.getElementById('letRelazione').value = letData.relazione || '';
+
+            window.aggiornaUILettera();
+        };
+
+        window.salvaLettera = async () => {
+            const n = window.globalSelectedPatient; if(!n) return window.showToast("⚠️ Seleziona prima un paziente!");
+            let d = window.dbClinica[n] || {};
+            d.letteraRecente = {
+                tipo: document.getElementById('letTipoEvento').value,
+                data: document.getElementById('letData').value,
+                ora: document.getElementById('letOra').value,
+                destinazione: document.getElementById('letDestinazione').value,
+                motivo: document.getElementById('letMotivo').value,
+                relazione: document.getElementById('letRelazione').value,
+                operatore: window.activeOperator,
+                timestamp: window.getTimestamp()
+            };
+            await setDoc(doc(db, "cartelle_cliniche", n), d, { merge: true });
+            window.showToast("✅ Dati Lettera Salvati Correttamente!");
+        };
+
+        window.generaStampaLettera = () => {
+            const n = window.globalSelectedPatient;
+            const g = window.dbOspiti.find(x => x.name === n);
+            if(!g) return window.showToast("⚠️ Seleziona prima un paziente!");
+            const pD = window.dbClinica[n] || {};
+
+            const tipo = document.getElementById('letTipoEvento').value;
+            const dataEv = document.getElementById('letData').value;
+            const oraEv = document.getElementById('letOra').value;
+            const dest = document.getElementById('letDestinazione').value;
+            const motivo = document.getElementById('letMotivo').value;
+            const rel = document.getElementById('letRelazione').value;
+
+            let titoloDoc = "RELAZIONE DI DIMISSIONE E TRASFERIMENTO";
+            if(tipo === 'PRONTO_SOCCORSO') titoloDoc = "SCHEDA CLINICA TRASFERIMENTO IN EMERGENZA / 118";
+            else if(tipo === 'DECESSO') titoloDoc = "ATTESTAZIONE E CONSTATAZIONE DI DECESSO";
+            else if(tipo === 'RIENTRO_CASA') titoloDoc = "LETTERA DI DIMISSIONE PER RIENTRO A DOMICILIO";
+
+            let html = `
+                <div class="print-header">
+                    <h1>NUOVA VILLA SILVANA</h1>
+                    <h2>Residenza Protetta per Anziani - Regione Umbria</h2>
+                    <h3 style="margin-top:10px; color:#0f766e;">${titoloDoc}</h3>
+                </div>
+
+                <div class="print-section">
+                    <h3>Dati Anagrafici dell'Ospite</h3>
+                    <p>Ospite: <strong>${g.name}</strong> | CF: <strong>${g.cf||'-'}</strong> | Sesso: <strong>${g.sesso||'-'}</strong> | Nato il: <strong>${window.formatDateSafe(g.dob)}</strong> a <strong>${g.pob||'-'}</strong></p>
+                    <p>Data Ingresso: <strong>${window.formatDateSafe(g.ingresso)}</strong> | Data e Ora Evento: <strong>${window.formatDateSafe(dataEv)} ore ${oraEv||'-'}</strong> | Destinazione: <strong>${dest||'-'}</strong></p>
+                </div>
+            `;
+
+            if(document.getElementById('pOptAnagrafica').checked) {
+                html += `
+                    <div class="print-section">
+                        <h3>Figure di Riferimento e Tutela Legale</h3>
+                        <p>Referente: <strong>${g.ref||'-'}</strong> (${g.refParentela||'Parente'}) Tel: <strong>${g.refTel||'-'}</strong> | MMG: <strong>${g.mmg||'-'}</strong> Tel: <strong>${g.mmgTel||'-'}</strong></p>
+                        ${g.tutore ? '<p>Tutore / AdS: <strong>'+g.tutore+'</strong> Tel: <strong>'+(g.tutoreTel||'-')+'</strong></p>' : ''}
+                    </div>
+                `;
+            }
+
+            if(document.getElementById('pOptAllergie').checked) {
+                html += `
+                    <div class="print-section">
+                        <h3>Allarmi Clinici & Status Infettivo</h3>
+                        <p>Isolamento Infettivo (ICA): <strong>${pD.infezione || 'Nessuno'}</strong> | Rischio Soffocamento / Disfagia: <strong>${pD.disfagia ? 'SI (Paziente Disfagico)' : 'NO'}</strong></p>
+                    </div>
+                `;
+            }
+
+            html += `
+                <div class="print-section">
+                    <h3>Motivo / Diagnosi di Evento</h3>
+                    <p style="white-space:pre-wrap;">${motivo || 'Nessuna specifica registrata.'}</p>
+                </div>
+                <div class="print-section">
+                    <h3>Relazione Clinica & Indicazioni al Paziente / Presidio Ricevente</h3>
+                    <p style="white-space:pre-wrap;">${rel || 'Nessuna nota aggiuntiva registrata.'}</p>
+                </div>
+            `;
+
+            if(document.getElementById('pOptVitali').checked && pD.vitals && pD.vitals.length > 0) {
+                let v = pD.vitals[0];
+                html += `
+                    <div class="print-section">
+                        <h3>Ultimi Parametri Vitali Registrati (${v.date})</h3>
+                        <p>PA: <strong>${v.pa||'-'}</strong> mmHg | FC: <strong>${v.fc||'-'}</strong> bpm | SpO2: <strong>${v.spo2||'-'}%</strong> | TC: <strong>${v.tc||'-'}°C</strong> | Glicemia: <strong>${v.gli||'-'} mg/dl</strong> | Dolore NRS: <strong>${v.nrs||'-'}/10</strong></p>
+                    </div>
+                `;
+            }
+
+            if(document.getElementById('pOptTerapia').checked && pD.terapiaList && pD.terapiaList.length > 0) {
+                html += `
+                    <div class="print-section">
+                        <h3>Terapia Farmacologica in Atto</h3>
+                        <table class="print-table">
+                            <tr><th>Farmaco</th><th>Posologia</th><th>Orario / Fascia</th><th>Note Cliniche</th></tr>
+                `;
+                pD.terapiaList.forEach(t => {
+                    html += `<tr><td><strong>${t.farmaco}</strong></td><td>${t.posologia||'-'}</td><td>${t.orario||'-'}</td><td>${t.note||'-'}</td></tr>`;
+                });
+                html += `</table></div>`;
+            }
+
+            if(document.getElementById('pOptDiari').checked && pD.diarioClinico && pD.diarioClinico.length > 0) {
+                html += `<div class="print-section"><h3>Ultime Note di Diario Clinico</h3>`;
+                pD.diarioClinico.slice(0, 3).forEach(d => {
+                    html += `<p style="margin:4px 0; font-size:8.5pt;"><strong>${d.data} - ${d.op} (${d.tipo}):</strong> ${d.testo}</p>`;
+                });
+                html += `</div>`;
+            }
+
+            html += `
+                <div class="print-signature-box">
+                    <div>
+                        <p style="font-size:9pt; margin:0;">Terni, ${window.formatDateSafe(dataEv)}</p>
+                        <p style="font-size:8pt; color:#64748b;">Fascicolo Sanitario Nuova Villa Silvana</p>
+                    </div>
+                    <div style="text-align:center;">
+                        <p style="font-size:9pt; margin:0 0 45px 0;"><strong>Firma del Medico / Direttore Sanitario:</strong></p>
+                        <div style="border-top:1px solid #000; width:220px; margin:0 auto; font-size:8pt;">Dott. / Operatore: ${window.activeOperator}</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('printArea').innerHTML = html;
+            setTimeout(() => window.print(), 300);
+        };
+
+        window.eseguiChiusuraCartella = async () => {
+            const n = window.globalSelectedPatient;
+            const g = window.dbOspiti.find(x => x.name === n);
+            if(!g) return window.showToast("⚠️ Seleziona prima un paziente!");
+
+            const tipo = document.getElementById('letTipoEvento').value;
+            const dataEv = document.getElementById('letData').value || window.getTodayString();
+
+            let motivoChiusura = "Dimissione";
+            if(tipo === 'DECESSO') motivoChiusura = "Decesso";
+            else if(tipo === 'PRONTO_SOCCORSO') motivoChiusura = "Trasferimento PS";
+            else if(tipo === 'ALTRA_STRUTTURA') motivoChiusura = "Trasferimento RSA";
+            else if(tipo === 'RIENTRO_CASA') motivoChiusura = "Rientro a Casa";
+
+            if(!confirm(`Sei sicuro di voler ARCHIVIARE DEFINITIVAMENTE ${n} per ${motivoChiusura}? La cartella attiva verrà chiusa e spostata nello Storico.`)) return;
+
+            let up = { motivoChiusura: motivoChiusura };
+            if(tipo === 'DECESSO') up.decesso = dataEv;
+            else up.dimissione = dataEv;
+
+            await updateDoc(doc(db, "ospiti", g.id), up);
+            await window.salvaLettera();
+            window.showToast("📁 Cartella chiusa e ospite archiviato nello Storico!");
+            window.loadGuests();
+        };
+
+        window.loadGuests = () => {
+            window.loadGuestSelector();
+
+            const sg = document.getElementById('storicoGrid'); 
+            if(sg) { 
+                sg.innerHTML = ''; 
+                let arc = window.dbOspiti.filter(g => g.decesso || g.dimissione).sort((a,b) => a.name.localeCompare(b.name));
+                
+                if(arc.length === 0) {
+                    sg.innerHTML = '<p style="color:#64748b; padding:10px;">Nessuna cartella archiviata presente nello storico.</p>';
+                    return;
+                }
+
+                arc.forEach(g => { 
+                    let av = g.photo ? `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">` : `👤`;
+                    let statusLabel = g.decesso ? `✝️ Deceduto il ${window.formatDateSafe(g.decesso)}` : `🚪 Uscita il ${window.formatDateSafe(g.dimissione)} (${g.motivoChiusura||'Dimesso'})`;
+                    sg.innerHTML += `
+                        <div class="guest-card">
+                            <div class="guest-card-top">
+                                <div class="guest-avatar">${av}</div>
+                                <div><h4 style="margin:0;">${g.name}</h4><small>CF: ${g.cf||'-'}</small></div>
+                            </div>
+                            <div style="font-size:0.85em; font-weight:bold; color:#475569; background:#f1f5f9; padding:8px; border-radius:4px;">${statusLabel}</div>
+                            <button class="btn-doc" style="padding:4px 8px; font-size:0.8em;" onclick="window.selectPatientGlobal('${g.name}')">Consulta Fascicolo Archiviato</button>
+                        </div>`; 
+                }); 
+            } 
+        };
+
+        // REAL-TIME LISTENERS
+        onSnapshot(collection(db, "ospiti"), snap => {
+            window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.loadGuests();
+        });
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => {
+            window.dbClinica = {};
+            snap.forEach(d => { window.dbClinica[d.id] = d.data(); });
+            window.renderGlobalPatientBanner();
+            if(window.globalSelectedPatient) window.caricaDatiLetteraOspite();
+        });
+        onSnapshot(collection(db, "contenzioni"), snap => {
+            window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.renderGlobalPatientBanner();
+        });
+
+        window.onload = () => {
+            document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
+            document.body.setAttribute('data-qualifica', window.activeOperatorQualifica);
+            if(['Medico','Direttore Sanitario'].includes(window.activeOperatorQualifica) || window.activeOperatorRole === 'admin') {
+                document.body.setAttribute('data-med-access', 'true');
+            }
+
+            let savedPatient = sessionStorage.getItem("globalSelectedPatient");
+            if(savedPatient) {
+                window.globalSelectedPatient = savedPatient;
+                window.renderGlobalPatientBanner();
+            }
+        };
+    </script>
+</body>
+</html>

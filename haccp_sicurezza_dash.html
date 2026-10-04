@@ -2,319 +2,624 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Dashboard HACCP Integrata</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - HACCP, Autocontrollo & Sicurezza 81/08</title>
 
     <style>
-        :root { --primary: #1e293b; --secondary: #3b82f6; --bg: #f1f5f9; --surface: #ffffff; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --text-main: #334155; --text-muted: #64748b; --border: #e2e8f0; --purple: #8b5cf6; --purple-light: #f3e8ff; --teal: #14b8a6; --teal-light: #ccfbf1; --blue: #0284c7;}
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg); margin: 0; padding: 0; color: var(--text-main); }
-        .navbar { background-color: var(--primary); color: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 50;}
-        .navbar h1 { margin: 0; font-size: 22px; font-weight: 600; }
-        .tabs-container { background: var(--surface); padding: 0 20px; display: flex; gap: 10px; border-bottom: 1px solid var(--border); margin-bottom: 25px; overflow-x: auto; white-space: nowrap;}
-        .tab-btn { background: none; border: none; padding: 15px 15px; font-size: 14px; font-weight: bold; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; }
-        .tab-btn:hover { color: var(--primary); } .tab-btn.active { color: var(--secondary); border-bottom-color: var(--secondary); }
-        .tab-btn.active-primary { color: var(--primary); border-bottom-color: var(--primary); } .tab-btn.active-purple { color: var(--purple); border-bottom-color: var(--purple); }
-        .tab-btn.active-warning { color: var(--warning); border-bottom-color: var(--warning); } .tab-btn.active-teal { color: var(--teal); border-bottom-color: var(--teal); } .tab-btn.active-blue { color: var(--blue); border-bottom-color: var(--blue); } .tab-btn.active-success { color: var(--success); border-bottom-color: var(--success); }
-        .tab-content { display: none; max-width: 1600px; margin: 0 auto; padding: 0 20px; } .tab-content.active { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 25px; }
-        .kpi-card { background: var(--surface); padding: 25px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 5px solid var(--secondary); }
-        .kpi-title { font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: bold; margin-bottom: 5px; display: block;}
-        .kpi-value { font-size: 32px; font-weight: 800; color: var(--primary); }
-        .kpi-card.success { border-color: var(--success); } .kpi-card.warning { border-color: var(--warning); } .kpi-card.danger { border-color: var(--danger); }
-        .kpi-card.purple { border-color: var(--purple); } .kpi-card.warning-box { border-color: var(--warning); } .kpi-card.teal { border-color: var(--teal); }
-        .table-wrapper { background: var(--surface); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-x: auto; margin-bottom: 40px;}
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background: #f8fafc; padding: 16px 20px; font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: bold; border-bottom: 2px solid var(--border); }
-        td { padding: 16px 20px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 14px; } tr:hover { background: #f1f5f9; } tr.row-critical { background-color: #fef2f2; } tr.row-warning { background-color: #fffbeb; }
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;}
-        .badge.conforme { background: #dcfce7; color: #166534; } .badge.gestito { background: #fef3c7; color: #92400e; } .badge.critico { background: #fee2e2; color: #991b1b; }
-        .badge.sicurezza { background: var(--purple-light); color: var(--purple); border: 1px solid #e9d5ff;} .badge.teal-badge { background: var(--teal-light); color: var(--teal); border: 1px solid #99f6e4;}
-        .server-time { font-size: 12px; color: var(--secondary); font-weight: 600; display: block; } .firma-img { max-height: 40px; mix-blend-mode: multiply; border: 1px solid #eee; border-radius: 4px; padding: 2px;}
-        .thumb-img { max-height: 60px; border-radius: 6px; cursor: pointer; transition: 0.2s; border: 2px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.1);} .thumb-img:hover { transform: scale(1.05); border-color: var(--teal); }
-        .items-grid { display: flex; flex-wrap: wrap; gap: 6px; max-width: 100%; } .item-tag { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 13px; color: #334155; display: flex; align-items: center; gap: 8px;} .item-tag.alert { background: #fee2e2; border-color: #fca5a5; color: #991b1b; font-weight: bold; }
-        .admin-panel { background: var(--surface); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); } .admin-panel h3 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--bg); padding-bottom: 10px; margin-bottom: 20px;}
-        .input-group { margin-bottom: 15px; } .input-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; color: var(--text-main); } .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; background: var(--bg);} .flex-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;}
-        .btn-add, .btn-print { background: var(--secondary); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s;} .btn-add { background: var(--success); height: 43px;} .btn-add:active { transform: scale(0.95); } .btn-print:hover { opacity: 0.9; transform: translateY(-1px);}
-        .list-container { max-height: 250px; overflow-y: auto; padding-right: 10px; } .list-item { background: var(--bg); border: 1px solid var(--border); padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; } .btn-del { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;} .btn-del:hover { background: var(--danger); color: white; }
-        .doc-btn-upload { background-color: var(--secondary); color: white; padding: 15px 30px; font-size: 16px; border-radius: 12px; font-weight: bold; text-decoration: none; display: inline-flex; justify-content: center; align-items: center; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); } .doc-btn-upload:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); } .doc-btn-drive { background-color: var(--surface); color: var(--primary); border: 2px solid var(--border); padding: 15px 30px; font-size: 16px; border-radius: 12px; font-weight: bold; text-decoration: none; display: inline-flex; justify-content: center; align-items: center; transition: 0.2s; } .doc-btn-drive:hover { border-color: var(--primary); background: #f8fafc; }
-        .btn-back { background-color: rgba(255, 255, 255, 0.15); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 10px 18px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s ease; margin-right: 20px; }
-        .btn-back:hover { background-color: rgba(255, 255, 255, 0.25); border-color: white; transform: translateY(-1px); }
+        :root {
+            --bg-color: #f1f5f9;         
+            --box-bg: #ffffff;
+            --primary-color: #0d9488; 
+            --secondary-color: #0f766e;  
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --input-bg: #ffffff;
+            --border-color: #cbd5e1;     
+            --error-color: #e11d48; 
+            --warning-color: #d97706; 
+            --success-color: #059669; 
+            --dir-color: #4f46e5;
+            --terapia-color: #0284c7; 
+            --haccp-color: #0f766e;
+            --haccp-light: #ccfbf1;
+            
+            --base-font-size: 14px;      
+            --radius: 6px;               
+            --transition: all 0.2s ease;
+        }
 
-        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
-        .toast { background: var(--primary); color: #fff; padding: 12px 24px; border-radius: 6px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            padding: 0; 
+            color: var(--text-main); 
+            font-size: var(--base-font-size); 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+        }
+
+        /* NAVBAR PRINCIPALE */
+        #top-nav-container { position: sticky; top: 0; z-index: 1000; width: 100%; display: flex; flex-direction: column; flex-shrink: 0; }
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); }
+        .navbar-brand { font-weight: bold; font-size: 1.1em; display: flex; align-items: center; gap: 12px; }
+        .nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 14px; border-radius: var(--radius); cursor: pointer; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; font-size: 0.88em; }
+        .nav-btn:hover { background: rgba(255,255,255,0.25); }
+        .current-op-badge { background: #ffffff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+
+        /* MENU AD INCASTRO COMPATTO */
+        .app-menu { 
+            display: flex; 
+            flex-wrap: wrap; 
+            background: #cbd5e1; 
+            padding: 6px 12px; 
+            gap: 4px; 
+            border-bottom: 2px solid var(--primary-color);
+        }
+        .menu-tab { 
+            padding: 6px 11px; 
+            background: #e2e8f0; 
+            border: 1px solid #94a3b8; 
+            border-radius: 4px; 
+            color: var(--text-light); 
+            font-weight: 600; 
+            font-size: 0.78rem; 
+            cursor: pointer; 
+            white-space: nowrap; 
+            flex: 1 0 auto; 
+            text-align: center;
+            transition: all 0.15s ease;
+        }
+        .menu-tab:hover { background: #f1f5f9; border-color: var(--primary-color); }
+        .menu-tab.active { 
+            background: var(--box-bg); 
+            color: var(--primary-color); 
+            border-color: var(--primary-color); 
+            border-bottom: 2px solid var(--primary-color);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            font-weight: bold; 
+        }
+
+        /* CONTENITORE CENTRALE */
+        .container { max-width: 1400px; width: 96%; margin: 15px auto; flex-grow: 1; }
+        .workspace { display: none; }
+        .workspace.active { display: block; }
+
+        /* CARD STILE NVS */
+        .card { background: var(--box-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--primary-color); padding-bottom: 8px; flex-wrap: wrap; gap:10px; }
+        .card-header h3 { margin: 0; color: var(--primary-color); font-size: 1.1em; text-transform: uppercase; }
+
+        /* METRICHE KPI */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .metric-card { background: var(--box-bg); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border-color); text-align: center; border-left: 5px solid var(--primary-color); }
+        .metric-card h2 { margin: 0; font-size: 2.1em; color: var(--primary-color); }
+
+        /* PULSANTI */
+        .btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-doc, .btn-outline { color: white; border: none; padding: 8px 14px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.88em; transition: 0.15s; }
+        .btn-primary { background: var(--secondary-color); }
+        .btn-success { background: var(--success-color); }
+        .btn-danger { background: var(--error-color); }
+        .btn-warning { background: var(--warning-color); }
+        .btn-doc { background: #475569; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); }
+
+        /* FORM */
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85em; color: var(--text-main); }
+        input[type="text"], input[type="number"], input[type="date"], input[type="time"], select, textarea { width: 100%; padding: 8px; border: 1px solid #94a3b8; border-radius: 4px; box-sizing: border-box; background-color: var(--input-bg); color: var(--text-main); font-family: inherit; font-size: 0.92em; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-color); outline: none; background-color: #f0fdfa; }
+
+        /* TABELLE */
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.88em; background: #ffffff; }
+        .data-table th, .data-table td { border: 1px solid var(--border-color); padding: 9px 10px; text-align: left; vertical-align: middle; }
+        .data-table th { background-color: var(--primary-color); color: white; font-weight: normal; text-transform: uppercase; font-size: 0.82em; }
+        .data-table tr:nth-child(even) { background-color: #f8fafc; }
+
+        /* BADGE STATO */
+        .badge-status { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px; font-size: 0.78em; font-weight: bold; }
+        .status-ok { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .status-warn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .status-err { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        /* GALLERIA LOTTI */
+        .lotti-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-top: 12px; }
+        .lotto-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: flex; flex-direction: column; }
+        .lotto-thumb { width: 100%; height: 125px; object-fit: cover; background: #f1f5f9; cursor: pointer; border-bottom: 1px solid #e2e8f0; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
+        .toast { background: var(--text-main); color: #fff; padding: 12px 20px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
         .toast.show { opacity: 1; }
+
+        /* MODALE LIGHTBOX */
+        #lightboxModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:35000; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; }
+
+        /* STAMPA VERBALI */
+        #printArea { display: none; }
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 25px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+            .print-header { text-align: center; border-bottom: 2px solid #0f766e; padding-bottom: 12px; margin-bottom: 20px; }
+            .print-header h1 { margin: 0; font-size: 18pt; color: #0f766e; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 9pt; }
+            .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; }
+            .print-table th { background: #f1f5f9 !important; font-weight: bold; }
+        }
     </style>
 </head>
 <body>
-
     <div id="toast-container"></div>
+    <div id="printArea"></div>
 
-    <div class="navbar">
-        <div style="display:flex; align-items:center;">
-            <a href="index.html" class="btn-back">⬅️ Torna al Gestionale</a>
-            <div>
-                <h1 id="main-title">Struttura Non Impostata</h1>
-                <span>Intranet & Cruscotto Direzionale HACCP</span>
-            </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:15px;">
-            <select id="globalTimeFilter" style="padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); outline: none; font-weight: bold; cursor: pointer;" onchange="window.initListeners(this.value)">
-                <option value="currentMonth" style="color:black;">📅 Mostra Solo Mese Corrente (Veloce)</option>
-                <option value="all" style="color:black;">📂 Mostra Tutti i Dati in Memoria</option>
-            </select>
-            <div id="cloud-status-badge" style="display:flex; align-items:center; gap:8px; background:var(--success); padding: 8px 15px; border-radius:20px;">
-                <span style="width:10px; height:10px; background:white; border-radius:50%; box-shadow: 0 0 5px white;"></span>
-                <span style="font-size:13px; font-weight:bold; color:white;" id="cloud-status-text">Cloud Attivo</span>
-            </div>
+    <!-- LIGHTBOX FOTO LOTTI -->
+    <div id="lightboxModal" onclick="this.style.display='none'">
+        <div style="background:#fff; border-radius:8px; max-width:700px; width:100%; overflow:hidden; padding:15px; text-align:center;" onclick="event.stopPropagation()">
+            <img id="lightboxImg" src="" style="max-height:500px; max-width:100%; object-fit:contain; border-radius:4px;">
+            <div id="lightboxMeta" style="margin-top:10px; font-size:0.9em; color:#334155;"></div>
+            <button class="btn-primary" style="margin-top:10px;" onclick="document.getElementById('lightboxModal').style.display='none'">Chiudi</button>
         </div>
     </div>
 
-    <div class="tabs-container">
-        <button class="tab-btn active" onclick="openTab('tab-dashboard', this, '')">📊 Cruscotto & Admin</button>
-        <button class="tab-btn" onclick="openTab('tab-temp', this, 'primary')">🌡️ Temperature</button>
-        <button class="tab-btn" onclick="openTab('tab-aree', this, 'blue')">✨ Sanificazioni Aree</button>
-        <button class="tab-btn" onclick="openTab('tab-pulizie', this, 'purple')">🧹 Pulizie (Mod.05)</button>
-        <button class="tab-btn" onclick="openTab('tab-ciclo', this, 'success')">🍳 Ciclo Cucina</button>
-        <button class="tab-btn" onclick="openTab('tab-merci', this, 'warning')">📦 Merci</button>
-        <button class="tab-btn" onclick="openTab('tab-tracc', this, 'teal')">🔍 Tracciabilità</button>
-        <button class="tab-btn" onclick="openTab('tab-infestanti', this, 'warning')">🪤 Pest Control</button>
-        <button class="tab-btn" onclick="openTab('tab-sicurezza', this, 'purple')">🦺 Sicurezza 81/08</button>
-        <button class="tab-btn" onclick="openTab('tab-doc-haccp', this, 'secondary')">📁 Archivi Drive</button>
-    </div>
-    
-    <!-- DASHBOARD E ADMIN -->
-    <div id="tab-dashboard" class="tab-content active">
-        <h3 style="color: var(--secondary); margin-bottom: 15px; margin-top: 0;">📊 Stato Generale Procedure HACCP</h3>
-        <div class="kpi-grid">
-            <div class="kpi-card"><span class="kpi-title">Registrazioni Selezionate</span><span class="kpi-value" id="kpi-totali">0</span></div>
-            <div class="kpi-card success" id="kpi-box-conformi"><span class="kpi-title">Stato Impianti</span><span class="kpi-value" id="kpi-conformi">Conformi</span></div>
-            <div class="kpi-card warning"><span class="kpi-title">Anomalie Gestite</span><span class="kpi-value" id="kpi-gestite">0</span></div>
-            <div class="kpi-card danger"><span class="kpi-title">Non Conformità</span><span class="kpi-value" id="kpi-critiche">0</span></div>
+    <!-- TOP NAVBAR UNIFICATA -->
+    <div id="top-nav-container">
+        <div class="navbar">
+            <div class="navbar-brand">
+                <span>🛡️ NVS Masterpiece [HACCP, Autocontrollo & Sicurezza 81/08]</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+                <a href="iso_9001_accreditamento.html" class="nav-btn" style="color:#fde047; font-weight:bold;">🏆 Area ISO</a>
+                <a href="index.html" class="nav-btn">🏠 Torna al Reparto (Home)</a>
+            </div>
         </div>
+
+        <!-- MENU AD INCASTRO A SCHEDE -->
+        <div class="app-menu">
+            <button class="menu-tab active" onclick="window.switchTab('kpi', this)">📊 Cruscotto & Dati</button>
+            <button class="menu-tab" onclick="window.switchTab('temp', this)">🌡️ Temperature Frigo/Celle</button>
+            <button class="menu-tab" onclick="window.switchTab('sanif', this)">✨ Sanificazione Aree</button>
+            <button class="menu-tab" onclick="window.switchTab('pulizie', this)">🧹 Pulizie (Mod. 05)</button>
+            <button class="menu-tab" onclick="window.switchTab('merci', this)">📦 Merci in Arrivo</button>
+            <button class="menu-tab" onclick="window.switchTab('lotti', this)">🔍 Tracciabilità Lotti</button>
+            <button class="menu-tab" onclick="window.switchTab('pest', this)">🪤 Pest Control</button>
+            <button class="menu-tab" onclick="window.switchTab('sicurezza', this)">🦺 Sicurezza (81/08)</button>
+            <button class="menu-tab" onclick="window.switchTab('cloud', this)">📁 Archivi Cloud</button>
+        </div>
+    </div>
+
+    <div class="container">
         
-        <div class="admin-panel" style="margin-top: 35px; border-left: 5px solid var(--danger);">
-            <h3 style="color: var(--danger); margin-bottom: 10px;">🗄️ Archiviazione Storica e Pulizia Database (Risparmio Spazio)</h3>
-            <p style="font-size:13.5px; color:var(--text-main); margin-bottom: 20px; line-height: 1.5;">Per preservare la fluidità del gestionale ed evitare costi cloud, archivia regolarmente le registrazioni più vecchie di 3 mesi. Verranno scaricate in un file protetto di backup sul tuo PC.<br><strong>Se hai bisogno di stamparle in futuro per un'ispezione, ricarica il file qui sotto.</strong></p>
-            
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <button class="btn-print" style="background-color: var(--danger); font-size: 14px;" onclick="creaArchivioTrimestrale()">📦 Esporta e Pulisci DB (> 3 mesi)</button>
-                <label class="btn-outline" style="cursor:pointer; display:inline-flex; align-items:center; border: 2px solid var(--text-muted); color: var(--text-main); padding: 12px 20px; border-radius: 6px; font-weight: bold; transition: 0.2s;">
-                    📂 Carica File Archivio Offline (Per Consultazione/Stampa)
-                    <input type="file" style="display:none;" accept=".json" onchange="loadLocalArchive(event)">
-                </label>
-                <button class="btn-print" style="background-color: var(--success); font-size: 14px; display: none;" id="btnRestoreLive" onclick="restoreLiveCloud()">🔄 Ripristina Connessione Cloud Live</button>
-            </div>
-        </div>
-
-        <div class="admin-panel" style="margin-top: 25px; border-left: 5px solid var(--secondary);">
-            <h3 style="color: var(--secondary); margin-bottom: 15px;">🏢 Dati Struttura (Intestazione Stampe PDF)</h3>
-            <div class="flex-row">
-                <div class="input-group" style="flex:1; min-width: 200px;"><label>Denominazione Struttura</label><input type="text" id="strutNome" placeholder="Es. Nuova Villa Silvana"></div>
-                <div class="input-group" style="flex:2; min-width: 250px;"><label>Indirizzo Completo</label><input type="text" id="strutIndirizzo" placeholder="Via, CAP, Città, Provincia"></div>
-                <div class="input-group" style="flex:1; min-width: 150px;"><label>P. IVA / C.F.</label><input type="text" id="strutPiva"></div>
-            </div>
-            <div class="flex-row" style="margin-top: 10px;">
-                <div class="input-group" style="flex:1; min-width: 200px;"><label>Amministratore / Legale Rappr.</label><input type="text" id="strutAdmin"></div>
-                <div class="input-group" style="flex:1; min-width: 200px;"><label>Responsabile HACCP</label><input type="text" id="strutHaccp"></div>
-                <button class="btn-print" style="height: 43px; margin-bottom: 15px; background-color: var(--secondary);" id="btnSalvaStruttura">💾 Salva Dati Struttura</button>
-            </div>
-        </div>
-
-        <div class="admin-panel" style="margin-top: 20px; border-left: 5px solid var(--teal);">
-            <h3 style="color: var(--teal); margin-bottom: 10px;">⚙️ Configurazione Voci Tablet (Menu a tendina reparti)</h3>
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom: 20px;">Aggiungendo voci in questi elenchi, i tablet in cucina e nei reparti si aggiorneranno automaticamente mostrando i nuovi frigoriferi o le nuove aree da sanificare.</p>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                <div>
-                    <h4 style="margin-top:0; font-size:14px;">🌡️ Frigoriferi e Celle</h4>
-                    <div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newFrigo" placeholder="Es. Frigo Latticini"></div><button class="btn-add" onclick="addConfigItem('frigoriferi', 'newFrigo')">Aggiungi</button></div>
-                    <div class="items-grid" id="list-frigoriferi"></div>
+        <!-- 1. WORKSPACE: CRUSCOTTO & DATI STRUTTURA -->
+        <div id="ws-kpi" class="workspace active">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h2 id="kpi-totali">0</h2>
+                    <span style="font-size:0.8em; text-transform:uppercase; color:var(--text-light);">Registrazioni Totali Mese</span>
                 </div>
-                <div>
-                    <h4 style="margin-top:0; font-size:14px;">✨ Aree Sanificazione</h4>
-                    <div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newArea" placeholder="Es. Sala Pranzo"></div><button class="btn-add" onclick="addConfigItem('aree', 'newArea')">Aggiungi</button></div>
-                    <div class="items-grid" id="list-aree"></div>
+                <div class="metric-card" style="border-left-color: var(--success-color);">
+                    <h2 id="kpi-conformita" style="color:var(--success-color);">100%</h2>
+                    <span style="font-size:0.8em; text-transform:uppercase; color:var(--text-light);">Stato Impianti & Celle</span>
                 </div>
-                <div>
-                    <h4 style="margin-top:0; font-size:14px;">🧹 Pulizie (Mod. 05)</h4>
-                    <div class="flex-row" style="margin-bottom: 10px;"><div class="input-group" style="flex:1; margin:0;"><input type="text" id="newPulizia" placeholder="Es. Pavimenti Reparto A"></div><button class="btn-add" onclick="addConfigItem('pulizie', 'newPulizia')">Aggiungi</button></div>
-                    <div class="items-grid" id="list-pulizie"></div>
+                <div class="metric-card" style="border-left-color: var(--warning-color);">
+                    <h2 id="kpi-anomalie" style="color:var(--warning-color);">0</h2>
+                    <span style="font-size:0.8em; text-transform:uppercase; color:var(--text-light);">Anomalie / Azioni Correttive</span>
+                </div>
+                <div class="metric-card" style="border-left-color: var(--error-color);">
+                    <h2 id="kpi-scadenze-8108" style="color:var(--error-color);">0</h2>
+                    <span style="font-size:0.8em; text-transform:uppercase; color:var(--text-light);">Scadenze 81/08 Imminenti</span>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- TAB: TEMPERATURE -->
-    <div id="tab-temp" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 style="color: var(--primary); margin: 0;">🌡️ Registro Temperature Frigoriferi e Celle</h2>
-        <button class="btn-print" style="background-color: var(--primary);" onclick="generatePDF('table-temp', 'REGISTRO TEMPERATURE FRIGORIFERI E CELLE')">🖨️ Stampa PDF</button></div>
-        <div class="table-wrapper"><table id="pdf-table-temp"><thead><tr><th>Stato</th><th>Data e Ora</th><th>Operatore (OSA)</th><th>Temperature Rilevate</th><th>Azioni Correttive</th><th>Firma Acquisita</th></tr></thead><tbody id="table-temp"><tr><td colspan="6" style="text-align:center; padding:20px;">Caricamento in corso...</td></tr></tbody></table></div>
-    </div>
-
-    <!-- TAB: SANIFICAZIONI AREE -->
-    <div id="tab-aree" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 style="color: var(--blue); margin: 0;">✨ Registro Sanificazione Aree</h2>
-        <button class="btn-print" style="background-color: var(--blue);" onclick="generatePDF('table-aree', 'REGISTRO SANIFICAZIONE AREE')">🖨️ Stampa PDF</button></div>
-        <div class="table-wrapper"><table id="pdf-table-aree"><thead><tr><th>Stato</th><th>Data e Ora</th><th>Operatore (OSA)</th><th>Aree Trattate</th><th>Note / Anomalie</th><th>Firma Acquisita</th></tr></thead><tbody id="table-aree"><tr><td colspan="6" style="text-align:center; padding:20px;">Caricamento in corso...</td></tr></tbody></table></div>
-    </div>
-
-    <!-- TAB: PULIZIE MOD 05 -->
-    <div id="tab-pulizie" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 style="color: var(--purple); margin: 0;">🧹 Registro Pulizie Giornaliere (Mod. 05)</h2>
-        <button class="btn-print" style="background-color: var(--purple);" onclick="generatePDF('table-pulizie', 'REGISTRO PULIZIE GIORNALIERE (MOD. 05)')">🖨️ Stampa PDF</button></div>
-        <div class="table-wrapper"><table id="pdf-table-pulizie"><thead><tr><th>Stato</th><th>Data e Ora</th><th>Operatore (OSA)</th><th>Operazioni Eseguite</th><th>Note / Anomalie</th><th>Firma Acquisita</th></tr></thead><tbody id="table-pulizie"><tr><td colspan="6" style="text-align:center; padding:20px;">Caricamento in corso...</td></tr></tbody></table></div>
-    </div>
-    
-    <!-- TAB: CICLO CUCINA -->
-    <div id="tab-ciclo" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div><h2 style="color: var(--success); margin: 0 0 5px 0;">🍳 Registro Ciclo Cucina (Cottura e Abbattimento)</h2></div>
-            <button class="btn-print" style="background-color: var(--success);" onclick="generatePDF('table-ciclo', 'REGISTRO CICLO CUCINA E ABBATTIMENTO')">🖨️ Stampa PDF</button>
-        </div>
-        <div class="kpi-grid">
-            <div class="kpi-card success"><span class="kpi-title" style="color:var(--success)">Processi Selezionati</span><span class="kpi-value" id="kpi-ciclo-tot">0</span></div>
-            <div class="kpi-card danger"><span class="kpi-title">Non Conformità / Anomalie</span><span class="kpi-value" id="kpi-ciclo-ko">0</span></div>
-        </div>
-        <div class="table-wrapper">
-            <table id="pdf-table-ciclo">
-                <thead><tr><th>Esito CCP</th><th>Data/Ora</th><th>Pietanza (Lotto)</th><th>Cottura (°C)</th><th>Abbattimento</th><th>Destinazione (Scad.)</th><th>Azione Correttiva</th><th>Operatore</th></tr></thead>
-                <tbody id="table-ciclo"><tr><td colspan="8" style="text-align:center; padding: 40px;">Caricamento in corso...</td></tr></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- TAB: MERCI -->
-    <div id="tab-merci" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><div><h2 style="color: var(--warning); margin: 0 0 5px 0;">📦 Registro Controllo Merci in Arrivo</h2></div>
-        <button class="btn-print" style="background-color: var(--warning);" onclick="generatePDF('table-merci', 'REGISTRO CONTROLLO MERCI IN ARRIVO')">🖨️ Stampa PDF</button></div>
-        <div class="kpi-grid"><div class="kpi-card warning-box"><span class="kpi-title" style="color:var(--warning)">Consegne</span><span class="kpi-value" id="kpi-merci-tot">0</span></div><div class="kpi-card success"><span class="kpi-title">Accettate</span><span class="kpi-value" id="kpi-merci-ok">0</span></div><div class="kpi-card danger"><span class="kpi-title">Respinte</span><span class="kpi-value" id="kpi-merci-ko">0</span></div></div>
-        <div class="table-wrapper"><table id="pdf-table-merci"><thead><tr><th>Esito</th><th>Data e Ora</th><th>Fornitore / Merce</th><th>Temp. (°C)</th><th>Imballaggi</th><th>Operatore</th></tr></thead><tbody id="table-merci"><tr><td colspan="6" style="text-align:center; padding: 40px;">Caricamento in corso...</td></tr></tbody></table></div>
-    </div>
-
-    <!-- TAB: TRACCIABILITA' -->
-    <div id="tab-tracc" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><div><h2 style="color: var(--teal); margin: 0 0 5px 0;">🔍 Tracciabilità Lotti (Fotografica)</h2></div>
-        <button class="btn-print" style="background-color: var(--teal);" onclick="generatePDF('table-tracc', 'REGISTRO TRACCIABILITA LOTTI INGREDIENTI')">🖨️ Stampa PDF</button></div>
-        <div class="kpi-grid"><div class="kpi-card teal"><span class="kpi-title" style="color:var(--teal)">Lotti Archiviati Selezionati</span><span class="kpi-value" id="kpi-tracc-tot">0</span></div></div>
-        <div class="table-wrapper"><table id="pdf-table-tracc"><thead><tr><th>Data Utilizzo</th><th>Categoria Ingrediente</th><th>Foto Acquisita</th><th>Operatore (Firma)</th></tr></thead><tbody id="table-tracc"><tr><td colspan="4" style="text-align:center; padding: 40px;">Caricamento in corso...</td></tr></tbody></table></div>
-    </div>
-
-    <!-- TAB: PEST CONTROL -->
-    <div id="tab-infestanti" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><div><h2 style="color: var(--warning); margin: 0 0 5px 0;">🪤 Pest Control (Monitoraggio)</h2></div>
-        <button class="btn-print" style="background-color: var(--warning);" onclick="generatePDF('table-pest', 'REGISTRO MONITORAGGIO INFESTANTI (PEST CONTROL)')">🖨️ Stampa PDF</button></div>
-        
-        <div class="kpi-grid">
-            <div class="kpi-card warning-box"><span class="kpi-title" style="color:var(--warning)">Controlli Totali</span><span class="kpi-value" id="kpi-pest-totali">0</span></div>
-            <div class="kpi-card success"><span class="kpi-title">Regolari (Intatte)</span><span class="kpi-value" id="kpi-pest-ok">0</span></div>
-            <div class="kpi-card danger"><span class="kpi-title">Anomalie / Catture</span><span class="kpi-value" id="kpi-pest-err">0</span></div>
+            <!-- DATI STRUTTURA PER INTESTAZIONI PDF -->
+            <div class="card" style="border-top:4px solid var(--primary-color);">
+                <div class="card-header">
+                    <h3>🏛️ Dati Struttura & Responsabili Autocontrollo (Intestazione Stampe)</h3>
+                </div>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:12px;">
+                    <div class="form-group" style="margin:0;">
+                        <label>Denominazione Struttura</label>
+                        <input type="text" id="haccpDenominazione" value="NUOVA VILLA SILVANA S.r.l.">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Indirizzo Completo</label>
+                        <input type="text" id="haccpIndirizzo" value="Via Flaminia Romana, Terni (TR)">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Partita IVA / Codice Fiscale</label>
+                        <input type="text" id="haccpPiva" value="01234567890">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:15px;">
+                    <div class="form-group" style="margin:0;">
+                        <label>Legale Rappresentante</label>
+                        <input type="text" id="haccpLegaleRappr" placeholder="Nome Cognome Amministratore">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Responsabile Autocontrollo HACCP / RSPP</label>
+                        <input type="text" id="haccpResponsabile" placeholder="Dott. / Sig. Responsabile Qualità e Sicurezza">
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end;">
+                    <button class="btn-success" onclick="window.salvaDatiStruttura()">💾 Salva Dati Intestazione</button>
+                </div>
+            </div>
         </div>
 
-        <div class="admin-panel" style="margin-bottom: 25px; border-left: 5px solid var(--warning);"><h3 style="color: var(--warning); margin-bottom: 15px;">➕ Registra Controllo Interno Postazione</h3><div class="flex-row"><div class="input-group" style="flex:1; margin:0;"><label>Data</label><input type="date" id="pestDate"></div><div class="input-group" style="flex:2; margin:0;"><label>Nome Postazione</label><input type="text" id="pestName" placeholder="Es. Trappola 1 Esterno..."></div><div class="input-group" style="flex:1; margin:0;"><label>Infestante</label><select id="pestType"><option value="Roditori">Roditori</option><option value="Insetti Striscianti">Insetti Striscianti</option><option value="Insetti Volanti">Insetti Volanti</option></select></div><div class="input-group" style="flex:1; margin:0;"><label>Esito</label><select id="pestResult"><option value="Regolare (Intatta)">Regolare (Intatta)</option><option value="Esca Consumata">Esca Consumata</option><option value="Cattura">Cattura Rilevata</option><option value="Danneggiata">Danneggiata</option></select></div><button class="btn-print" style="background-color: var(--warning);" id="btnAddPest">Salva Controllo</button></div></div>
-        <div class="table-wrapper"><table id="pdf-table-pest"><thead><tr><th>Data Controllo</th><th>Postazione</th><th>Target</th><th>Esito Rilevato</th><th>Stato</th><th>Azioni</th></tr></thead><tbody id="table-pest"><tr><td colspan="6" style="text-align:center; padding: 40px;">Caricamento in corso...</td></tr></tbody></table></div>
-    </div>
+        <!-- 2. WORKSPACE: TEMPERATURE FRIGO E CELLE -->
+        <div id="ws-temp" class="workspace">
+            <div class="card" style="border-top:4px solid var(--terapia-color);">
+                <div class="card-header">
+                    <h3 style="color:var(--terapia-color);">🌡️ Registro Giornaliero Temperature Frigoriferi, Celle & Surgelati</h3>
+                    <button class="btn-doc" onclick="window.stampaRegistro('temp')">🖨️ Stampa Verbale PDF/A4</button>
+                </div>
 
-    <!-- TAB: SICUREZZA 81/08 -->
-    <div id="tab-sicurezza" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><div><h2 style="color: var(--purple); margin: 0 0 5px 0;">🦺 Scadenzario Sicurezza (81/08)</h2></div>
-        <button class="btn-print" style="background-color: var(--purple);" onclick="generatePDF('table-sicurezza', 'SCADENZARIO SICUREZZA E MANUTENZIONI - D.LGS 81/08')">🖨️ Stampa Scadenzario PDF</button></div>
-        <div class="kpi-grid"><div class="kpi-card purple"><span class="kpi-title" style="color:var(--purple)">Monitorati</span><span class="kpi-value" id="kpi-sic-totali" style="color:var(--purple)">0</span></div><div class="kpi-card success" id="box-sic-ok"><span class="kpi-title">In Regola</span><span class="kpi-value" id="kpi-sic-ok">0</span></div><div class="kpi-card warning" id="box-sic-warn"><span class="kpi-title">In Scadenza</span><span class="kpi-value" id="kpi-sic-warn">0</span></div><div class="kpi-card danger" id="box-sic-err"><span class="kpi-title">Scaduti</span><span class="kpi-value" id="kpi-sic-err">0</span></div></div>
-        <div class="admin-panel" style="margin-bottom: 25px; border-left: 5px solid var(--purple);"><h3 style="color: var(--purple); margin-bottom: 15px;">➕ Inserisci Nuova Scadenza</h3><div class="flex-row"><div class="input-group" style="flex:2; margin:0;"><label>Nome Documento</label><input type="text" id="sicDocName" placeholder="Es. Revisione Estintori..."></div><div class="input-group" style="flex:1; margin:0;"><label>Categoria</label><select id="sicDocCat"><option value="Documentale Base">Documentale Base</option><option value="Formazione Personale">Formazione Personale</option><option value="Impianti e Struttura">Impianti e Struttura</option><option value="Sanitario">Rischio Sanitario</option></select></div><div class="input-group" style="flex:1; margin:0;"><label>Data Scadenza</label><input type="date" id="sicDocDate"></div><button class="btn-print" style="background-color: var(--purple);" id="btnAddSicurezza">Registra</button></div></div>
-        <div class="table-wrapper"><table id="pdf-table-sicurezza"><thead><tr><th>Stato</th><th>Data Scadenza</th><th>Giorni Rimasti</th><th>Nome Documento</th><th>Area Controllo</th><th>Azioni</th></tr></thead><tbody id="table-sicurezza"><tr><td colspan="6" style="text-align:center; padding: 40px;">Caricamento in corso...</td></tr></tbody></table></div>
-    </div>
+                <!-- FORM RILEVAZIONE -->
+                <div style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:6px; margin-bottom:15px;">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:10px; margin-bottom:10px;">
+                        <div class="form-group" style="margin:0;">
+                            <label>Unità / Impianto *</label>
+                            <select id="tempUnita">
+                                <option value="Frigo Cucina 1 (0°C / +4°C)">Frigo Cucina 1 (+0/+4°C)</option>
+                                <option value="Frigo Cucina 2 (0°C / +4°C)">Frigo Cucina 2 (+0/+4°C)</option>
+                                <option value="Cella Carni (0°C / +3°C)">Cella Carni (+0/+3°C)</option>
+                                <option value="Cella Verdure (+4°C / +7°C)">Cella Verdure (+4/+7°C)</option>
+                                <option value="Freezer Surgelati (≤ -18°C)">Freezer Surgelati (≤ -18°C)</option>
+                                <option value="Frigo Farmaci Reparto (+2°C / +8°C)">Frigo Farmaci Reparto (+2/+8°C)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Temperatura Rilevata (°C) *</label>
+                            <input type="number" step="0.1" id="tempValore" placeholder="Es. 3.2">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Data & Ora</label>
+                            <input type="datetime-local" id="tempDataOra">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Operatore (OSA)</label>
+                            <input type="text" id="tempOperatore" readonly style="background:#f1f5f9;">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:10px;">
+                        <label>Eventuale Azione Correttiva (in caso di anomalia termica)</label>
+                        <input type="text" id="tempAzione" placeholder="Es. Regolazione termostato, verifica chiusura porta, trasferimento alimenti...">
+                    </div>
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button class="btn-primary" style="background:#0284c7;" onclick="window.salvaTemperatura()">Registra Temperatura</button>
+                    </div>
+                </div>
 
-    <!-- TAB: DRIVE -->
-    <div id="tab-doc-haccp" class="tab-content">
-        <div style="text-align: center; margin-bottom: 50px;">
-            <h2 style="color: var(--primary); margin-bottom: 10px; font-size: 28px;">Archivi Cloud Documentali</h2>
-            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top:20px;"><a href="https://docs.google.com/forms/d/e/1FAIpQLSenXfRGHGJnqSTC8RtEgao6f9XDLcydxc3y-JaMCavmRiTbxA/viewform?usp=dialog" target="_blank" class="doc-btn-upload">☁️ Carica Documento HACCP</a><a href="https://drive.google.com/" target="_blank" class="doc-btn-drive">📂 Apri Cartella HACCP</a></div>
-            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top:20px;"><a href="https://docs.google.com/forms/d/e/1FAIpQLSenXfRGHGJnqSTC8RtEgao6f9XDLcydxc3y-JaMCavmRiTbxA/viewform?usp=dialog" target="_blank" class="doc-btn-upload" style="background-color: var(--purple);">☁️ Carica Documento Sicurezza</a><a href="https://drive.google.com/" target="_blank" class="doc-btn-drive" style="color: var(--purple); border-color: #c4b5fd;">📂 Apri Cartella Sicurezza</a></div>
+                <div style="overflow-x:auto;">
+                    <table class="data-table" id="tableTemp">
+                        <thead>
+                            <tr><th>Stato</th><th>Data e Ora</th><th>Impianto</th><th>Temp. (°C)</th><th>Azione Correttiva</th><th>Operatore (OSA)</th><th class="restrict-oss">Azione</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
+
+        <!-- 3. WORKSPACE: SANIFICAZIONE AREE -->
+        <div id="ws-sanif" class="workspace">
+            <div class="card" style="border-top:4px solid var(--primary-color);">
+                <div class="card-header">
+                    <h3>✨ Registro Sanificazione e Disinfezione Superfici</h3>
+                    <button class="btn-doc" onclick="window.stampaRegistro('sanif')">🖨️ Stampa Verbale PDF/A4</button>
+                </div>
+
+                <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:6px; margin-bottom:15px;">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:10px;">
+                        <div class="form-group" style="margin:0;">
+                            <label>Area Trattata *</label>
+                            <select id="sanifArea">
+                                <option value="Cucina & Piani Preparazione">Cucina & Piani Preparazione</option>
+                                <option value="Zona Lavaggio & Stoviglie">Zona Lavaggio & Stoviglie</option>
+                                <option value="Dispensa & Celle Frigo">Dispensa & Celle Frigo</option>
+                                <option value="Refettorio Ospiti">Refettorio Ospiti</option>
+                                <option value="Servizi Igienici Personale">Servizi Igienici Personale</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Prodotto Chimico & Diluizione</label>
+                            <input type="text" id="sanifProdotto" value="Clorattivo 2% / Sgrassatore Igienizzante">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Note / Anomalie</label>
+                            <input type="text" id="sanifNote" placeholder="Nessuna anomalia riscontrata">
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button class="btn-success" onclick="window.salvaSanificazione()">Registra Sanificazione</button>
+                    </div>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="data-table" id="tableSanif">
+                        <thead>
+                            <tr><th>Stato</th><th>Data e Ora</th><th>Area Trattata</th><th>Detergente/Disinfettante</th><th>Note</th><th>Operatore</th><th class="restrict-oss">Azione</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. WORKSPACE: PULIZIE GIORNALIERE (MOD. 05) -->
+        <div id="ws-pulizie" class="workspace">
+            <div class="card" style="border-top:4px solid var(--warning-color);">
+                <div class="card-header">
+                    <h3 style="color:var(--warning-color);">🧹 Registro Pulizie Giornaliere e Periodiche (Mod. 05)</h3>
+                    <button class="btn-doc" onclick="window.stampaRegistro('pulizie')">🖨️ Stampa Verbale PDF/A4</button>
+                </div>
+
+                <div style="background:#fffbeb; border:1px solid #fde68a; padding:15px; border-radius:6px; margin-bottom:15px;">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-bottom:10px;">
+                        <div class="form-group" style="margin:0;">
+                            <label>Operazione Eseguita *</label>
+                            <select id="puliziaTipo">
+                                <option value="Pulizia Piani di Lavoro & Affettatrice">Pulizia Piani di Lavoro & Affettatrice</option>
+                                <option value="Sgrassaggio Forni & Fornelli">Sgrassaggio Forni & Fornelli</option>
+                                <option value="Lavaggio & Igienizzazione Pavimenti">Lavaggio & Igienizzazione Pavimenti</option>
+                                <option value="Pulizia Cappa Aspirante e Filtri">Pulizia Cappa Aspirante e Filtri</option>
+                                <option value="Smaltimento Rifiuti & Svuotamento Bidoni">Smaltimento Rifiuti & Svuotamento Bidoni</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Esito Controllo</label>
+                            <select id="puliziaEsito">
+                                <option value="CONFORME">🟢 Conforme (Eseguito a regola d'arte)</option>
+                                <option value="NON CONFORME">🔴 Non Conforme (Necessario ritrattamento)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Dettagli & Note</label>
+                            <input type="text" id="puliziaNote" placeholder="Tutto regolare">
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button class="btn-warning" onclick="window.salvaPulizia()">Registra Scheda Pulizia</button>
+                    </div>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="data-table" id="tablePulizie">
+                        <thead>
+                            <tr><th>Stato</th><th>Data e Ora</th><th>Operazione</th><th>Esito</th><th>Note</th><th>Operatore</th><th class="restrict-oss">Azione</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. WORKSPACE: CONTROLLO MERCI IN ARRIVO -->
+        <div id="ws-merci" class="workspace">
+            <div class="card" style="border-top:4px solid var(--dir-color);">
+                <div class="card-header">
+                    <h3 style="color:var(--dir-color);">📦 Registro Controllo Merci & Alimenti in Arrivo</h3>
+                    <button class="btn-doc" onclick="window.stampaRegistro('merci')">🖨️ Stampa Verbale PDF/A4</button>
+                </div>
+
+                <div style="background:#f5f3ff; border:1px solid #ddd6fe; padding:15px; border-radius:6px; margin-bottom:15px;">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:10px;">
+                        <div class="form-group" style="margin:0;">
+                            <label>Fornitore *</label>
+                            <input type="text" id="merceFornitore" placeholder="Es. Carni Umbre S.r.l.">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Tipologia Alimento *</label>
+                            <input type="text" id="merceTipo" placeholder="Es. Carni fresche, latticini...">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Temp. Misurata (°C)</label>
+                            <input type="number" step="0.1" id="merceTemp" placeholder="Es. 3.5">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Integrità Imballaggi & Mezzo</label>
+                            <select id="merceImballi">
+                                <option value="Integri e Puliti">Integri e Puliti</option>
+                                <option value="Danneggiati / Sporchi">Danneggiati / Sporchi</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Esito Accettazione *</label>
+                            <select id="merceEsito">
+                                <option value="ACCETTATA">🟢 Accettata</option>
+                                <option value="CON RISERVA">🟡 Con Riserva</option>
+                                <option value="RESPINTA">🔴 Respinta al Mittente</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button class="btn-primary" style="background:var(--dir-color);" onclick="window.salvaMerce()">Registra Ricezione Merce</button>
+                    </div>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="data-table" id="tableMerci">
+                        <thead>
+                            <tr><th>Esito</th><th>Data e Ora</th><th>Fornitore</th><th>Tipologia</th><th>Temp. (°C)</th><th>Imballi</th><th>Operatore</th><th class="restrict-oss">Azione</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. WORKSPACE: TRACCIABILITÀ LOTTI (FOTOGRAFICA) -->
+        <div id="ws-lotti" class="workspace">
+            <div class="card" style="border-top:4px solid var(--primary-color);">
+                <div class="card-header">
+                    <h3>🔍 Tracciabilità Fotografica Lotti & Etichette Ingredienti</h3>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:6px; margin-bottom:15px;">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:10px;">
+                        <div class="form-group" style="margin:0;">
+                            <label>Categoria Ingrediente *</label>
+                            <select id="lottoCategoria">
+                                <option value="Carni & Salumi">Carni & Salumi</option>
+                                <option value="Latticini & Formaggi">Latticini & Formaggi</option>
+                                <option value="Ortofrutta Fresca">Ortofrutta Fresca</option>
+                                <option value="Farine, Cereali & Pasta">Farine, Cereali & Pasta</option>
+                                <option value="Prodotti Surgelati">Prodotti Surgelati</option>
+                                <option value="Oli & Condimenti">Oli & Condimenti</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Dettaglio / Descrizione Prodotto</label>
+                            <input type="text" id="lottoDescrizione" placeholder="Es. Petto di pollo lotto 9845-A">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Foto Etichetta / Scansione *</label>
+                            <input type="file" id="lottoFotoFile" accept="image/*" capture="environment" style="background:#fff;">
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button class="btn-primary" onclick="window.salvaLottoFotografico()">📷 Archivia Foto Lotto</button>
+                    </div>
+                </div>
+
+                <h4 style="margin:10px 0 8px 0;">Archivio Lotti Alimentari Digitalizzati</h4>
+                <div id="lottiGallery" class="lotti-grid"></div>
+            </div>
+        </div>
+
+        <!-- 7. WORKSPACE: PEST CONTROL (MONITORAGGIO INFESTANTI) -->
+        <div id="ws-pest" class="workspace">
+            <div class="card" style="border-top:4px solid var(--pres-color);">
+                <div class="card-header">
+                    <h3 style="color:var(--pres-color);">🪤 Pest Control & Monitoraggio Infestanti</h3>
+                    <button class="btn-doc" onclick="window.stampaRegistro('pest')">🖨️ Stampa Verbale PDF/A4</button>
+                </div>
+
+                <div style="background:#fffbeb; border:1px solid #fde68a; padding:15px; border-radius:6px; margin-bottom:15px;">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:10px;">
+                        <div class="form-group" style="margin:0;">
+                            <label>Postazione Esche *</label>
+                            <select id="pestPostazione">
+                                <option value="P01 - Ingresso Merci Esterno">P01 - Ingresso Merci Esterno</option>
+                                <option value="P02 - Locale Rifiuti Cucina">P02 - Locale Rifiuti Cucina</option>
+                                <option value="P03 - Dispensa Alimentare Secca">P03 - Dispensa Alimentare Secca</option>
+                                <option value="P04 - Corridoio Accesso Cucina">P04 - Corridoio Accesso Cucina</option>
+                                <option value="P05 - Lampada Cattura Insetti Volanti">P05 - Lampada Cattura Insetti Volanti</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Target Infestante</label>
+                            <select id="pestTarget">
+                                <option value="Roditori">Roditori</option>
+                                <option value="Insetti Striscianti">Insetti Striscianti</option>
+                                <option value="Insetti Volanti">Insetti Volanti</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Esito Ispezione *</label>
+                            <select id="pestEsito">
+                                <option value="REGOLARE">🟢 Regolare (Esca intatta)</option>
+                                <option value="ESCA CONSUMATA">🟡 Esca Consumata</option>
+                                <option value="CATTURA RILEVATA">🔴 Cattura Rilevata</option>
+                                <option value="DANNEGGIATA">⚪ Postazione Danneggiata</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Azioni Intraprese</label>
+                            <input type="text" id="pestAzioni" placeholder="Es. Reintegro esca, sanificazione...">
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button class="btn-warning" onclick="window.salvaPestControl()">Registra Controllo</button>
+                    </div>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="data-table" id="tablePest">
+                        <thead>
+                            <tr><th>Stato</th><th>Data</th><th>Postazione</th><th>Target</th><th>Esito</th><th>Azioni</th><th>Operatore</th><th class="restrict-oss">Azione</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. WORKSPACE: SICUREZZA SUL LAVORO (D.LGS 81/08) -->
+        <div id="ws-sicurezza" class="workspace">
+            <div class="card" style="border-top:4px solid var(--error-color);">
+                <div class="card-header">
+                    <h3 style="color:var(--error-color);">🦺 Scadenzario Sicurezza sul Lavoro (D.Lgs 81/08)</h3>
+                    <button class="btn-doc" onclick="window.stampaRegistro('sicurezza')">🖨️ Stampa Scadenzario PDF/A4</button>
+                </div>
+
+                <div style="background:#fff1f2; border:1px solid #fecdd3; padding:15px; border-radius:6px; margin-bottom:15px;">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:10px;">
+                        <div class="form-group" style="margin:0;">
+                            <label>Titolo Documento / Adempimento *</label>
+                            <input type="text" id="sicNome" placeholder="Es. Aggiornamento DVR, Corso Antincendio...">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Area di Riferimento</label>
+                            <select id="sicArea">
+                                <option value="Documentale Base (DVR, DUVRI, PEE)">Documentale Base (DVR, DUVRI, PEE)</option>
+                                <option value="Formazione Lavoratori (Accordo S.R.)">Formazione Lavoratori (Accordo S.R.)</option>
+                                <option value="Sorveglianza Sanitaria (Medico Comp.)">Sorveglianza Sanitaria (Medico Comp.)</option>
+                                <option value="Impianti (Messa a terra, Caldaie, Ascensori)">Impianti (Messa a terra, Ascensori, O2)</option>
+                                <option value="Prevenzione Incendi & CPI">Prevenzione Incendi & CPI</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Data di Scadenza Obbligo *</label>
+                            <input type="date" id="sicDataScadenza">
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button class="btn-danger" onclick="window.salvaScadenzaSicurezza()">Registra Scadenza 81/08</button>
+                    </div>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="data-table" id="tableSicurezza">
+                        <thead>
+                            <tr><th>Stato</th><th>Scadenza</th><th>Tempo Rimanente</th><th>Adempimento</th><th>Area</th><th>Operatore</th><th class="restrict-oss">Azione</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9. WORKSPACE: ARCHIVI CLOUD & DRIVE -->
+        <div id="ws-cloud" class="workspace">
+            <div class="card" style="border-top:4px solid var(--dir-color);">
+                <div class="card-header">
+                    <h3 style="color:var(--dir-color);">📁 Archivi Cloud & Cartelle Documentali Condivise</h3>
+                </div>
+                <p style="color:var(--text-light); font-size:0.92em; margin-top:0;">Accesso diretto ai moduli di caricamento e alle cartelle Cloud di conservazione delle certificazioni.</p>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:15px;">
+                    <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:6px;">
+                        <h4 style="margin:0 0 6px 0; color:var(--primary-color);">☁️ Documentale HACCP & Sanificazioni</h4>
+                        <p style="font-size:0.85em; color:var(--text-light); margin:0 0 12px 0;">Manuale di Autocontrollo, schede tecniche detergenti e rapporti periodici di laboratorio.</p>
+                        <a href="https://drive.google.com/" target="_blank" class="btn-primary" style="text-decoration:none; display:inline-block; font-size:0.85em;">📁 Apri Cartella Drive HACCP</a>
+                    </div>
+                    <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:6px;">
+                        <h4 style="margin:0 0 6px 0; color:var(--error-color);">🦺 Archivio Sicurezza sul Lavoro (81/08)</h4>
+                        <p style="font-size:0.85em; color:var(--text-light); margin:0 0 12px 0;">DVR, nomine RSPP/RLS/Medico Competente, attestati formazione e verbali periodici.</p>
+                        <a href="https://drive.google.com/" target="_blank" class="btn-danger" style="text-decoration:none; display:inline-block; font-size:0.85em;">📁 Apri Cartella Drive 81/08</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- MODAL FOTO -->
-    <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; padding:20px; flex-direction: column;" onclick="this.style.display='none'">
-        <img id="expandedImg" style="max-width:100%; max-height:85vh; border-radius:8px;">
-        <p style="color:white; font-weight:bold; margin-top: 15px; background: rgba(0,0,0,0.5); padding: 8px 15px; border-radius: 20px;">Tocca per chiudere</p>
-    </div>
-
-    <script>
-        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
-
-        window.datiStruttura = { denominazione: 'STRUTTURA NON IMPOSTATA', indirizzo: '-', piva: '-', admin: '-', haccp: '-' };
-        window.generatePDF = function(tableId, titoloDocumento) {
-            try {
-                const { jsPDF } = window.jspdf; const doc = new jsPDF('landscape'); 
-                doc.setFontSize(18); doc.setTextColor(30, 41, 59); doc.text((window.datiStruttura.denominazione || window.datiStruttura.nome || 'STRUTTURA NON IMPOSTATA').toUpperCase(), 14, 20);
-                doc.setFontSize(10); doc.setTextColor(100, 116, 139);
-                let stringaIndirizzo = `Indirizzo: ${window.datiStruttura.indirizzo || '-'} | P.IVA/C.F.: ${window.datiStruttura.piva || '-'}`;
-                let stringaResp = `Legale Rappresentante: ${window.datiStruttura.admin || '-'} | Resp. HACCP: ${window.datiStruttura.haccp || '-'}`;
-                doc.text(stringaIndirizzo, 14, 26); doc.text(stringaResp, 14, 31);
-                doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.text(titoloDocumento, 14, 42);
-
-                const dataStampa = new Date().toLocaleDateString('it-IT');
-                const oraStampa = new Date().toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'});
-                doc.setFontSize(9); doc.text('Generato il: ' + dataStampa + ' alle ' + oraStampa, 280, 20, { align: 'right' });
-
-                let autoTableOptions = {
-                    html: '#pdf-' + tableId, startY: 48, theme: 'grid', styles: { fontSize: 9, cellPadding: 3, valign: 'middle' },
-                    headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [241, 245, 249] },
-                    didParseCell: function(data) {
-                        if(data.cell.text && Array.isArray(data.cell.text)) {
-                            for(let i=0; i<data.cell.text.length; i++){
-                                if(typeof data.cell.text[i] === 'string') {
-                                    data.cell.text[i] = data.cell.text[i].replace(/⚠️|✅|❌|✓|📦|🔍|🌡️|✨|🧹|🪤|🦺|📁|Rimuovi|🍳/g, '').trim();
-                                }
-                            }
-                        }
-                        if (tableId === 'table-tracc' && data.section === 'body' && data.column.index === 2) { data.cell.text = []; }
-                        if(data.section === 'body' && (data.column.index === 5 || (tableId === 'table-tracc' && data.column.index === 3) || (tableId === 'table-ciclo' && data.column.index === 7))) {
-                            let opName = (data.cell.text && data.cell.text[0]) ? data.cell.text[0].split('\n')[0] : "Operatore";
-                            data.cell.text = [opName, "(Firma Acquisita a Sistema)"];
-                        }
-                    },
-                    didDrawCell: function(data) {
-                        if (tableId === 'table-tracc' && data.section === 'body' && data.column.index === 2) {
-                            var td = data.cell.raw;
-                            if(td && typeof td.getElementsByTagName === 'function') {
-                                var img = td.getElementsByTagName('img')[0];
-                                if (img) {
-                                    var base64Str = img.getAttribute('src');
-                                    if (base64Str && base64Str.startsWith('data:image')) {
-                                        var dim = 30; var textPosX = data.cell.x + (data.cell.width / 2) - (dim / 2); var textPosY = data.cell.y + 2;
-                                        var format = base64Str.indexOf('image/png') > -1 ? 'PNG' : 'JPEG';
-                                        try { doc.addImage(base64Str, format, textPosX, textPosY, dim, dim); } catch (e) { console.error("Errore PDF:", e); }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                };
-                if (tableId === 'table-tracc') { autoTableOptions.bodyStyles = { minCellHeight: 35 }; }
-                doc.autoTable(autoTableOptions);
-
-                const pageCount = doc.internal.getNumberOfPages();
-                for (var i = 1; i <= pageCount; i++) {
-                    doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150);
-                    doc.text('Documento informatico validato digitalmente ai sensi del D.Lgs 193/07 e successivi.', 14, doc.internal.pageSize.height - 10);
-                    doc.text('Pagina ' + i + ' di ' + pageCount, 280, doc.internal.pageSize.height - 10, { align: 'right' });
-                }
-                doc.save(titoloDocumento.replace(/ /g, '_') + '_' + dataStampa + '.pdf');
-            } catch(error) { alert("🚨 Si è verificato un errore:\n\n" + error.message); }
-        };
-    </script>
-
+    <!-- LOGICHE JAVASCRIPT & FIREBASE -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, where, onSnapshot, getDocs, addDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
@@ -324,294 +629,472 @@
             messagingSenderId: "720937824810", 
             appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
         };
-        const app = initializeApp(firebaseConfig); 
-        window.db = getFirestore(app);
-        const db = window.db;
+        const app = initializeApp(firebaseConfig);
+        try {
+            initializeAppCheck(app, { 
+                provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), 
+                isTokenAutoRefreshEnabled: true 
+            });
+        } catch(e) { console.warn("AppCheck bypassato in ambiente locale."); }
+        const db = getFirestore(app);
 
-        document.getElementById('pestDate').value = new Date().toISOString().split('T')[0];
+        // STATO APPLICATIVO
+        window.activeOperator = sessionStorage.getItem("activeOperator") || "Operatore OSA";
+        window.dbTemp = []; window.dbSanif = []; window.dbPulizie = []; 
+        window.dbMerci = []; window.dbLotti = []; window.dbPest = []; window.dbSicurezza = [];
 
-        window.openTab = (tabId, btn, colorClass) => {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.className = 'tab-btn');
-            document.getElementById(tabId).classList.add('active');
-            btn.classList.add('active'); if(colorClass) btn.classList.add('active-' + colorClass);
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
+        window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} ore ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
+        window.formatDateSafe = (d) => { if (!d) return '-'; if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/'); return d; };
+
+        // SWITCH TAB
+        window.switchTab = (tabId, btn) => {
+            document.querySelectorAll('.workspace, .menu-tab').forEach(e => e.classList.remove('active'));
+            const target = document.getElementById('ws-' + tabId);
+            if(target) target.classList.add('active');
+            if(btn) btn.classList.add('active');
         };
 
-        function formatTime(ts) { 
-            if(!ts) return "Attendere..."; 
-            if(typeof ts.toDate === 'function') return ts.toDate().toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-            if(ts.seconds) return new Date(ts.seconds * 1000).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-            if(typeof ts === 'number' || typeof ts === 'string') return new Date(ts).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-            return ts;
-        }
+        // GESTIONE TEMPERATURE
+        window.salvaTemperatura = async () => {
+            const u = document.getElementById('tempUnita').value;
+            const v = parseFloat(document.getElementById('tempValore').value);
+            const dt = document.getElementById('tempDataOra').value ? document.getElementById('tempDataOra').value.replace('T', ' ') : window.getTimestamp();
+            const az = document.getElementById('tempAzione').value.trim();
 
-        window.renderRegistriTables = (dati) => {
-            const tbTemp = document.getElementById('table-temp'); const tbAree = document.getElementById('table-aree'); const tbPulizie = document.getElementById('table-pulizie');
-            let tCount = 0, gCount = 0, cCount = 0; let htmlTemp = '', htmlAree = '', htmlPulizie = '';
+            if(isNaN(v)) return window.showToast("⚠️ Inserisci un valore di temperatura valido");
 
-            dati.forEach((data) => {
-                let tipo = data.tipo_registro;
-                if (!tipo) {
-                    if (data.temperature && Object.keys(data.temperature).length > 0) tipo = 'temperature';
-                    else if (data.pulizie_eseguite && data.pulizie_eseguite.length > 0) {
-                        if (data.pulizie_eseguite[0].includes('S. Area')) tipo = 'aree'; else tipo = 'pulizie';
-                    } else { tipo = 'sconosciuto'; }
-                }
+            // Verifica range conforme
+            let conforme = true;
+            if(u.includes('Cucina') && (v < 0 || v > 4.5)) conforme = false;
+            if(u.includes('Carni') && (v < 0 || v > 3.5)) conforme = false;
+            if(u.includes('Verdure') && (v < 4 || v > 8)) conforme = false;
+            if(u.includes('Freezer') && (v > -17)) conforme = false;
+            if(u.includes('Farmaci') && (v < 2 || v > 8)) conforme = false;
 
-                let tagsHtml = '<div class="items-grid">'; let hasAnomaly = false; let isEmpty = false;
-
-                if (tipo === 'temperature' || tipo === 'temp') {
-                    if (data.temperature && Object.keys(data.temperature).length > 0) {
-                        for (const [nome, temp] of Object.entries(data.temperature)) {
-                            if (temp === "") continue; let val = parseFloat(temp); let limit = (nome.toLowerCase().includes('cong') || nome.toLowerCase().includes('cella')) ? -18 : 4;
-                            if (val > limit) { hasAnomaly = true; tagsHtml += `<span class="item-tag alert"><i class="fa-solid fa-triangle-exclamation"></i> ${nome}: ${val}°C</span>`; } else { tagsHtml += `<span class="item-tag">${nome}: ${val}°C</span>`; }
-                        }
-                    } else { isEmpty = true; }
-                } else if (tipo === 'aree') {
-                    if (data.pulizie_eseguite && data.pulizie_eseguite.length > 0) {
-                        data.pulizie_eseguite.forEach(p => tagsHtml += `<span class="item-tag">✓ ${p.replace('S. Area: ', '')}</span>`);
-                    } else { isEmpty = true; }
-                } else if (tipo === 'pulizie') {
-                    if (data.pulizie_eseguite && data.pulizie_eseguite.length > 0) {
-                        data.pulizie_eseguite.forEach(p => tagsHtml += `<span class="item-tag">✓ ${p}</span>`);
-                    } else { isEmpty = true; }
-                } else { isEmpty = true; }
-
-                tagsHtml += '</div>';
-                if (isEmpty || tipo === 'sconosciuto') return; 
-
-                tCount++;
-                let noteText = data.note ? data.note.trim() : ""; 
-                let azioneText = data.azione_correttiva ? data.azione_correttiva.trim() : "";
-                let azCorrettivaHtml = azioneText ? `<br><strong style="color:var(--danger)">Azione:</strong> ${azioneText}` : "";
-                
-                let statusBadge = ""; let rowClass = "";
-                if (!hasAnomaly) { statusBadge = `<span class="badge conforme">✓ Conforme</span>`; } else if (hasAnomaly && (noteText.length > 3 || azioneText.length > 3)) { statusBadge = `<span class="badge gestito">⚠️ Gestito</span>`; gCount++; } else { statusBadge = `<span class="badge critico">❌ Critico</span>`; rowClass = "row-critical"; cCount++; }
-
-                const rigaHtml = `<tr class="${rowClass}"><td>${statusBadge}</td><td><strong>${data.data_dichiarata}</strong><br><span class="server-time">${formatTime(data.timestamp_server)}</span></td><td><strong>${data.operatore || 'Ignoto'}</strong></td><td>${tagsHtml}</td><td><div style="font-size:12px; max-width: 250px; line-height: 1.4;"><span style="font-style:italic;">${noteText || '-'}</span>${azCorrettivaHtml}</div></td><td><img src="${data.firma_base64}" class="firma-img"></td></tr>`;
-
-                if(tipo === 'temperature' || tipo === 'temp') htmlTemp += rigaHtml; else if(tipo === 'aree') htmlAree += rigaHtml; else if(tipo === 'pulizie') htmlPulizie += rigaHtml;
+            await addDoc(collection(db, "haccp_temperature"), {
+                unita: u,
+                valore: v,
+                dataOra: dt,
+                conforme: conforme,
+                azione: az || (conforme ? 'Nessuna (Nella norma)' : 'ATTENZIONE: Fuori range'),
+                op: window.activeOperator,
+                ts: Date.now()
             });
 
-            tbTemp.innerHTML = htmlTemp || '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nessun record in questo periodo.</td></tr>'; 
-            tbAree.innerHTML = htmlAree || '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nessuna sanificazione in questo periodo.</td></tr>'; 
-            tbPulizie.innerHTML = htmlPulizie || '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nessuna pulizia in questo periodo.</td></tr>';
-            document.getElementById('kpi-totali').innerText = tCount; document.getElementById('kpi-gestite').innerText = gCount; document.getElementById('kpi-critiche').innerText = cCount;
-            const kBox = document.getElementById('kpi-box-conformi'); const kText = document.getElementById('kpi-conformi');
-            if (cCount > 0) { kBox.className = "kpi-card danger"; kText.innerText = "Intervento Richiesto"; } else if (gCount > 0) { kBox.className = "kpi-card warning"; kText.innerText = "Attenzione (Gestita)"; } else { kBox.className = "kpi-card success"; kText.innerText = "Ottimo (100%)"; }
+            document.getElementById('tempValore').value = '';
+            document.getElementById('tempAzione').value = '';
+            window.showToast("✅ Temperatura registrata!");
         };
 
-        window.renderCicloCucina = (dati) => {
-            const tbody = document.getElementById('table-ciclo'); let htmlCiclo = ''; let cTot = 0, cKo = 0;
-            dati.forEach((data) => { cTot++;
-                let badge = ""; let rowClass = "";
-                if (data.esito_ccp === "CONFORME") { badge = `<span class="badge conforme">✓ Conforme</span>`; } else { badge = `<span class="badge critico">❌ ${data.esito_ccp}</span>`; rowClass = "row-critical"; cKo++; }
-                let infoAbbattimento = data.durata_abbattimento_min ? `<strong>${data.durata_abbattimento_min} min</strong><br><span style="font-size:12px; color:var(--blue);">${data.temp_abbattimento}°C</span>` : '<span style="color:var(--text-muted); font-size: 12px;">Non applicato</span>';
-                htmlCiclo += `<tr class="${rowClass}"><td>${badge}</td><td><strong>${data.data_processo}</strong><br><span class="server-time">${formatTime(data.timestamp_server)}</span></td><td><strong style="color:var(--success); font-size:15px;">${data.alimento}</strong><br><span style="font-size:12px; color:var(--text-muted);">Lotto: ${data.lotto}</span><br><span style="font-size:11px; color:var(--danger); font-weight:bold;">Allergeni: ${data.allergeni}</span></td><td><strong style="font-size:16px;">${data.temp_cottura} °C</strong><br><span style="font-size:12px;">Fine: ${data.ora_fine_cottura || '-'}</span></td><td>${infoAbbattimento}</td><td><span style="font-size: 13px; font-weight: bold;">${data.destinazione}</span><br><strong style="font-size:12px; color:var(--purple); background: var(--purple-light); padding: 2px 5px; border-radius: 4px;">Scad: ${data.scadenza}</strong></td><td><div style="font-size:12px; max-width: 150px; font-style:italic;">${data.azione_correttiva || '-'}</div></td><td><strong>${data.operatore}</strong><br><img src="${data.firma_base64}" class="firma-img"></td></tr>`;
+        window.renderTableTemp = () => {
+            const tb = document.querySelector('#tableTemp tbody'); if(!tb) return;
+            tb.innerHTML = '';
+            window.dbTemp.sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 30).forEach(r => {
+                const badge = r.conforme ? `<span class="badge-status status-ok">🟢 CONFORME</span>` : `<span class="badge-status status-err">🔴 ANOMALIA</span>`;
+                tb.innerHTML += `
+                    <tr>
+                        <td>${badge}</td>
+                        <td><strong>${r.dataOra}</strong></td>
+                        <td>${r.unita}</td>
+                        <td><strong>${r.valore} °C</strong></td>
+                        <td><small style="color:${r.conforme ? '#475569' : '#b91c1c'};">${r.azione}</small></td>
+                        <td>${r.op}</td>
+                        <td class="restrict-oss"><button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_temperature','${r.id}')">✕</button></td>
+                    </tr>`;
             });
-            tbody.innerHTML = htmlCiclo || '<tr><td colspan="8" style="text-align:center; padding: 20px;">Nessun ciclo cottura/abbattimento in questo periodo.</td></tr>';
-            document.getElementById('kpi-ciclo-tot').innerText = cTot; document.getElementById('kpi-ciclo-ko').innerText = cKo;
         };
 
-        window.renderTracciabilita = (dati) => {
-            const tbody = document.getElementById('table-tracc'); let tTot = 0; let htmlTracc = '';
-            dati.forEach((data) => { tTot++; htmlTracc += `<tr><td><strong>${data.data_dichiarata}</strong><br><span class="server-time">${formatTime(data.timestamp_server)}</span></td><td><span class="badge teal-badge">${data.categoria_prodotto}</span></td><td><img src="${data.foto_base64}" class="thumb-img" onclick="zoomImage(this.src)" title="Ingrandisci"></td><td><strong>${data.operatore}</strong><br><img src="${data.firma_base64}" class="firma-img"></td></tr>`; });
-            tbody.innerHTML = htmlTracc || '<tr><td colspan="4" style="text-align:center; padding: 20px;">Nessun lotto tracciato in questo periodo.</td></tr>'; document.getElementById('kpi-tracc-tot').innerText = tTot;
-        };
+        // GESTIONE SANIFICAZIONI
+        window.salvaSanificazione = async () => {
+            const a = document.getElementById('sanifArea').value;
+            const p = document.getElementById('sanifProdotto').value.trim();
+            const n = document.getElementById('sanifNote').value.trim() || 'Regolare';
 
-        window.renderMerci = (dati) => {
-            const tbody = document.getElementById('table-merci'); let htmlMerci = ''; let mTot = 0, mOk = 0, mKo = 0;
-            dati.forEach((data) => { mTot++; let badge = ""; let rowClass = "";
-                if (data.esito === "Merce Accettata") { badge = `<span class="badge conforme">✓ Accettata</span>`; mOk++; } else if (data.esito === "Accettata con Riserva") { badge = `<span class="badge gestito">⚠️ Riserva</span>`; mOk++; rowClass = "row-warning"; } else { badge = `<span class="badge critico">❌ Respinta</span>`; mKo++; rowClass = "row-critical"; }
-                htmlMerci += `<tr class="${rowClass}"><td>${badge}</td><td><strong>${data.data_dichiarata}</strong><br><span class="server-time">${formatTime(data.timestamp_server)}</span></td><td><strong>${data.fornitore}</strong><br><span style="font-size:12px; color:var(--text-muted);">${data.prodotto || ''}</span></td><td><strong style="font-size:16px;">${data.temperatura || '-'} °C</strong></td><td>${data.imballaggi === 'Intatti' ? '✅ Intatti' : '❌ Danneggiati'}</td><td><strong>${data.operatore}</strong><br><img src="${data.firma_base64}" class="firma-img"></td></tr>`;
+            await addDoc(collection(db, "haccp_sanificazioni"), {
+                area: a, prodotto: p, note: n, op: window.activeOperator, dataOra: window.getTimestamp(), ts: Date.now()
             });
-            tbody.innerHTML = htmlMerci || '<tr><td colspan="6" style="text-align:center; padding: 40px;">Nessun arrivo registrato in questo periodo.</td></tr>';
-            document.getElementById('kpi-merci-tot').innerText = mTot; document.getElementById('kpi-merci-ok').innerText = mOk; document.getElementById('kpi-merci-ko').innerText = mKo;
+            window.showToast("✅ Sanificazione registrata!");
         };
 
-        let unsubRegistri, unsubCiclo, unsubMerci, unsubTracc;
+        window.renderTableSanif = () => {
+            const tb = document.querySelector('#tableSanif tbody'); if(!tb) return;
+            tb.innerHTML = '';
+            window.dbSanif.sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 30).forEach(r => {
+                tb.innerHTML += `
+                    <tr>
+                        <td><span class="badge-status status-ok">🟢 ESEGUITO</span></td>
+                        <td><strong>${r.dataOra}</strong></td>
+                        <td><strong>${r.area}</strong></td>
+                        <td>${r.prodotto}</td>
+                        <td><small>${r.note}</small></td>
+                        <td>${r.op}</td>
+                        <td class="restrict-oss"><button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_sanificazioni','${r.id}')">✕</button></td>
+                    </tr>`;
+            });
+        };
 
-        window.initListeners = (filterType) => {
-            if(unsubRegistri) unsubRegistri(); if(unsubCiclo) unsubCiclo(); if(unsubMerci) unsubMerci(); if(unsubTracc) unsubTracc();
-            document.getElementById('btnRestoreLive').style.display = 'none';
+        // GESTIONE PULIZIE (MOD. 05)
+        window.salvaPulizia = async () => {
+            const t = document.getElementById('puliziaTipo').value;
+            const e = document.getElementById('puliziaEsito').value;
+            const n = document.getElementById('puliziaNote').value.trim() || 'Regolare';
 
-            // Reset visuale tabelle durante il caricamento
-            ['table-temp', 'table-aree', 'table-pulizie', 'table-ciclo', 'table-merci', 'table-tracc', 'table-pest'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Caricamento dati dal Server...</td></tr>';
+            await addDoc(collection(db, "haccp_pulizie"), {
+                tipo: t, esito: e, note: n, op: window.activeOperator, dataOra: window.getTimestamp(), ts: Date.now()
+            });
+            window.showToast("✅ Scheda pulizia registrata!");
+        };
+
+        window.renderTablePulizie = () => {
+            const tb = document.querySelector('#tablePulizie tbody'); if(!tb) return;
+            tb.innerHTML = '';
+            window.dbPulizie.sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 30).forEach(r => {
+                const b = r.esito === 'CONFORME' ? `<span class="badge-status status-ok">🟢 CONFORME</span>` : `<span class="badge-status status-err">🔴 NON CONF.</span>`;
+                tb.innerHTML += `
+                    <tr>
+                        <td>${b}</td>
+                        <td><strong>${r.dataOra}</strong></td>
+                        <td>${r.tipo}</td>
+                        <td><strong>${r.esito}</strong></td>
+                        <td><small>${r.note}</small></td>
+                        <td>${r.op}</td>
+                        <td class="restrict-oss"><button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_pulizie','${r.id}')">✕</button></td>
+                    </tr>`;
+            });
+        };
+
+        // GESTIONE MERCI IN ARRIVO
+        window.salvaMerce = async () => {
+            const f = document.getElementById('merceFornitore').value.trim();
+            const t = document.getElementById('merceTipo').value.trim();
+            const tmp = document.getElementById('merceTemp').value;
+            const imb = document.getElementById('merceImballi').value;
+            const es = document.getElementById('merceEsito').value;
+
+            if(!f || !t) return window.showToast("⚠️ Fornitore e Tipologia Alimento sono obbligatori");
+
+            await addDoc(collection(db, "haccp_merci"), {
+                fornitore: f, tipo: t, temp: tmp ? `${tmp}°C` : 'N/D', imballi: imb, esito: es, op: window.activeOperator, dataOra: window.getTimestamp(), ts: Date.now()
             });
 
-            let startDate = null;
-            if(filterType === 'currentMonth') {
-                startDate = new Date(); startDate.setDate(1); startDate.setHours(0,0,0,0);
+            document.getElementById('merceFornitore').value = '';
+            document.getElementById('merceTipo').value = '';
+            document.getElementById('merceTemp').value = '';
+            window.showToast("✅ Ricezione merce archiviata!");
+        };
+
+        window.renderTableMerci = () => {
+            const tb = document.querySelector('#tableMerci tbody'); if(!tb) return;
+            tb.innerHTML = '';
+            window.dbMerci.sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 30).forEach(r => {
+                let badgeClass = r.esito === 'ACCETTATA' ? 'status-ok' : (r.esito === 'CON RISERVA' ? 'status-warn' : 'status-err');
+                tb.innerHTML += `
+                    <tr>
+                        <td><span class="badge-status ${badgeClass}">${r.esito}</span></td>
+                        <td><strong>${r.dataOra}</strong></td>
+                        <td><strong>${r.fornitore}</strong></td>
+                        <td>${r.tipo}</td>
+                        <td>${r.temp}</td>
+                        <td><small>${r.imballi}</small></td>
+                        <td>${r.op}</td>
+                        <td class="restrict-oss"><button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_merci','${r.id}')">✕</button></td>
+                    </tr>`;
+            });
+        };
+
+        // TRACCIABILITÀ LOTTI (FOTOGRAFICA)
+        window.salvaLottoFotografico = async () => {
+            const cat = document.getElementById('lottoCategoria').value;
+            const desc = document.getElementById('lottoDescrizione').value.trim() || 'Etichetta ingrediente';
+            const fileInput = document.getElementById('lottoFotoFile');
+
+            if(!fileInput.files || fileInput.files.length === 0) {
+                return window.showToast("⚠️ Seleziona o scatta una foto dell'etichetta del lotto!");
             }
 
-            const buildQuery = (colName) => {
-                let colRef = collection(db, colName);
-                return startDate ? query(colRef, where("timestamp_server", ">=", startDate), orderBy("timestamp_server", "desc")) : query(colRef, orderBy("timestamp_server", "desc"));
-            };
-
-            unsubRegistri = onSnapshot(buildQuery("haccp_registri"), snap => { let a=[]; snap.forEach(d=>a.push(d.data())); window.renderRegistriTables(a); });
-            unsubCiclo = onSnapshot(buildQuery("haccp_ciclo_cucina"), snap => { let a=[]; snap.forEach(d=>a.push(d.data())); window.renderCicloCucina(a); });
-            unsubMerci = onSnapshot(buildQuery("haccp_merci"), snap => { let a=[]; snap.forEach(d=>a.push(d.data())); window.renderMerci(a); });
-            unsubTracc = onSnapshot(buildQuery("haccp_tracciabilita"), snap => { let a=[]; snap.forEach(d=>a.push(d.data())); window.renderTracciabilita(a); });
-        };
-
-        window.initListeners('currentMonth');
-
-        window.creaArchivioTrimestrale = async () => {
-            try {
-                const threeMonthsAgo = new Date();
-                threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-
-                let archivio = { registri: [], ciclo: [], merci: [], tracc: [] };
-                let docRefsToDelete = [];
-
-                const cols = [ {name: "haccp_registri", key: "registri"}, {name: "haccp_ciclo_cucina", key: "ciclo"}, {name: "haccp_merci", key: "merci"}, {name: "haccp_tracciabilita", key: "tracc"} ];
-
-                document.getElementById('cloud-status-text').innerText = "Estrazione in corso...";
-                
-                for(let col of cols) {
-                    const q = query(collection(db, col.name), where("timestamp_server", "<", threeMonthsAgo));
-                    const snap = await getDocs(q);
-                    snap.forEach(doc => {
-                        let data = doc.data();
-                        if(data.timestamp_server && typeof data.timestamp_server.toDate === 'function') { data.timestamp_server = data.timestamp_server.toMillis(); }
-                        archivio[col.key].push({id: doc.id, ...data});
-                        docRefsToDelete.push(doc.ref);
-                    });
-                }
-
-                document.getElementById('cloud-status-text').innerText = "Cloud Attivo";
-
-                if(docRefsToDelete.length === 0) return alert("Non ci sono registrazioni antecedenti a 3 mesi da archiviare.");
-
-                const blob = new Blob([JSON.stringify(archivio, null, 2)], {type: "application/json"});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url; a.download = `Archivio_HACCP_Antecedente_${threeMonthsAgo.toISOString().split('T')[0]}.json`;
-                a.click();
-
-                if(confirm(`File scaricato (${docRefsToDelete.length} record archiviati).\n\nEliminare definitivamente i dati archiviati dal Cloud per preservare spazio e velocità?`)) {
-                    for(let ref of docRefsToDelete) { await deleteDoc(ref); }
-                    alert("Pulizia database completata con successo!");
-                }
-
-            } catch(e) { alert("Errore durante l'archiviazione: " + e.message); }
-        };
-
-        window.loadLocalArchive = (event) => {
-            const file = event.target.files[0]; if(!file) return;
+            const file = fileInput.files[0];
             const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if(unsubRegistri) unsubRegistri(); if(unsubCiclo) unsubCiclo(); if(unsubMerci) unsubMerci(); if(unsubTracc) unsubTracc();
+            reader.onload = async (e) => {
+                // Compressione canvas veloce
+                const img = new Image();
+                img.onload = async () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    const maxDim = 900;
+                    if(w > maxDim || h > maxDim) {
+                        if(w > h) { h = Math.round((h * maxDim)/w); w = maxDim; }
+                        else { w = Math.round((w * maxDim)/h); h = maxDim; }
+                    }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    const b64 = canvas.toDataURL('image/jpeg', 0.70);
 
-                    document.getElementById('btnRestoreLive').style.display = 'inline-block';
-                    document.getElementById('cloud-status-badge').style.background = 'var(--danger)';
-                    document.getElementById('cloud-status-badge').style.boxShadow = '0 0 5px var(--danger)';
-                    document.getElementById('cloud-status-text').innerText = "Archivio Offline Sola Lettura";
-
-                    if(data.registri) window.renderRegistriTables(data.registri);
-                    if(data.ciclo) window.renderCicloCucina(data.ciclo);
-                    if(data.merci) window.renderMerci(data.merci);
-                    if(data.tracc) window.renderTracciabilita(data.tracc);
-
-                    alert("Archivio Storico caricato! Ora puoi consultare le tabelle o generare i PDF di controllo.");
-                } catch(err) { alert("File di archivio non valido o corrotto."); }
+                    await addDoc(collection(db, "haccp_lotti"), {
+                        categoria: cat, desc: desc, imgBase64: b64, op: window.activeOperator, data: window.getTimestamp(), ts: Date.now()
+                    });
+                    fileInput.value = '';
+                    document.getElementById('lottoDescrizione').value = '';
+                    window.showToast("✅ Foto lotto archiviata!");
+                };
+                img.src = e.target.result;
             };
-            reader.readAsText(file);
+            reader.readAsDataURL(file);
         };
 
-        window.restoreLiveCloud = () => {
-            document.getElementById('cloud-status-badge').style.background = 'var(--success)';
-            document.getElementById('cloud-status-badge').style.boxShadow = '0 0 5px var(--success)';
-            document.getElementById('cloud-status-text').innerText = "Cloud Attivo";
-            window.initListeners(document.getElementById('globalTimeFilter').value);
+        window.renderLotti = () => {
+            const gallery = document.getElementById('lottiGallery'); if(!gallery) return;
+            gallery.innerHTML = '';
+            if(window.dbLotti.length === 0) {
+                gallery.innerHTML = '<p style="color:#64748b; font-size:0.85em;">Nessun lotto alimentare fotografato.</p>';
+                return;
+            }
+            window.dbLotti.sort((a,b) => (b.ts||0) - (a.ts||0)).forEach(l => {
+                gallery.innerHTML += `
+                    <div class="lotto-card">
+                        <img src="${l.imgBase64}" class="lotto-thumb" onclick="window.apriLightbox('${l.imgBase64}', '${l.categoria}: ${l.desc} (${l.data})')">
+                        <div style="padding:8px; font-size:0.8em; flex-grow:1;">
+                            <strong style="color:var(--primary-color);">${l.categoria}</strong><br>
+                            <span>${l.desc}</span><br>
+                            <small style="color:#64748b;">${l.data} (${l.op})</small>
+                            <div style="margin-top:6px; display:flex; justify-content:flex-end;">
+                                <button class="btn-danger restrict-oss" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_lotti','${l.id}')">🗑️</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
         };
 
-        // Sincronizzazione Dati Struttura con il Gestionale Principale
-        onSnapshot(doc(db, "struttura", "info"), (docSnap) => {
-            if (docSnap.exists()) {
-                const d = docSnap.data(); window.datiStruttura = d;
-                document.getElementById('strutNome').value = d.denominazione || ''; 
-                document.getElementById('strutIndirizzo').value = d.indirizzo || '';
-                document.getElementById('strutPiva').value = d.piva || ''; 
-                document.getElementById('strutAdmin').value = d.admin || ''; 
-                document.getElementById('strutHaccp').value = d.haccp || '';
-                if(d.denominazione) { 
-                    document.getElementById('main-title').innerText = d.denominazione; 
-                    document.title = "Dashboard HACCP - " + d.denominazione; 
+        window.apriLightbox = (src, meta) => {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightboxMeta').innerText = meta;
+            document.getElementById('lightboxModal').style.display = 'flex';
+        };
+
+        // PEST CONTROL
+        window.salvaPestControl = async () => {
+            const p = document.getElementById('pestPostazione').value;
+            const t = document.getElementById('pestTarget').value;
+            const e = document.getElementById('pestEsito').value;
+            const az = document.getElementById('pestAzioni').value.trim() || 'Nessuna azione richiesta';
+
+            await addDoc(collection(db, "haccp_pest"), {
+                postazione: p, target: t, esito: e, azioni: az, op: window.activeOperator, dataOra: window.getTimestamp(), ts: Date.now()
+            });
+            document.getElementById('pestAzioni').value = '';
+            window.showToast("✅ Controllo infestanti registrato!");
+        };
+
+        window.renderTablePest = () => {
+            const tb = document.querySelector('#tablePest tbody'); if(!tb) return;
+            tb.innerHTML = '';
+            window.dbPest.sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 30).forEach(r => {
+                let badgeClass = r.esito === 'REGOLARE' ? 'status-ok' : (r.esito === 'ESCA CONSUMATA' ? 'status-warn' : 'status-err');
+                tb.innerHTML += `
+                    <tr>
+                        <td><span class="badge-status ${badgeClass}">${r.esito}</span></td>
+                        <td><strong>${r.dataOra}</strong></td>
+                        <td>${r.postazione}</td>
+                        <td>${r.target}</td>
+                        <td><strong>${r.esito}</strong></td>
+                        <td><small>${r.azioni}</small></td>
+                        <td>${r.op}</td>
+                        <td class="restrict-oss"><button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_pest','${r.id}')">✕</button></td>
+                    </tr>`;
+            });
+        };
+
+        // SICUREZZA SUL LAVORO (D.LGS 81/08)
+        window.salvaScadenzaSicurezza = async () => {
+            const n = document.getElementById('sicNome').value.trim();
+            const a = document.getElementById('sicArea').value;
+            const d = document.getElementById('sicDataScadenza').value;
+
+            if(!n || !d) return window.showToast("⚠️ Titolo dell'adempimento e Data di Scadenza sono obbligatori!");
+
+            await addDoc(collection(db, "sicurezza_8108"), {
+                nome: n, area: a, dataScadenza: d, op: window.activeOperator, ts: Date.now()
+            });
+
+            document.getElementById('sicNome').value = '';
+            document.getElementById('sicDataScadenza').value = '';
+            window.showToast("✅ Scadenza sicurezza 81/08 registrata!");
+        };
+
+        window.renderTableSicurezza = () => {
+            const tb = document.querySelector('#tableSicurezza tbody'); if(!tb) return;
+            tb.innerHTML = '';
+            const today = new Date(); today.setHours(0,0,0,0);
+            let imminentiCount = 0;
+
+            window.dbSicurezza.sort((a,b) => (a.dataScadenza||'').localeCompare(b.dataScadenza||'')).forEach(r => {
+                const exp = new Date(r.dataScadenza + 'T00:00:00');
+                const diffDays = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
+                let badge, diffText;
+
+                if(diffDays < 0) {
+                    badge = `<span class="badge-status status-err">🔴 SCADUTO</span>`;
+                    diffText = `<span style="color:#991b1b; font-weight:bold;">Scaduto da ${Math.abs(diffDays)} gg</span>`;
+                    imminentiCount++;
+                } else if(diffDays <= 30) {
+                    badge = `<span class="badge-status status-warn">🟡 IN SCADENZA</span>`;
+                    diffText = `<span style="color:#b45309; font-weight:bold;">Tra ${diffDays} gg</span>`;
+                    imminentiCount++;
+                } else {
+                    badge = `<span class="badge-status status-ok">🟢 IN REGOLA</span>`;
+                    diffText = `Tra ${diffDays} gg`;
                 }
+
+                tb.innerHTML += `
+                    <tr>
+                        <td>${badge}</td>
+                        <td><strong>${window.formatDateSafe(r.dataScadenza)}</strong></td>
+                        <td>${diffText}</td>
+                        <td><strong>${r.nome}</strong></td>
+                        <td><small>${r.area}</small></td>
+                        <td>${r.op}</td>
+                        <td class="restrict-oss"><button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('sicurezza_8108','${r.id}')">✕</button></td>
+                    </tr>`;
+            });
+
+            if(document.getElementById('kpi-scadenze-8108')) {
+                document.getElementById('kpi-scadenze-8108').innerText = imminentiCount;
+            }
+        };
+
+        // AGGIORNAMENTO KPI TOTALI
+        window.aggiornaKpiGenerali = () => {
+            const tot = window.dbTemp.length + window.dbSanif.length + window.dbPulizie.length + window.dbMerci.length + window.dbPest.length;
+            const anomalie = window.dbTemp.filter(t => !t.conforme).length + window.dbMerci.filter(m => m.esito === 'RESPINTA').length;
+
+            if(document.getElementById('kpi-totali')) document.getElementById('kpi-totali').innerText = tot;
+            if(document.getElementById('kpi-anomalie')) document.getElementById('kpi-anomalie').innerText = anomalie;
+            if(document.getElementById('kpi-conformita')) {
+                const perc = tot > 0 ? Math.round(((tot - anomalie) / tot) * 100) : 100;
+                document.getElementById('kpi-conformita').innerText = `${perc}%`;
+            }
+        };
+
+        // SALVATAGGIO INFORMAZIONI STRUTTURA
+        window.salvaDatiStruttura = async () => {
+            const d = {
+                denominazione: document.getElementById('haccpDenominazione').value.trim(),
+                indirizzo: document.getElementById('haccpIndirizzo').value.trim(),
+                piva: document.getElementById('haccpPiva').value.trim(),
+                legaleRappr: document.getElementById('haccpLegaleRappr').value.trim(),
+                responsabile: document.getElementById('haccpResponsabile').value.trim(),
+                aggiornatoIl: window.getTimestamp()
+            };
+            await setDoc(doc(db, "impostazioni", "haccp_struttura"), d, { merge: true });
+            window.showToast("✅ Dati struttura salvati!");
+        };
+
+        // ELIMINAZIONE RECORD
+        window.eliminaRecord = async (colName, id) => {
+            if(confirm("Eliminare definitivamente questo record di autocontrollo?")) {
+                await deleteDoc(doc(db, colName, id));
+                window.showToast("Record eliminato");
+            }
+        };
+
+        // STAMPA VERBALI FORMALI IN PDF/A4
+        window.stampaRegistro = (tipo) => {
+            const dNome = document.getElementById('haccpDenominazione')?.value || 'NUOVA VILLA SILVANA';
+            const dInd = document.getElementById('haccpIndirizzo')?.value || 'Terni';
+            const dPiva = document.getElementById('haccpPiva')?.value || '-';
+            const dResp = document.getElementById('haccpResponsabile')?.value || 'Responsabile Autocontrollo';
+
+            let titolo = "", rowsHtml = "";
+
+            if(tipo === 'temp') {
+                titolo = "REGISTRO CONTROLLO TEMPERATURE FRIGORIFERI E CELLE";
+                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Impianto</th><th>Temp. Rilevata</th><th>Azione Correttiva</th><th>Operatore (OSA)</th></tr></thead><tbody>`;
+                window.dbTemp.forEach(r => {
+                    rowsHtml += `<tr><td>${r.dataOra}</td><td>${r.unita}</td><td><strong>${r.valore} °C</strong></td><td>${r.azione}</td><td>${r.op}</td></tr>`;
+                });
+            } else if(tipo === 'sanif') {
+                titolo = "REGISTRO SANIFICAZIONE E DISINFEZIONE AMBIENTI";
+                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Area Trattata</th><th>Detergente / Disinfettante</th><th>Note</th><th>Operatore (OSA)</th></tr></thead><tbody>`;
+                window.dbSanif.forEach(r => {
+                    rowsHtml += `<tr><td>${r.dataOra}</td><td>${r.area}</td><td>${r.prodotto}</td><td>${r.note}</td><td>${r.op}</td></tr>`;
+                });
+            } else if(tipo === 'pulizie') {
+                titolo = "REGISTRO PULIZIE GIORNALIERE E PERIODICHE (MOD. 05)";
+                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Operazione Eseguita</th><th>Esito Controllo</th><th>Note</th><th>Operatore (OSA)</th></tr></thead><tbody>`;
+                window.dbPulizie.forEach(r => {
+                    rowsHtml += `<tr><td>${r.dataOra}</td><td>${r.tipo}</td><td>${r.esito}</td><td>${r.note}</td><td>${r.op}</td></tr>`;
+                });
+            } else if(tipo === 'merci') {
+                titolo = "REGISTRO CONTROLLO RICEZIONE MERCI E ALIMENTI";
+                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Fornitore</th><th>Tipologia Merce</th><th>Temp. (°C)</th><th>Esito</th><th>Operatore (OSA)</th></tr></thead><tbody>`;
+                window.dbMerci.forEach(r => {
+                    rowsHtml += `<tr><td>${r.dataOra}</td><td>${r.fornitore}</td><td>${r.tipo}</td><td>${r.temp}</td><td>${r.esito}</td><td>${r.op}</td></tr>`;
+                });
+            } else if(tipo === 'pest') {
+                titolo = "REGISTRO MONITORAGGIO INFESTANTI (PEST CONTROL)";
+                rowsHtml = `<thead><tr><th>Data</th><th>Postazione</th><th>Target</th><th>Esito Rilevato</th><th>Azioni</th><th>Operatore (OSA)</th></tr></thead><tbody>`;
+                window.dbPest.forEach(r => {
+                    rowsHtml += `<tr><td>${r.dataOra}</td><td>${r.postazione}</td><td>${r.target}</td><td>${r.esito}</td><td>${r.azioni}</td><td>${r.op}</td></tr>`;
+                });
+            } else if(tipo === 'sicurezza') {
+                titolo = "SCADENZARIO SICUREZZA SUL LAVORO (D.LGS 81/08)";
+                rowsHtml = `<thead><tr><th>Adempimento Obbligatorio</th><th>Area di Riferimento</th><th>Data di Scadenza</th><th>Stato</th></tr></thead><tbody>`;
+                window.dbSicurezza.forEach(r => {
+                    rowsHtml += `<tr><td>${r.nome}</td><td>${r.area}</td><td>${window.formatDateSafe(r.dataScadenza)}</td><td>Registrato</td></tr>`;
+                });
+            }
+
+            rowsHtml += `</tbody>`;
+
+            let html = `
+                <div class="print-header">
+                    <h1>${dNome}</h1>
+                    <p style="margin:4px 0; font-size:10pt;">${dInd} | P.IVA: ${dPiva}</p>
+                    <h3 style="margin:12px 0 4px 0; color:#0f766e;">${titolo}</h3>
+                    <p style="font-size:9pt; color:#64748b;">Rapporto ufficiale estratto dal Sistema di Autocontrollo NVS Masterpiece</p>
+                </div>
+                <table class="print-table">
+                    ${rowsHtml}
+                </table>
+                <div style="margin-top:35px; display:flex; justify-content:space-between; font-size:9pt;">
+                    <div>Emesso il: ${window.getTimestamp()}</div>
+                    <div style="text-align:center;">
+                        Firma Responsabile Autocontrollo / RSPP:<br><br>
+                        __________________________________<br>
+                        <strong>${dResp}</strong>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('printArea').innerHTML = html;
+            setTimeout(() => window.print(), 300);
+        };
+
+        // REAL-TIME FIRESTORE LISTENERS
+        onSnapshot(collection(db, "haccp_temperature"), snap => { window.dbTemp = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTableTemp(); window.aggiornaKpiGenerali(); });
+        onSnapshot(collection(db, "haccp_sanificazioni"), snap => { window.dbSanif = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTableSanif(); window.aggiornaKpiGenerali(); });
+        onSnapshot(collection(db, "haccp_pulizie"), snap => { window.dbPulizie = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTablePulizie(); window.aggiornaKpiGenerali(); });
+        onSnapshot(collection(db, "haccp_merci"), snap => { window.dbMerci = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTableMerci(); window.aggiornaKpiGenerali(); });
+        onSnapshot(collection(db, "haccp_lotti"), snap => { window.dbLotti = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderLotti(); });
+        onSnapshot(collection(db, "haccp_pest"), snap => { window.dbPest = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTablePest(); window.aggiornaKpiGenerali(); });
+        onSnapshot(collection(db, "sicurezza_8108"), snap => { window.dbSicurezza = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTableSicurezza(); });
+
+        // LETTURA DATI STRUTTURA SALVATI
+        onSnapshot(doc(db, "impostazioni", "haccp_struttura"), docSnap => {
+            if(docSnap.exists()) {
+                const s = docSnap.data();
+                if(document.getElementById('haccpDenominazione')) document.getElementById('haccpDenominazione').value = s.denominazione || '';
+                if(document.getElementById('haccpIndirizzo')) document.getElementById('haccpIndirizzo').value = s.indirizzo || '';
+                if(document.getElementById('haccpPiva')) document.getElementById('haccpPiva').value = s.piva || '';
+                if(document.getElementById('haccpLegaleRappr')) document.getElementById('haccpLegaleRappr').value = s.legaleRappr || '';
+                if(document.getElementById('haccpResponsabile')) document.getElementById('haccpResponsabile').value = s.responsabile || '';
             }
         });
 
-        document.getElementById('btnSalvaStruttura').addEventListener('click', async () => {
-            const data = {
-                denominazione: document.getElementById('strutNome').value.trim(),
-                indirizzo: document.getElementById('strutIndirizzo').value.trim(),
-                piva: document.getElementById('strutPiva').value.trim(),
-                admin: document.getElementById('strutAdmin').value.trim(),
-                haccp: document.getElementById('strutHaccp').value.trim()
-            };
-            await setDoc(doc(db, "struttura", "info"), data, { merge: true });
-            window.showToast("✅ Dati Struttura aggiornati globalmente!");
-        });
-
-        // Configurazione Liste Tablet
-        const configRef = doc(db, "configurazioni", "liste"); let currentConfig = { frigoriferi: [], aree: [], pulizie: [] };
-        onSnapshot(configRef, (docSnap) => {
-            if (docSnap.exists()) currentConfig = docSnap.data();
-            const render = (arr, id, key) => { const c = document.getElementById(id); c.innerHTML = ''; if(arr) arr.forEach((item, idx) => c.innerHTML += `<div class="item-tag">${item} <span style="color:var(--danger); cursor:pointer; margin-left:5px; font-weight:bold; font-size:14px;" title="Rimuovi" onclick="removeConfigItem('${key}', ${idx})">✕</span></div>`); };
-            render(currentConfig.frigoriferi, 'list-frigoriferi', 'frigoriferi'); render(currentConfig.aree, 'list-aree', 'aree'); render(currentConfig.pulizie, 'list-pulizie', 'pulizie');
-        });
-        window.addConfigItem = async (key, inputId) => { const el = document.getElementById(inputId); const val = el.value.trim(); if (!val) return; let arr = currentConfig[key] || []; arr.push(val); await setDoc(configRef, { [key]: arr }, { merge: true }); el.value = ''; };
-        window.removeConfigItem = async (key, idx) => { let arr = currentConfig[key] || []; arr.splice(idx, 1); await setDoc(configRef, { [key]: arr }, { merge: true }); };
-
-        // Sicurezza 81/08 Scadenziario
-        document.getElementById('btnAddSicurezza').addEventListener('click', async () => {
-            const n = document.getElementById('sicDocName').value.trim(); const c = document.getElementById('sicDocCat').value; const d = document.getElementById('sicDocDate').value;
-            if(!n || !d) return alert("Inserisci Nome e Data scadenza.");
-            await addDoc(collection(db, "sicurezza_scadenze"), { nome: n, categoria: c, data_scadenza: d });
-            document.getElementById('sicDocName').value = ''; document.getElementById('sicDocDate').value = '';
-        });
-        window.deleteScadenza = async (id) => { if(confirm("Rimuovere scadenza?")) await deleteDoc(doc(db, "sicurezza_scadenze", id)); };
-        onSnapshot(query(collection(db, "sicurezza_scadenze"), orderBy("data_scadenza", "asc")), (snapshot) => {
-            const tbody = document.getElementById('table-sicurezza'); let htmlSic = ''; let sTot = 0, sOk = 0, sWarn = 0, sErr = 0; const oggi = new Date(); oggi.setHours(0,0,0,0);
-            snapshot.forEach((docSnap) => {
-                const data = docSnap.data(); sTot++;
-                const parts = data.data_scadenza.split('-'); const dataScad = new Date(parts[0], parts[1]-1, parts[2]); const dataFormattata = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                const diffDays = Math.ceil((dataScad - oggi) / (1000 * 60 * 60 * 24));
-                let badge = ""; let rowClass = ""; let giorniTxt = "";
-                if (diffDays < 0) { badge = `<span class="badge critico">❌ SCADUTO</span>`; rowClass = "row-critical"; giorniTxt = `<strong style="color:var(--danger)">Scaduto da ${Math.abs(diffDays)} gg</strong>`; sErr++; } else if (diffDays <= 30) { badge = `<span class="badge gestito">⚠️ IN SCADENZA</span>`; rowClass = "row-warning"; giorniTxt = `<strong style="color:var(--warning)">Mancano ${diffDays} gg</strong>`; sWarn++; } else { badge = `<span class="badge conforme">✓ VALIDO</span>`; giorniTxt = `Tra ${diffDays} gg`; sOk++; }
-                htmlSic += `<tr class="${rowClass}"><td>${badge}</td><td style="font-size: 16px; font-weight: bold;">${dataFormattata}</td><td>${giorniTxt}</td><td style="font-size: 16px;"><strong>${data.nome}</strong></td><td><span class="badge sicurezza">${data.categoria}</span></td><td><button class="btn-del" onclick="deleteScadenza('${docSnap.id}')">Rimuovi</button></td></tr>`;
-            });
-            tbody.innerHTML = htmlSic || '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nessuna scadenza.</td></tr>';
-            document.getElementById('kpi-sic-totali').innerText = sTot; document.getElementById('kpi-sic-ok').innerText = sOk; document.getElementById('kpi-sic-warn').innerText = sWarn; document.getElementById('kpi-sic-err').innerText = sErr;
-        });
-
-        // Pest Control
-        document.getElementById('btnAddPest').addEventListener('click', async () => {
-            const d = document.getElementById('pestDate').value; const n = document.getElementById('pestName').value.trim(); const t = document.getElementById('pestType').value; const r = document.getElementById('pestResult').value;
-            if(!d || !n) return alert("Inserisci Data e Nome.");
-            await addDoc(collection(db, "haccp_pest_control"), { data_controllo: d, postazione: n, tipo: t, esito: r });
-            document.getElementById('pestName').value = ''; 
-        });
-        window.deletePest = async (id) => { if(confirm("Rimuovere controllo?")) await deleteDoc(doc(db, "haccp_pest_control", id)); };
-        onSnapshot(query(collection(db, "haccp_pest_control"), orderBy("data_controllo", "desc")), (snapshot) => {
-            const tbody = document.getElementById('table-pest'); let htmlPest = ''; let pTot = 0, pOk = 0, pErr = 0;
-            snapshot.forEach((docSnap) => {
-                const data = docSnap.data(); pTot++; let badge = ""; let rowClass = "";
-                if (data.esito === "Regolare (Intatta)") { badge = `<span class="badge conforme">✓ Regolare</span>`; pOk++; } else { badge = `<span class="badge critico">⚠️ ${data.esito}</span>`; rowClass = "row-warning"; pErr++; }
-                const parts = data.data_controllo.split('-'); const dataFormattata = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : data.data_controllo;
-                htmlPest += `<tr class="${rowClass}"><td style="font-size: 15px; font-weight: bold;">${dataFormattata}</td><td style="font-size: 15px;"><strong>${data.postazione}</strong></td><td>${data.tipo}</td><td>${data.esito}</td><td>${badge}</td><td><button class="btn-del" onclick="deletePest('${docSnap.id}')">Rimuovi</button></td></tr>`;
-            });
-            tbody.innerHTML = htmlPest || '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nessun controllo registrato.</td></tr>';
-            document.getElementById('kpi-pest-totali').innerText = pTot; document.getElementById('kpi-pest-ok').innerText = pOk; document.getElementById('kpi-pest-err').innerText = pErr;
-        });
-
-        window.zoomImage = (base64) => { document.getElementById('expandedImg').src = base64; document.getElementById('imageModal').style.display = 'flex'; };
+        window.onload = () => {
+            document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
+            document.getElementById('tempOperatore').value = window.activeOperator;
+        };
     </script>
 </body>
 </html>

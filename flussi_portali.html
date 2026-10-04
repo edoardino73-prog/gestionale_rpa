@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - Flussi Regionali & Portali Istituzionali</title>
+
+    <style>
+        :root {
+            --bg-color: #f1f5f9;         
+            --box-bg: #ffffff;
+            --primary-color: #0d9488; 
+            --secondary-color: #0f766e;  
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --input-bg: #ffffff;
+            --border-color: #cbd5e1;     
+            --error-color: #e11d48; 
+            --warning-color: #d97706; 
+            --success-color: #059669; 
+            --dir-color: #4f46e5;
+            --base-font-size: 14px;      
+            --radius: 6px;               
+            --transition: all 0.2s ease;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; min-height: 100vh; }
+
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1em; }
+        .nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 14px; border-radius: var(--radius); cursor: pointer; text-decoration:none; font-weight: 600; display:inline-flex; align-items:center; }
+        .nav-btn:hover { background: rgba(255,255,255,0.25); }
+        .current-op-badge { background: #ffffff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+
+        .container { max-width: 1100px; width: 95%; margin: 20px auto; flex-grow: 1; }
+        .card { background: var(--box-bg); padding: 22px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 22px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--primary-color); padding-bottom: 8px; flex-wrap: wrap; gap:10px; }
+        .card-header h3 { margin: 0; color: var(--primary-color); font-size: 1.1em; text-transform: uppercase; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85em; color: var(--text-main); }
+        input[type="date"] { width: 100%; padding: 8px; border: 1px solid #94a3b8; border-radius: 4px; box-sizing: border-box; background-color: var(--input-bg); color: var(--text-main); font-family: inherit; font-size: 0.95em; }
+        input:focus { border-color: var(--primary-color); outline: none; background-color: #f0fdfa; }
+
+        .btn-primary, .btn-success, .btn-doc { color: white; border: none; padding: 9px 18px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.9em; transition: 0.2s; }
+        .btn-primary { background: var(--secondary-color); }
+        .btn-success { background: var(--success-color); }
+        .btn-doc { background: #475569; }
+
+        .alloggiati-obbligatorio { border: 2px solid var(--error-color) !important; background-color: #fff1f2 !important; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
+        .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <!-- NAVBAR SATELLITE -->
+    <div class="navbar">
+        <div class="navbar-brand">
+            <span>📤 NVS Masterpiece - Flussi Regionali & Portali</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+            <button class="nav-btn" onclick="window.navigaA('anagrafica.html')">🛏️ Anagrafica Ospiti ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('index.html')">🏠 Torna al Reparto (Home)</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <!-- 1. ALLOGGIATI WEB (POLIZIA DI STATO) -->
+        <div class="card restrict-oss" style="border-left: 6px solid #0284c7;">
+            <div class="card-header" style="border-bottom-color:#0284c7;">
+                <h3 style="color:#0284c7;">👮‍♂️ Portale "Alloggiati Web" (Polizia di Stato)</h3>
+                <span style="font-size:0.85em; background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:4px; font-weight:bold;">Tracciato Standard Ministeriale (170 byte)</span>
+            </div>
+            
+            <p style="color:var(--text-light); font-size:0.9em; margin-top:0; margin-bottom:15px;">
+                Genera il file <code>.txt</code> conforme al Decreto Ministeriale per la trasmissione delle schede alloggiati alla Questura di Terni.
+            </p>
+
+            <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:6px; margin-bottom:15px;">
+                <label style="font-weight:bold; font-size:0.9em; display:block; margin-bottom:8px;">Intervallo di Riferimento Ingressi / Presenze:</label>
+                <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+                    <div class="form-group" style="margin:0; flex:1; min-width:140px;">
+                        <label style="font-size:0.8em;">Dal Giorno:</label>
+                        <input type="date" id="alloggiatiStart" class="alloggiati-obbligatorio">
+                    </div>
+                    <div class="form-group" style="margin:0; flex:1; min-width:140px;">
+                        <label style="font-size:0.8em;">Al Giorno:</label>
+                        <input type="date" id="alloggiatiEnd" class="alloggiati-obbligatorio">
+                    </div>
+                    <button class="btn-doc" style="height:35px; padding:6px 12px; font-size:0.85em;" onclick="window.setAlloggiatiDates('oggi')">📅 Oggi</button>
+                    <button class="btn-doc" style="height:35px; padding:6px 12px; font-size:0.85em;" onclick="window.setAlloggiatiDates('mese')">🗓️ Mese Intero (1-30)</button>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <button class="btn-primary" style="background:#0284c7; flex:1; min-width:240px; padding:12px;" onclick="window.exportAlloggiati('nuovi')">
+                    ⬇️ Genera TXT: Solo Nuovi Ingressi
+                </button>
+                <button class="btn-success" style="background:#15803d; flex:1; min-width:240px; padding:12px;" onclick="window.exportAlloggiati('rinnovo')">
+                    🔄 Genera TXT: Rinnovo TUTTI i Presenti (30 gg)
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. FLUSSO F.A.R. (USL UMBRIA) -->
+        <div class="card restrict-oss" style="border-left: 6px solid var(--primary-color);">
+            <div class="card-header">
+                <h3>🏛️ Flusso F.A.R. (Fascicolo Assistenziale Residenziale - USL Umbria)</h3>
+            </div>
+            <p style="color:var(--text-light); font-size:0.9em; margin-top:0; margin-bottom:15px;">
+                Esportazione anagrafica consolidata in formato CSV per il rendiconto dei posti letto accreditati verso l'Azienda Sanitaria USL Umbria 2.
+            </p>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#f0fdf4; border:1px solid #bbf7d0; padding:12px 15px; border-radius:4px;">
+                <span style="font-size:0.85em; color:#166534; font-weight:bold;">Campi inclusi: Nominativo, Codice Fiscale, Data Ingresso, Uscita/Decesso, Stato.</span>
+                <button class="btn-primary" style="background:#0f766e;" onclick="window.exportFARUmbria()">📊 Esporta Tracciato CSV FAR</button>
+            </div>
+        </div>
+
+        <!-- 3. FLUSSO S.I.A.R. / S.I.C.O.F. -->
+        <div class="card restrict-oss" style="border-left: 6px solid #4f46e5;">
+            <div class="card-header" style="border-bottom-color:#4f46e5;">
+                <h3 style="color:#4f46e5;">📋 Flusso S.I.A.R. / S.I.C.O.F. (Debito Informativo Regionale)</h3>
+            </div>
+            <p style="color:var(--text-light); font-size:0.9em; margin-top:0; margin-bottom:15px;">
+                Tracciato anagrafico per il monitoraggio dei residenti e la saturazione dei moduli abitativi per la Regione Umbria.
+            </p>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#f5f3ff; border:1px solid #ddd6fe; padding:12px 15px; border-radius:4px;">
+                <span style="font-size:0.85em; color:#4338ca; font-weight:bold;">Campi inclusi: Cognome, Nome, Codice Fiscale, Data Ingresso, Stanza assegnata.</span>
+                <button class="btn-primary" style="background:#4f46e5;" onclick="window.exportSIAR()">🏃‍♂️ Esporta Tracciato CSV SIAR</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LOGICHE JAVASCRIPT & FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        try {
+            initializeAppCheck(app, { 
+                provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), 
+                isTokenAutoRefreshEnabled: true 
+            });
+        } catch(e) { console.warn("AppCheck bypassato."); }
+        const db = getFirestore(app);
+
+        window.dbOspiti = [];
+        window.activeOperator = sessionStorage.getItem("activeOperator") || "Operatore";
+        window.activeOperatorRole = sessionStorage.getItem("activeRole") || "user";
+        window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica") || "";
+
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
+        window.getTodayString = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
+        window.checkOssRestriction = () => { if(window.activeOperatorQualifica==='OSS' && window.activeOperatorRole!=='admin') { window.showToast("🚫 Azione non consentita al profilo OSS"); return true; } return false; };
+        window.navigaA = (url) => { window.location.href = url; };
+
+        // IMPOSTAZIONE RAPIDA DATE ALLOGGIATI
+        window.setAlloggiatiDates = (mode) => {
+            let t = new Date();
+            if(mode === 'oggi') {
+                let td = window.getTodayString();
+                document.getElementById('alloggiatiStart').value = td;
+                document.getElementById('alloggiatiEnd').value = td;
+            } else if(mode === 'mese') {
+                document.getElementById('alloggiatiStart').value = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-01`;
+                let endD = new Date(t.getFullYear(), t.getMonth() + 1, 0); 
+                document.getElementById('alloggiatiEnd').value = `${endD.getFullYear()}-${String(endD.getMonth()+1).padStart(2,'0')}-${String(endD.getDate()).padStart(2,'0')}`;
+            }
+        };
+
+        // ESPORTAZIONE ALLOGGIATI WEB (170 BYTE RIGIDI)
+        window.exportAlloggiati = (tipoExport = 'nuovi') => { 
+            if(window.checkOssRestriction()) return; 
+            const dS=document.getElementById('alloggiatiStart').value; 
+            const dE=document.getElementById('alloggiatiEnd').value; 
+            if(!dS||!dE) return window.showToast("⚠️ Imposta le date Dal e Al!"); 
+            
+            let osp = tipoExport === 'rinnovo' ? window.dbOspiti.filter(g => !g.decesso && !g.dimissione) : window.dbOspiti.filter(g => g.ingresso >= dS && g.ingresso <= dE);
+            if(osp.length===0) return window.showToast("⚠️ Nessun ospite trovato per i criteri selezionati");
+
+            let txt=""; 
+            const p=(s,l)=>(s||'').toString().substring(0,l).padEnd(l,' '); 
+            
+            osp.forEach((g)=>{ 
+                let dataArrivo = tipoExport === 'rinnovo' ? dS.split('-').reverse().join('/') : (g.ingresso ? g.ingresso.split('-').reverse().join('/') : ""); 
+                let cognome = (g.cognome || g.name.split(' ')[0] || "").toUpperCase().replace(/[^A-Z\s\']/g, '');
+                let nome = (g.nome || g.name.split(' ').slice(1).join(' ') || "").toUpperCase().replace(/[^A-Z\s\']/g, '');
+                let sesso = g.sesso === 'F' ? "2" : "1";
+                let dataNascita = g.dob ? g.dob.split('-').reverse().join('/') : "";
+                let statoNascita = g.pobCod && String(g.pobCod).startsWith("1000") && String(g.pobCod).length === 9 ? g.pobCod : "100000100";
+                let isItalia = statoNascita === "100000100";
+                let comuneNascita = isItalia ? (g.pobCod || "").toString().padEnd(9, ' ') : "         ";
+                let provNascita = isItalia ? (g.pobProv || "  ").padEnd(2, ' ') : "  ";
+                let cittadinanza = g.cittadinanza || "100000100";
+                let tipoDocumento = (g.docTipo || "IDENT").padEnd(5, ' ');
+                let numDocumento = (g.docNum || "").toUpperCase().padEnd(20, ' ');
+                let luogoRilascio = (g.docRilascioCod || "").padEnd(9, ' ');
+
+                let record = p("16", 2) + p(dataArrivo, 10) + p("30", 2) + p(cognome, 50) + p(nome, 30) + p(sesso, 1) + p(dataNascita, 10) + p(comuneNascita, 9) + p(provNascita, 2) + p(statoNascita, 9) + p(cittadinanza, 9) + p(tipoDocumento, 5) + p(numDocumento, 20) + p(luogoRilascio, 9);
+                txt += record + "\r\n"; 
+            }); 
+            
+            const b=new Blob([txt],{type:'text/plain'}); 
+            const l=document.createElement("a"); l.href=URL.createObjectURL(b); 
+            l.download=tipoExport === 'rinnovo' ? `Alloggiati_RinnovoPresenti_${dS}.txt` : `Alloggiati_NuoviIngressi_${dS}.txt`; 
+            l.click(); 
+            window.showToast("👮‍♂️ File .txt Alloggiati Web generato con successo!"); 
+        };
+
+        // ESPORTAZIONE F.A.R. USL UMBRIA
+        window.exportFARUmbria = () => { 
+            let c="data:text/csv;charset=utf-8,NOME;CF;INGRESSO;USCITA;STATO\n"; 
+            window.dbOspiti.forEach(g=>c+=`${g.name};${g.cf||''};${g.ingresso||''};${g.decesso||g.dimissione||''};${g.decesso?'DEC':(g.dimissione?'DIM':'IN')}\n`); 
+            const l=document.createElement("a"); l.href=encodeURI(c); l.download=`FAR_USL_Umbria_${window.getTodayString()}.csv`; l.click(); 
+            window.showToast("📊 File CSV F.A.R. generato");
+        };
+
+        // ESPORTAZIONE S.I.A.R. / S.I.C.O.F.
+        window.exportSIAR = () => { 
+            let c="data:text/csv;charset=utf-8,COGNOME;NOME;CF;DATA_INGRESSO;STANZA\n"; 
+            window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione).forEach(g=>{ 
+                c+=`${g.cognome||g.name.split(' ')[0]||''};${g.nome||g.name.split(' ').slice(1).join(' ')||''};${g.cf||''};${g.ingresso||''};${g.room||''}\n`; 
+            }); 
+            const l=document.createElement("a"); l.href=encodeURI(c); l.download=`SIAR_Umbria_${window.getTodayString()}.csv`; l.click(); 
+            window.showToast("🏃‍♂️ File CSV S.I.A.R. generato");
+        };
+
+        // LISTENERS REALTIME
+        onSnapshot(collection(db, "ospiti"), snap => {
+            window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()}));
+        });
+
+        window.onload = () => {
+            document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
+            document.body.setAttribute('data-qualifica', window.activeOperatorQualifica);
+            window.setAlloggiatiDates('oggi');
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - Gestione CUP, Visite Specialistiche & Trasporti Sanitari</title>
+
+    <style>
+        :root {
+            --bg-color: #f1f5f9;         
+            --box-bg: #ffffff;
+            --primary-color: #0d9488; 
+            --secondary-color: #0f766e;  
+            --cup-color: #10b981;
+            --cup-dark: #047857;
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --input-bg: #ffffff;
+            --border-color: #cbd5e1;     
+            --error-color: #e11d48; 
+            --warning-color: #d97706; 
+            --success-color: #059669; 
+            --dir-color: #4f46e5;
+            --terapia-color: #0284c7;
+            --base-font-size: 14px;      
+            --radius: 6px;               
+            --transition: all 0.2s ease;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; min-height: 100vh; }
+
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1em; }
+        .nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 14px; border-radius: var(--radius); cursor: pointer; text-decoration:none; font-weight: 600; display:inline-flex; align-items:center; }
+        .nav-btn:hover { background: rgba(255,255,255,0.25); }
+        .current-op-badge { background: #ffffff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+
+        .container { max-width: 1350px; width: 96%; margin: 15px auto; flex-grow: 1; }
+        .card { background: var(--box-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--cup-color); padding-bottom: 8px; flex-wrap: wrap; gap:10px; }
+        .card-header h3 { margin: 0; color: var(--cup-dark); font-size: 1.1em; text-transform: uppercase; }
+
+        /* CARD OSPITE ATTIVO IN ALTO */
+        .global-active-patient-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-left: 8px solid var(--cup-color);
+            border-radius: var(--radius);
+            padding: 12px 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .gap-info-left { display: flex; align-items: center; gap: 14px; }
+        .gap-avatar { width: 52px; height: 52px; border-radius: 6px; object-fit: cover; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 1.8em; border: 1px solid var(--border-color); overflow: hidden; flex-shrink: 0; }
+        .gap-name-block h2 { margin: 0; font-size: 1.25em; color: var(--text-main); letter-spacing: 0.5px; }
+        .gap-sub { font-size: 0.85em; color: var(--text-light); margin-top: 3px; }
+        .gap-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        .badge-disfagia { background: var(--warning-color); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+        .badge-infezione { background: var(--error-color); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+        .badge-contenzione { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85em; color: var(--text-main); }
+        input[type="text"], input[type="date"], input[type="time"], select { width: 100%; padding: 8px; border: 1px solid #94a3b8; border-radius: 4px; box-sizing: border-box; background-color: var(--input-bg); color: var(--text-main); font-family: inherit; font-size: 0.95em; }
+        input:focus, select:focus { border-color: var(--cup-color); outline: none; background-color: #f0fdf4; }
+
+        .btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-doc { color: white; border: none; padding: 8px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.9em; transition: 0.2s; }
+        .btn-primary { background: var(--cup-color); }
+        .btn-primary:hover { background: var(--cup-dark); }
+        .btn-success { background: var(--success-color); }
+        .btn-danger { background: var(--error-color); }
+        .btn-warning { background: var(--warning-color); }
+        .btn-doc { background: #475569; }
+
+        .check-item { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.85em; cursor:pointer;}
+        .check-item input[type="checkbox"] { transform: scale(1.15); accent-color: var(--cup-color); }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.88em; background: #ffffff; }
+        .data-table th, .data-table td { border: 1px solid var(--border-color); padding: 8px; text-align: left; vertical-align: middle; }
+        .data-table th { background-color: var(--cup-dark); color: white; font-weight: normal; text-transform: uppercase; font-size: 0.82em; }
+        .data-table tr:nth-child(even) { background-color: #f8fafc; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
+        .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
+        .toast.show { opacity: 1; }
+
+        #printArea { display: none; }
+        @media print {
+            body * { visibility: hidden; } 
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 25px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+            .print-header { text-align: center; border-bottom: 2px solid #10b981; padding-bottom: 15px; margin-bottom: 20px; }
+            .print-header h1 { margin: 0; color: #047857; font-size: 18pt; text-transform: uppercase; }
+            .print-header h2 { margin: 5px 0 0 0; font-size: 12pt; color: #334155; }
+            .print-section { margin-bottom: 18px; }
+            .print-section h3 { margin: 0 0 8px 0; font-size: 11pt; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; text-transform: uppercase; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 9pt; } 
+            .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; } 
+            .print-table th { background: #f1f5f9 !important; font-weight: bold; -webkit-print-color-adjust: exact; }
+            .print-signature-box { margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    <div id="printArea"></div>
+
+    <!-- NAVBAR SATELLITE -->
+    <div class="navbar">
+        <div class="navbar-brand">
+            <span>📅 NVS Masterpiece - Gestione CUP, Visite Specialistiche & Trasporti</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+            <button class="nav-btn" onclick="window.navigaA('cartella_clinica.html')">⚕️ Fascicolo Clinico ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('terapia.html')">💊 Terapia ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('anagrafica.html')">🛏️ Anagrafica ↗</button>
+            <button class="nav-btn" onclick="window.navigaA('index.html')">🏠 Torna al Reparto (Home)</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <!-- CARD OSPITE ATTIVO IN ALTO PERSISTENTE -->
+        <div id="globalActivePatientBanner" class="global-active-patient-card">
+            <div class="gap-info-left">
+                <div id="gapAvatar" class="gap-avatar">👤</div>
+                <div class="gap-name-block">
+                    <h2 id="gapNome">NESSUN OSPITE SELEZIONATO</h2>
+                    <div class="gap-sub" id="gapDettagli">Stanza: - | CF: -</div>
+                </div>
+            </div>
+            <div class="gap-badges" id="gapBadges">
+                <span style="color:#64748b; font-size:0.85em;">Seleziona un paziente dal modulo sottostante o dalla sidebar di reparto.</span>
+            </div>
+        </div>
+
+        <!-- FORM NUOVO APPUNTAMENTO E LOGISTICA TRASPORTO -->
+        <div class="card restrict-oss" style="border-top: 4px solid var(--cup-color);">
+            <div class="card-header">
+                <h3>📅 Nuova Prenotazione CUP & Scheda di Viaggio Sanitario</h3>
+            </div>
+            
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-bottom:10px;">
+                <div class="form-group" style="margin:0;">
+                    <label>Ospite Destinatario *</label>
+                    <select id="appGuestSelect" onchange="window.selectPatientGlobal(this.value)">
+                        <option value="" disabled selected>Scegli ospite...</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Prestazione / Esame Specialistico *</label>
+                    <input type="text" id="appType" placeholder="Es. Visita Cardiologica con ECG" list="prestazioniCUPList" autocomplete="off">
+                    <datalist id="prestazioniCUPList">
+                        <option value="Visita Cardiologica con ECG">
+                        <option value="Ecocardiogramma Color-Doppler">
+                        <option value="Visita Oculistica con Esame Fondo Oculare">
+                        <option value="Visita Ortopedica di Controllo">
+                        <option value="Visita Neurologica / Valutazione CDCD">
+                        <option value="Ecografia Addome Completo">
+                        <option value="Radiografia Torace 2P">
+                        <option value="Radiografia Bacino e Anca">
+                        <option value="Visita Fisiatrica per Prescrizione Ausili">
+                        <option value="Visita Dermatologica / Controllo Neoplasie">
+                        <option value="Visita Urologica con Cateterismo">
+                        <option value="Visita Pneumologica con Spirometria">
+                        <option value="Visita Diabetologica con Piano Terapeutico">
+                    </datalist>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Luogo / Presidio / Struttura Erogatrice *</label>
+                    <input type="text" id="appLuogo" placeholder="Es. Ospedale S. Maria Terni - Padiglione 4 Ambulatorio 12">
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:10px; margin-bottom:10px;">
+                <div class="form-group" style="margin:0;"><label>Data Visita *</label><input type="date" id="appDate"></div>
+                <div class="form-group" style="margin:0;"><label>Ora Appuntamento *</label><input type="time" id="appTime"></div>
+                <div class="form-group" style="margin:0;">
+                    <label>Tipologia Mezzo di Trasporto *</label>
+                    <select id="appTransport">
+                        <option value="In Sede">Visita Specialistica in Sede (Nessun Mezzo)</option>
+                        <option value="Ambulanza con Barelliere">Ambulanza con Barelliere (Paziente Barellato)</option>
+                        <option value="Mezzo Attrezzato (Pedana/Carrozzina)">Mezzo Attrezzato Pedana (In Carrozzina)</option>
+                        <option value="Autovettura Volontari">Autovettura Volontari OdV (Paziente Deambulante)</option>
+                        <option value="A cura Famiglia">A cura dei Familiari / Amministratore di Sostegno</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Accompagnatore Designato</label>
+                    <select id="appAccompagnatore">
+                        <option value="Personale Sanitario NVS (Infermiere/OSS)">Personale NVS (Infermiere / OSS)</option>
+                        <option value="Volontario OdV Convenzionata">Volontario OdV Convenzionata</option>
+                        <option value="Familiare / Caregiver Delegato">Familiare / Caregiver Delegato</option>
+                        <option value="Amministratore di Sostegno">Amministratore di Sostegno (AdS)</option>
+                        <option value="Nessuno / Solo Conducente">Nessuno / Solo Conducente del Mezzo</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Regime Economico</label>
+                    <select id="appRegime">
+                        <option value="SSN / Convenzionato">SSN / Convenzionato (Con Ticket)</option>
+                        <option value="Esente Totale / Patologia">Esente Totale / Patologia (Cod. Esenzione)</option>
+                        <option value="Privato a Pagamento">Regime Privato a Pagamento</option>
+                        <option value="Controllo Gratuito">Controllo Post-Ricovero Gratuito</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px; margin-bottom:10px;">
+                <div class="form-group" style="margin:0;">
+                    <label>N° Ricetta Elettronica (NRE / Impegnativa SSN)</label>
+                    <input type="text" id="appNRE" placeholder="Es. 1000A4000123456" style="text-transform:uppercase;">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Istruzioni Cliniche & Preparazione all'Esame</label>
+                    <input type="text" id="appPrep" placeholder="Es. Digiuno da 8h, vescica piena, portare esami ematici recenti, sospendere anticoagulante...">
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-top:8px;">
+                <div style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
+                    <label class="check-item" style="padding:4px 8px; margin:0;"><input type="checkbox" id="appDigiuno"> <span>⚠️ Digiuno Obbligatorio</span></label>
+                    <input type="text" id="appNote" placeholder="Note logistiche (contatto autista, sedia propria, etc.)..." style="width:280px; padding:6px; font-size:0.85em;">
+                </div>
+                <button class="btn-primary" onclick="window.addAppointment()">📅 Registra Appuntamento CUP</button>
+            </div>
+        </div>
+
+        <!-- TABELLA GENERALE ED AGENDA APPUNTAMENTI -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Agenda Appuntamenti CUP & Storico Viaggi</h3>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-doc" style="font-size:0.8em; padding:4px 10px;" onclick="window.loadAppointments(true)">Solo Ospite Selezionato</button>
+                    <button class="btn-doc" style="font-size:0.8em; padding:4px 10px;" onclick="window.loadAppointments(false)">Tutti gli Ospiti in Struttura</button>
+                </div>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="data-table" id="appointmentsTable">
+                    <thead>
+                        <tr>
+                            <th>Data / Ora</th>
+                            <th>Ospite</th>
+                            <th>Prestazione & Presidio</th>
+                            <th>Trasporto & Accompagno</th>
+                            <th>Regime / NRE</th>
+                            <th>Preparazione & Note</th>
+                            <th>Op</th>
+                            <th class="restrict-oss">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LOGICHE JAVASCRIPT & FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        try {
+            initializeAppCheck(app, { 
+                provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), 
+                isTokenAutoRefreshEnabled: true 
+            });
+        } catch(e) { console.warn("AppCheck bypassato."); }
+        const db = getFirestore(app);
+
+        window.dbOspiti = [];
+        window.dbClinica = {};
+        window.dbContenzioni = [];
+        window.dbCup = [];
+
+        window.globalSelectedPatient = sessionStorage.getItem("globalSelectedPatient") || "";
+        window.activeOperator = sessionStorage.getItem("activeOperator") || "Operatore";
+        window.activeOperatorRole = sessionStorage.getItem("activeRole") || "user";
+        window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica") || "";
+
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
+        window.getInitials = (n) => { if(!n) return ""; return n.replace(/Inf\.|Dr\.|OSS/gi,'').trim().split(' ').map(x=>x[0].toUpperCase()).join('.')+'.'; };
+        window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
+        window.getTodayString = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
+        window.formatDateSafe = (d) => { if (!d) return '-'; if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/'); return d; };
+        window.checkOssRestriction = () => { if(window.activeOperatorQualifica==='OSS' && window.activeOperatorRole!=='admin') { window.showToast("🚫 Azione non consentita al profilo OSS"); return true; } return false; };
+        window.navigaA = (url) => { window.location.href = url; };
+
+        // BANNER OSPITE ATTIVO IN ALTO
+        window.renderGlobalPatientBanner = () => {
+            const n = window.globalSelectedPatient;
+            const bannerNome = document.getElementById('gapNome');
+            const bannerDet = document.getElementById('gapDettagli');
+            const bannerBadges = document.getElementById('gapBadges');
+            const bannerAv = document.getElementById('gapAvatar');
+
+            if(!n) {
+                bannerNome.innerText = "NESSUN OSPITE SELEZIONATO";
+                bannerNome.style.color = "#64748b";
+                bannerDet.innerText = "Stanza: - | CF: -";
+                bannerBadges.innerHTML = `<span style="color:#64748b; font-size:0.85em;">Seleziona un paziente dal menu per verificare i dati anagrafici e i trasporti.</span>`;
+                bannerAv.innerHTML = `👤`;
+                return;
+            }
+
+            const g = window.dbOspiti.find(x => x.name === n) || {};
+            const pD = window.dbClinica[n] || {};
+
+            bannerNome.innerText = n;
+            bannerNome.style.color = "var(--text-main)";
+            bannerDet.innerHTML = `Stanza: <strong>${g.room || '-'}</strong> | CF: <strong>${g.cf || '-'}</strong> | Nato il: <strong>${window.formatDateSafe(g.dob)}</strong>`;
+            bannerAv.innerHTML = g.photo ? `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">` : `👤`;
+
+            let badges = '';
+            if(pD.disfagia) badges += `<div class="badge-disfagia">🥣 Disfagico</div>`;
+            if(pD.infezione) badges += `<div class="badge-infezione">☣ ${pD.infezione}</div>`;
+            
+            const hasCont = window.dbContenzioni.some(c => c.ospite === n && c.stato === 'ATTIVA');
+            if(hasCont) badges += `<div class="badge-contenzione">🔒 Contenzione Attiva</div>`;
+
+            bannerBadges.innerHTML = badges || `<span style="color:#15803d; font-size:0.85em; font-weight:bold;">✅ Nessun alert clinico attivo</span>`;
+        };
+
+        window.loadGuestSelector = () => {
+            const s = document.getElementById('appGuestSelect');
+            if(!s) return;
+            s.innerHTML = '<option value="" disabled selected>Scegli ospite...</option>';
+            window.dbOspiti.filter(g => !g.decesso && !g.dimissione).sort((a,b) => a.name.localeCompare(b.name)).forEach(g => {
+                s.innerHTML += `<option value="${g.name}">${g.name}</option>`;
+            });
+            if(window.globalSelectedPatient) {
+                s.value = window.globalSelectedPatient;
+                window.renderGlobalPatientBanner();
+            }
+        };
+
+        window.selectPatientGlobal = (n) => {
+            window.globalSelectedPatient = n;
+            sessionStorage.setItem("globalSelectedPatient", n);
+            const s = document.getElementById('appGuestSelect');
+            if(s) s.value = n;
+            window.renderGlobalPatientBanner();
+            window.loadAppointments(true);
+            window.showToast(`👤 Paziente Attivo: ${n}`);
+        };
+
+        // GESTIONE REGISTRAZIONE CUP
+        window.addAppointment = async () => {
+            if(window.checkOssRestriction()) return;
+            const g = document.getElementById('appGuestSelect').value;
+            const ty = document.getElementById('appType').value.trim();
+            const lu = document.getElementById('appLuogo').value.trim();
+            const d = document.getElementById('appDate').value;
+            const tm = document.getElementById('appTime').value;
+            const tr = document.getElementById('appTransport').value;
+            const acc = document.getElementById('appAccompagnatore').value;
+            const rg = document.getElementById('appRegime').value;
+            const nre = document.getElementById('appNRE').value.trim().toUpperCase();
+            const prep = document.getElementById('appPrep').value.trim();
+            const dig = document.getElementById('appDigiuno').checked;
+            const nt = document.getElementById('appNote').value.trim();
+
+            if(!g || !ty || !d || !tm) return window.showToast("⚠️ Ospite, prestazione, data e ora sono obbligatori");
+
+            await addDoc(collection(db, "cup"), {
+                guest: g,
+                type: ty,
+                luogo: lu || 'Non specificato',
+                data: d,
+                time: tm,
+                transport: tr,
+                accompagnatore: acc,
+                regime: rg,
+                nre: nre,
+                preparazione: prep,
+                digiuno: dig,
+                note: nt,
+                op: window.activeOperator,
+                ts: window.getTimestamp()
+            });
+
+            document.getElementById('appType').value = '';
+            document.getElementById('appLuogo').value = '';
+            document.getElementById('appNRE').value = '';
+            document.getElementById('appPrep').value = '';
+            document.getElementById('appNote').value = '';
+            document.getElementById('appDigiuno').checked = false;
+            window.showToast("✅ Appuntamento CUP Registrato con Successo!");
+        };
+
+        window.loadAppointments = (onlySelected = false) => {
+            let a = [...window.dbCup].sort((x,y) => new Date(x.data+'T'+x.time) - new Date(y.data+'T'+y.time));
+            let sel = window.globalSelectedPatient;
+            const tb = document.querySelector('#appointmentsTable tbody');
+            
+            if(tb) {
+                tb.innerHTML = '';
+                let f = (onlySelected && sel) ? a.filter(c => c.guest === sel) : a;
+                if(f.length === 0) {
+                    tb.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#64748b; padding:15px;">Nessun appuntamento CUP trovato per la selezione corrente.</td></tr>';
+                } else {
+                    f.forEach(c => {
+                        let digBadge = c.digiuno ? '<span style="background:#fee2e2; color:#b91c1c; padding:1px 5px; border-radius:3px; font-weight:bold; font-size:0.75em;">DIGIUNO</span> ' : '';
+                        tb.innerHTML += `
+                            <tr>
+                                <td><strong>${window.formatDateSafe(c.data)}</strong><br><small>🕒 ${c.time}</small></td>
+                                <td><strong>${c.guest}</strong></td>
+                                <td>${c.type}<br><small style="color:#64748b;">📍 ${c.luogo||'-'}</small></td>
+                                <td><span style="color:#0369a1; font-weight:bold;">${c.transport}</span><br><small>Accompagno: ${c.accompagnatore||'N/D'}</small></td>
+                                <td>${c.regime||'-'}${c.nre ? '<br><small>NRE: '+c.nre+'</small>' : ''}</td>
+                                <td>${digBadge}<small>${c.preparazione||''}</small>${c.note ? '<br><small style="color:#475569;">'+c.note+'</small>' : ''}</td>
+                                <td>${window.getInitials(c.op)}</td>
+                                <td class="restrict-oss">
+                                    <div style="display:flex; gap:4px;">
+                                        <button class="btn-doc" style="padding:4px 8px; font-size:0.8em;" onclick="window.stampaPromemoriaCUP('${c.id}')" title="Stampa Scheda Viaggio">🖨️ Stampa</button>
+                                        <button class="btn-danger" style="padding:4px 8px; font-size:0.8em;" onclick="window.deleteAppointment('${c.id}')" title="Elimina">X</button>
+                                    </div>
+                                </td>
+                            </tr>`;
+                    });
+                }
+            }
+        };
+
+        window.stampaPromemoriaCUP = (id) => {
+            const c = window.dbCup.find(x => x.id === id);
+            if(!c) return;
+            const g = window.dbOspiti.find(x => x.name === c.guest) || {};
+
+            let html = `
+                <div class="print-header">
+                    <h1>NUOVA VILLA SILVANA</h1>
+                    <h2>Residenza Protetta per Anziani - Regione Umbria</h2>
+                    <h3 style="margin-top:10px; color:#10b981;">SCHEDA VIAGGIO & PROMEMORIA VISITA SPECIALISTICA CUP</h3>
+                </div>
+                <div class="print-section">
+                    <h3>Dati Identificativi dell'Ospite</h3>
+                    <p>Paziente: <strong>${c.guest}</strong> | CF: <strong>${g.cf||'-'}</strong> | Stanza: <strong>${g.room||'-'}</strong> | Nato il: <strong>${window.formatDateSafe(g.dob)}</strong></p>
+                    <p>Referente Familiare: <strong>${g.ref||'-'}</strong> (${g.refParentela||'Parente'}) Tel: <strong>${g.refTel||'-'}</strong></p>
+                    <p>Medico Curante (MMG): <strong>${g.mmg||'-'}</strong> Tel: <strong>${g.mmgTel||'-'}</strong></p>
+                </div>
+                <div class="print-section">
+                    <h3>Dettagli Logistica e Appuntamento</h3>
+                    <table class="print-table">
+                        <tr><th style="width:32%;">Data e Ora Appuntamento</th><td><strong>${window.formatDateSafe(c.data)} alle ore ${c.time}</strong></td></tr>
+                        <tr><th>Prestazione Specialistica</th><td><strong>${c.type}</strong></td></tr>
+                        <tr><th>Luogo / Presidio Erogatore</th><td>${c.luogo}</td></tr>
+                        <tr><th>Modalità Mezzo di Trasporto</th><td><strong>${c.transport}</strong></td></tr>
+                        <tr><th>Accompagnatore Incaricato</th><td>${c.accompagnatore||'N/D'}</td></tr>
+                        <tr><th>Regime Economico / NRE</th><td>${c.regime||'-'} ${c.nre ? ' (Cod. NRE: '+c.nre+')' : ''}</td></tr>
+                        <tr><th>Preparazione all'Esame</th><td>${c.digiuno ? '<strong>DIGIUNO OBBLIGATORIO</strong>. ' : ''}${c.preparazione||'Nessuna istruzione specifica.'}</td></tr>
+                        <tr><th>Note Operative per l'Equipe</th><td>${c.note||'Nessuna nota aggiuntiva.'}</td></tr>
+                    </table>
+                </div>
+                <div class="print-signature-box">
+                    <div>
+                        <p style="font-size:9pt; margin:0;">Stampato il: ${window.getTimestamp()}</p>
+                        <p style="font-size:8pt; color:#64748b;">Operatore Struttura: ${c.op}</p>
+                    </div>
+                    <div style="text-align:center;">
+                        <p style="font-size:9pt; margin:0 0 45px 0;"><strong>Firma Personale Sanitario NVS:</strong></p>
+                        <div style="border-top:1px solid #000; width:220px; margin:0 auto; font-size:8pt;">Operatore Referente Viaggio</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('printArea').innerHTML = html;
+            setTimeout(() => window.print(), 300);
+        };
+
+        window.deleteAppointment = async (id) => { 
+            if(window.checkOssRestriction()) return;
+            if(confirm("Sei sicuro di voler eliminare definitivamente questo appuntamento CUP?")) {
+                await deleteDoc(doc(db, "cup", id)); 
+                window.showToast("Appuntamento CUP rimosso");
+            }
+        };
+
+        // REAL-TIME LISTENERS
+        onSnapshot(collection(db, "ospiti"), snap => {
+            window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.loadGuestSelector();
+        });
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => {
+            window.dbClinica = {};
+            snap.forEach(d => { window.dbClinica[d.id] = d.data(); });
+            window.renderGlobalPatientBanner();
+        });
+        onSnapshot(collection(db, "contenzioni"), snap => {
+            window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.renderGlobalPatientBanner();
+        });
+        onSnapshot(collection(db, "cup"), snap => {
+            window.dbCup = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.loadAppointments(true);
+        });
+
+        window.onload = () => {
+            document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
+            document.body.setAttribute('data-qualifica', window.activeOperatorQualifica);
+
+            let savedPatient = sessionStorage.getItem("globalSelectedPatient");
+            if(savedPatient) {
+                window.globalSelectedPatient = savedPatient;
+                window.renderGlobalPatientBanner();
+            }
+        };
+    </script>
+</body>
+</html>
