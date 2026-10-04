@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NVS Masterpiece - HACCP, Autocontrollo & Sicurezza 81/08</title>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
     <style>
         :root {
             --bg-color: #f1f5f9;         
@@ -84,7 +87,7 @@
         }
 
         /* CONTENITORE CENTRALE */
-        .container { max-width: 1400px; width: 96%; margin: 15px auto; flex-grow: 1; }
+        .container { max-width: 1420px; width: 96%; margin: 15px auto; flex-grow: 1; }
         .workspace { display: none; }
         .workspace.active { display: block; }
 
@@ -115,7 +118,7 @@
 
         /* TABELLE */
         .data-table { width: 100%; border-collapse: collapse; font-size: 0.88em; background: #ffffff; }
-        .data-table th, .data-table td { border: 1px solid var(--border-color); padding: 9px 10px; text-align: left; vertical-align: middle; }
+        .data-table th, .data-table td { border: 1px solid var(--border-color); padding: 8px 10px; text-align: left; vertical-align: middle; }
         .data-table th { background-color: var(--primary-color); color: white; font-weight: normal; text-transform: uppercase; font-size: 0.82em; }
         .data-table tr:nth-child(even) { background-color: #f8fafc; }
 
@@ -125,40 +128,120 @@
         .status-warn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
         .status-err { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
-        /* LISTE CONFIGURAZIONE ELEMENTI */
-        .config-list-box {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .config-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* BARRA FILTRO MESE A SCHERMO */
+        .month-filter-bar {
             background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 0.88em;
-        }
-        .config-item:hover {
-            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        /* GALLERIA LOTTI */
-        .lotti-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-top: 12px; }
-        .lotto-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: flex; flex-direction: column; }
-        .lotto-thumb { width: 100%; height: 125px; object-fit: cover; background: #f1f5f9; cursor: pointer; border-bottom: 1px solid #e2e8f0; }
+        /* BOX FIRMA DIGITALE TABLET */
+        .signature-box {
+            background: #ffffff;
+            border: 2px dashed #94a3b8;
+            border-radius: 6px;
+            padding: 8px;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .signature-canvas {
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            border-radius: 4px;
+            touch-action: none;
+            cursor: crosshair;
+        }
+        .signature-thumb {
+            width: 80px;
+            height: 32px;
+            object-fit: contain;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 3px;
+            display: block;
+        }
+
+        /* CHIPS PER LISTA REGISTRAZIONI SU RIGA SINGOLA */
+        .haccp-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 3px 7px;
+            border-radius: 4px;
+            font-size: 0.82em;
+            margin: 2px 4px 2px 0;
+            white-space: nowrap;
+        }
+        .haccp-chip.chip-err {
+            background: #fee2e2;
+            border-color: #fca5a5;
+            color: #991b1b;
+            font-weight: bold;
+        }
+        .haccp-chip.chip-ok {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+
+        /* CHECKLIST COMPATTA E SPUNTA TOTALE */
+        .quick-checklist {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 8px;
+            background: #ffffff;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .quick-check-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 8px 10px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.88em;
+            font-weight: 600;
+        }
+        .quick-check-item:hover { background: #f0fdfa; border-color: var(--primary-color); }
+        .quick-check-item input[type="checkbox"] { transform: scale(1.2); accent-color: var(--primary-color); }
+
+        /* MINIATURA FOTO LOTTO IN TABELLA */
+        .table-lotto-thumb {
+            width: 52px;
+            height: 52px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .table-lotto-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
 
         #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
         .toast { background: var(--text-main); color: #fff; padding: 12px 20px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
         .toast.show { opacity: 1; }
 
-        /* MODALE LIGHTBOX */
         #lightboxModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:35000; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; }
 
         /* STAMPA VERBALI */
@@ -204,14 +287,14 @@
         <!-- MENU AD INCASTRO A SCHEDE -->
         <div class="app-menu">
             <button class="menu-tab active" onclick="window.switchTab('kpi', this)">📊 Cruscotto & Dati</button>
-            <button class="menu-tab" onclick="window.switchTab('temp', this)">🌡️ Temperature Frigo/Celle</button>
+            <button class="menu-tab" onclick="window.switchTab('temp', this)">🌡️ Temperature Rapide</button>
             <button class="menu-tab" onclick="window.switchTab('sanif', this)">✨ Sanificazione Aree</button>
-            <button class="menu-tab" onclick="window.switchTab('pulizie', this)">🧹 Pulizie (Mod. 05)</button>
+            <button class="menu-tab" onclick="window.switchTab('pulizie', this)">🧹 Pulizie Rapide (Mod. 05)</button>
             <button class="menu-tab" onclick="window.switchTab('merci', this)">📦 Merci in Arrivo</button>
-            <button class="menu-tab" onclick="window.switchTab('lotti', this)">🔍 Tracciabilità Lotti</button>
+            <button class="menu-tab" onclick="window.switchTab('lotti', this)">🔍 Tracciabilità Lotti (Foto)</button>
             <button class="menu-tab" onclick="window.switchTab('pest', this)">🪤 Pest Control</button>
             <button class="menu-tab" onclick="window.switchTab('sicurezza', this)">🦺 Sicurezza (81/08)</button>
-            <button class="menu-tab" onclick="window.switchTab('cloud', this)">📁 Archivi Cloud</button>
+            <button class="menu-tab" onclick="window.switchTab('cloud', this)" style="background:#ccfbf1; color:#0f766e; font-weight:bold;">📁 Conservazione & ZIP 3 Mesi</button>
         </div>
     </div>
 
@@ -222,11 +305,11 @@
             <div class="metrics-grid">
                 <div class="metric-card">
                     <h2 id="kpi-totali">0</h2>
-                    <span style="font-size:0.8em; text-transform:uppercase; color:var(--text-light);">Registrazioni Totali Mese</span>
+                    <span style="font-size:0.8em; text-transform:uppercase; color:var(--text-light);">Sessioni Mese Attivo</span>
                 </div>
                 <div class="metric-card" style="border-left-color: var(--success-color);">
                     <h2 id="kpi-conformita" style="color:var(--success-color);">100%</h2>
-                    <span style="font-size:0.8em; text-transform:uppercase; color:var(--text-light);">Stato Impianti & Celle</span>
+                    <span style="font-size:0.8em; text-transform:uppercase; color:var(--text-light);">Conformità Mese in Corso</span>
                 </div>
                 <div class="metric-card" style="border-left-color: var(--warning-color);">
                     <h2 id="kpi-anomalie" style="color:var(--warning-color);">0</h2>
@@ -238,19 +321,14 @@
                 </div>
             </div>
 
-            <!-- GESTIONE DINAMICA IMPIANTI, FRIGORIFERI E LOCALI (NUOVA SEZIONE AMMINISTRATIVA) -->
+            <!-- GESTIONE DINAMICA IMPIANTI, FRIGORIFERI E LOCALI -->
             <div class="card" style="border-top:4px solid var(--secondary-color);">
                 <div class="card-header">
                     <h3 style="color:var(--secondary-color);">⚙️ Configurazione Dinamica Reparti, Impianti & Locali HACCP</h3>
                 </div>
-                <p style="color:var(--text-light); font-size:0.9em; margin-top:0;">
-                    Aggiungi o rimuovi le unità refrigeranti, i locali di disinfezione e gli ambienti dedicati alle pulizie. I menu a tendina delle schede operative si aggiorneranno automaticamente.
-                </p>
-
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap:18px;">
-                    
                     <!-- BOX 1: FRIGORIFERI & CELLE -->
-                    <div class="config-list-box">
+                    <div style="background:#fff; border:1px solid #cbd5e1; border-radius:6px; padding:12px; display:flex; flex-direction:column; gap:8px;">
                         <strong style="color:var(--terapia-color); font-size:0.95em;">❄️ Impianti Frigoriferi, Celle & Surgelati</strong>
                         <div style="display:flex; gap:6px;">
                             <input type="text" id="newCfgFrigo" placeholder="Es. Frigo Latticini (+0/+4°C)" style="padding:6px; font-size:0.88em;">
@@ -259,8 +337,8 @@
                         <div id="cfgListFrigoriferi" style="max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:5px; margin-top:6px;"></div>
                     </div>
 
-                    <!-- BOX 2: LOCALI DISINFEZIONE & SANIFICAZIONE -->
-                    <div class="config-list-box">
+                    <!-- BOX 2: LOCALI SANIFICAZIONE -->
+                    <div style="background:#fff; border:1px solid #cbd5e1; border-radius:6px; padding:12px; display:flex; flex-direction:column; gap:8px;">
                         <strong style="color:var(--primary-color); font-size:0.95em;">✨ Aree & Locali Sanificazione</strong>
                         <div style="display:flex; gap:6px;">
                             <input type="text" id="newCfgSanif" placeholder="Es. Locale Lavaggio Carrelli" style="padding:6px; font-size:0.88em;">
@@ -269,8 +347,8 @@
                         <div id="cfgListSanificazione" style="max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:5px; margin-top:6px;"></div>
                     </div>
 
-                    <!-- BOX 3: LOCALI & AMBIENTI PULIZIE (MOD. 05) -->
-                    <div class="config-list-box">
+                    <!-- BOX 3: LOCALI PULIZIE -->
+                    <div style="background:#fff; border:1px solid #cbd5e1; border-radius:6px; padding:12px; display:flex; flex-direction:column; gap:8px;">
                         <strong style="color:var(--warning-color); font-size:0.95em;">🧹 Locali & Checklist Pulizie (Mod. 05)</strong>
                         <div style="display:flex; gap:6px;">
                             <input type="text" id="newCfgPulizie" placeholder="Es. Pulizia Cella Rifiuti" style="padding:6px; font-size:0.88em;">
@@ -278,7 +356,6 @@
                         </div>
                         <div id="cfgListPulizie" style="max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:5px; margin-top:6px;"></div>
                     </div>
-
                 </div>
             </div>
 
@@ -288,28 +365,13 @@
                     <h3>🏛️ Dati Struttura & Responsabili Autocontrollo (Intestazione Stampe)</h3>
                 </div>
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:12px;">
-                    <div class="form-group" style="margin:0;">
-                        <label>Denominazione Struttura</label>
-                        <input type="text" id="haccpDenominazione" value="NUOVA VILLA SILVANA S.r.l.">
-                    </div>
-                    <div class="form-group" style="margin:0;">
-                        <label>Indirizzo Completo</label>
-                        <input type="text" id="haccpIndirizzo" value="Via Flaminia Romana, Terni (TR)">
-                    </div>
-                    <div class="form-group" style="margin:0;">
-                        <label>Partita IVA / Codice Fiscale</label>
-                        <input type="text" id="haccpPiva" value="01234567890">
-                    </div>
+                    <div class="form-group" style="margin:0;"><label>Denominazione Struttura</label><input type="text" id="haccpDenominazione" value="NUOVA VILLA SILVANA S.r.l."></div>
+                    <div class="form-group" style="margin:0;"><label>Indirizzo Completo</label><input type="text" id="haccpIndirizzo" value="Via Flaminia Romana, Terni (TR)"></div>
+                    <div class="form-group" style="margin:0;"><label>Partita IVA / Codice Fiscale</label><input type="text" id="haccpPiva" value="01234567890"></div>
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:15px;">
-                    <div class="form-group" style="margin:0;">
-                        <label>Legale Rappresentante</label>
-                        <input type="text" id="haccpLegaleRappr" placeholder="Nome Cognome Amministratore">
-                    </div>
-                    <div class="form-group" style="margin:0;">
-                        <label>Responsabile Autocontrollo HACCP / RSPP</label>
-                        <input type="text" id="haccpResponsabile" placeholder="Dott. / Sig. Responsabile Qualità e Sicurezza">
-                    </div>
+                    <div class="form-group" style="margin:0;"><label>Legale Rappresentante</label><input type="text" id="haccpLegaleRappr" placeholder="Nome Cognome Amministratore"></div>
+                    <div class="form-group" style="margin:0;"><label>Responsabile Autocontrollo HACCP / RSPP</label><input type="text" id="haccpResponsabile" placeholder="Dott. / Sig. Responsabile Qualità"></div>
                 </div>
                 <div style="display:flex; justify-content:flex-end;">
                     <button class="btn-success" onclick="window.salvaDatiStruttura()">💾 Salva Dati Intestazione</button>
@@ -321,43 +383,52 @@
         <div id="ws-temp" class="workspace">
             <div class="card" style="border-top:4px solid var(--terapia-color);">
                 <div class="card-header">
-                    <h3 style="color:var(--terapia-color);">🌡️ Registro Giornaliero Temperature Frigoriferi, Celle & Surgelati</h3>
-                    <button class="btn-doc" onclick="window.stampaRegistro('temp')">🖨️ Stampa Verbale PDF/A4</button>
+                    <h3 style="color:var(--terapia-color);">🌡️ Registrazione Rapida Temperature & Celle (Auto-Conformità)</h3>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-success" style="padding:6px 12px; font-size:0.85em; background:#059669;" onclick="window.compilaAutomaticamenteTemperatureConformi()">🎯 Compila Temperature Conformi (Tutte)</button>
+                        <button class="btn-doc" onclick="window.stampaRegistro('temp')">🖨️ Stampa Verbale PDF/A4</button>
+                    </div>
                 </div>
 
-                <!-- FORM RILEVAZIONE -->
                 <div style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:6px; margin-bottom:15px;">
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:10px; margin-bottom:10px;">
-                        <div class="form-group" style="margin:0;">
-                            <label>Unità / Impianto *</label>
-                            <select id="tempUnita"></select>
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Temperatura Rilevata (°C) *</label>
-                            <input type="number" step="0.1" id="tempValore" placeholder="Es. 3.2">
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Data & Ora</label>
-                            <input type="datetime-local" id="tempDataOra">
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Operatore (OSA)</label>
-                            <input type="text" id="tempOperatore" readonly style="background:#f1f5f9;">
-                        </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                        <p style="margin:0; font-size:0.9em; color:#0369a1; font-weight:bold;">
+                            ⚡ Inserisci i valori o premi "Compila Temperature Conformi" per valorizzare tutti i campi con valori a norma.
+                        </p>
+                        <button type="button" class="btn-doc" style="padding:3px 8px; font-size:0.75em;" onclick="window.svuotaCampiTemperature()">Svuota Campi</button>
                     </div>
-                    <div class="form-group" style="margin-bottom:10px;">
-                        <label>Eventuale Azione Correttiva (in caso di anomalia termica)</label>
-                        <input type="text" id="tempAzione" placeholder="Es. Regolazione termostato, verifica chiusura porta, trasferimento alimenti...">
+                    
+                    <div id="quickTempGrid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:10px; margin-bottom:15px;"></div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px; border-top:1px dashed #bae6fd; padding-top:12px;">
+                        <div class="signature-box">
+                            <span style="font-size:0.8em; font-weight:bold; color:var(--text-light);">✍️ Firma Operatore (Tablet/Touch):</span>
+                            <canvas id="sigCanvasTemp" class="signature-canvas" width="220" height="70"></canvas>
+                            <button type="button" class="btn-doc" style="padding:2px 8px; font-size:0.75em;" onclick="window.clearSignature('sigCanvasTemp')">Pulisci Tratto</button>
+                        </div>
+                        <button class="btn-primary" style="background:#0284c7; padding:10px 22px; font-size:0.95em;" onclick="window.salvaSessioneTemperatureUnica()">⚡ Registra Sessione Temperature (Riga Unica)</button>
                     </div>
-                    <div style="display:flex; justify-content:flex-end;">
-                        <button class="btn-primary" style="background:#0284c7;" onclick="window.salvaTemperatura()">Registra Temperatura</button>
+                </div>
+
+                <div class="month-filter-bar">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="font-weight:bold; font-size:0.9em; color:#0369a1;">📅 Periodo Visualizzato:</label>
+                        <select id="filterMonthTemp" onchange="window.renderTableTemp()" style="padding:4px 8px; font-size:0.9em; width:auto;"></select>
                     </div>
+                    <span id="totRecTempBadge" style="font-size:0.85em; font-weight:bold; color:#64748b;">Sessioni: 0</span>
                 </div>
 
                 <div style="overflow-x:auto;">
                     <table class="data-table" id="tableTemp">
                         <thead>
-                            <tr><th>Stato</th><th>Data e Ora</th><th>Impianto</th><th>Temp. (°C)</th><th>Azione Correttiva</th><th>Operatore (OSA)</th><th class="restrict-oss">Azione</th></tr>
+                            <tr>
+                                <th style="width:140px;">Stato Globale</th>
+                                <th style="width:160px;">Data e Ora</th>
+                                <th>Rilevazioni Impianti (Valori & Esito)</th>
+                                <th style="width:140px;">Operatore</th>
+                                <th style="width:100px;">Firma</th>
+                                <th style="width:70px;" class="restrict-oss">Azione</th>
+                            </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -365,38 +436,61 @@
             </div>
         </div>
 
-        <!-- 3. WORKSPACE: SANIFICAZIONE AREE -->
+        <!-- 3. WORKSPACE: SANIFICAZIONE AREE (SESSIONE UNICA A RIGA SINGOLA) -->
         <div id="ws-sanif" class="workspace">
             <div class="card" style="border-top:4px solid var(--primary-color);">
                 <div class="card-header">
-                    <h3>✨ Registro Sanificazione e Disinfezione Superfici</h3>
+                    <h3>✨ Registro Sanificazione Aree & Superfici (Spunta Rapida)</h3>
                     <button class="btn-doc" onclick="window.stampaRegistro('sanif')">🖨️ Stampa Verbale PDF/A4</button>
                 </div>
 
                 <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:6px; margin-bottom:15px;">
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:10px;">
-                        <div class="form-group" style="margin:0;">
-                            <label>Area Trattata *</label>
-                            <select id="sanifArea"></select>
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Prodotto Chimico & Diluizione</label>
-                            <input type="text" id="sanifProdotto" value="Clorattivo 2% / Sgrassatore Igienizzante">
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Note / Anomalie</label>
-                            <input type="text" id="sanifNote" placeholder="Nessuna anomalia riscontrata">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+                        <span style="font-weight:bold; color:#166534;">Seleziona le aree trattate:</span>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn-success" style="padding:4px 10px; font-size:0.8em;" onclick="window.toggleAllCheckboxes('sanifCheckboxes', true)">☑️ Seleziona Tutte le Aree</button>
+                            <button class="btn-doc" style="padding:4px 10px; font-size:0.8em;" onclick="window.toggleAllCheckboxes('sanifCheckboxes', false)">Deseleziona</button>
                         </div>
                     </div>
-                    <div style="display:flex; justify-content:flex-end;">
-                        <button class="btn-success" onclick="window.salvaSanificazione()">Registra Sanificazione</button>
+
+                    <div id="sanifCheckboxes" class="quick-checklist"></div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
+                        <div class="form-group" style="margin:0;"><label>Prodotto Chimico & Diluizione</label><input type="text" id="sanifProdotto" value="Clorattivo 2% / Sgrassatore Igienizzante"></div>
+                        <div class="form-group" style="margin:0;"><label>Note / Anomalie</label><input type="text" id="sanifNote" placeholder="Nessuna anomalia riscontrata"></div>
                     </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px; border-top:1px dashed #bbf7d0; padding-top:12px;">
+                        <div class="signature-box">
+                            <span style="font-size:0.8em; font-weight:bold; color:var(--text-light);">✍️ Firma Operatore (Tablet/Touch):</span>
+                            <canvas id="sigCanvasSanif" class="signature-canvas" width="220" height="70"></canvas>
+                            <button type="button" class="btn-doc" style="padding:2px 8px; font-size:0.75em;" onclick="window.clearSignature('sigCanvasSanif')">Pulisci Tratto</button>
+                        </div>
+                        <button class="btn-success" style="padding:10px 22px; font-size:0.95em;" onclick="window.salvaSanificazioniRapide()">⚡ Registra Sessione Sanificazioni (Riga Unica)</button>
+                    </div>
+                </div>
+
+                <div class="month-filter-bar">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="font-weight:bold; font-size:0.9em; color:#0f766e;">📅 Periodo Visualizzato:</label>
+                        <select id="filterMonthSanif" onchange="window.renderTableSanif()" style="padding:4px 8px; font-size:0.9em; width:auto;"></select>
+                    </div>
+                    <span id="totRecSanifBadge" style="font-size:0.85em; font-weight:bold; color:#64748b;">Sessioni: 0</span>
                 </div>
 
                 <div style="overflow-x:auto;">
                     <table class="data-table" id="tableSanif">
                         <thead>
-                            <tr><th>Stato</th><th>Data e Ora</th><th>Area Trattata</th><th>Detergente/Disinfettante</th><th>Note</th><th>Operatore</th><th class="restrict-oss">Azione</th></tr>
+                            <tr>
+                                <th style="width:130px;">Stato</th>
+                                <th style="width:160px;">Data e Ora</th>
+                                <th>Aree Trattate (Elenco)</th>
+                                <th>Detergente / Disinfettante</th>
+                                <th>Note</th>
+                                <th style="width:140px;">Operatore</th>
+                                <th style="width:100px;">Firma</th>
+                                <th style="width:70px;" class="restrict-oss">Azione</th>
+                            </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -404,41 +498,66 @@
             </div>
         </div>
 
-        <!-- 4. WORKSPACE: PULIZIE GIORNALIERE (MOD. 05) -->
+        <!-- 4. WORKSPACE: PULIZIE GIORNALIERE (MOD. 05 - SESSIONE UNICA A RIGA SINGOLA) -->
         <div id="ws-pulizie" class="workspace">
             <div class="card" style="border-top:4px solid var(--warning-color);">
                 <div class="card-header">
-                    <h3 style="color:var(--warning-color);">🧹 Registro Pulizie Giornaliere e Periodiche (Mod. 05)</h3>
+                    <h3 style="color:var(--warning-color);">🧹 Registro Pulizie Giornaliere e Periodiche (Mod. 05 - Spunta Rapida)</h3>
                     <button class="btn-doc" onclick="window.stampaRegistro('pulizie')">🖨️ Stampa Verbale PDF/A4</button>
                 </div>
 
                 <div style="background:#fffbeb; border:1px solid #fde68a; padding:15px; border-radius:6px; margin-bottom:15px;">
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-bottom:10px;">
-                        <div class="form-group" style="margin:0;">
-                            <label>Operazione / Locale *</label>
-                            <select id="puliziaTipo"></select>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+                        <span style="font-weight:bold; color:#b45309;">Seleziona le operazioni/locali eseguiti:</span>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn-warning" style="padding:4px 10px; font-size:0.8em;" onclick="window.toggleAllCheckboxes('pulizieCheckboxes', true)">☑️ Seleziona Tutte le Pulizie</button>
+                            <button class="btn-doc" style="padding:4px 10px; font-size:0.8em;" onclick="window.toggleAllCheckboxes('pulizieCheckboxes', false)">Deseleziona</button>
                         </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Esito Controllo</label>
+                    </div>
+
+                    <div id="pulizieCheckboxes" class="quick-checklist"></div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
+                        <div class="form-group" style="margin:0;"><label>Esito Globale</label>
                             <select id="puliziaEsito">
                                 <option value="CONFORME">🟢 Conforme (Eseguito a regola d'arte)</option>
                                 <option value="NON CONFORME">🔴 Non Conforme (Necessario ritrattamento)</option>
                             </select>
                         </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Dettagli & Note</label>
-                            <input type="text" id="puliziaNote" placeholder="Tutto regolare">
+                        <div class="form-group" style="margin:0;"><label>Dettagli & Note</label><input type="text" id="puliziaNote" placeholder="Tutto regolare"></div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px; border-top:1px dashed #fde68a; padding-top:12px;">
+                        <div class="signature-box">
+                            <span style="font-size:0.8em; font-weight:bold; color:var(--text-light);">✍️ Firma Operatore (Tablet/Touch):</span>
+                            <canvas id="sigCanvasPulizie" class="signature-canvas" width="220" height="70"></canvas>
+                            <button type="button" class="btn-doc" style="padding:2px 8px; font-size:0.75em;" onclick="window.clearSignature('sigCanvasPulizie')">Pulisci Tratto</button>
                         </div>
+                        <button class="btn-warning" style="padding:10px 22px; font-size:0.95em;" onclick="window.salvaPulizieRapide()">⚡ Registra Sessione Pulizie (Riga Unica)</button>
                     </div>
-                    <div style="display:flex; justify-content:flex-end;">
-                        <button class="btn-warning" onclick="window.salvaPulizia()">Registra Scheda Pulizia</button>
+                </div>
+
+                <div class="month-filter-bar">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="font-weight:bold; font-size:0.9em; color:#b45309;">📅 Periodo Visualizzato:</label>
+                        <select id="filterMonthPulizie" onchange="window.renderTablePulizie()" style="padding:4px 8px; font-size:0.9em; width:auto;"></select>
                     </div>
+                    <span id="totRecPulizieBadge" style="font-size:0.85em; font-weight:bold; color:#64748b;">Sessioni: 0</span>
                 </div>
 
                 <div style="overflow-x:auto;">
                     <table class="data-table" id="tablePulizie">
                         <thead>
-                            <tr><th>Stato</th><th>Data e Ora</th><th>Operazione / Locale</th><th>Esito</th><th>Note</th><th>Operatore</th><th class="restrict-oss">Azione</th></tr>
+                            <tr>
+                                <th style="width:130px;">Stato</th>
+                                <th style="width:160px;">Data e Ora</th>
+                                <th>Operazioni / Locali Eseguiti (Elenco)</th>
+                                <th style="width:120px;">Esito</th>
+                                <th>Note</th>
+                                <th style="width:140px;">Operatore</th>
+                                <th style="width:100px;">Firma</th>
+                                <th style="width:70px;" class="restrict-oss">Azione</th>
+                            </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -456,27 +575,16 @@
 
                 <div style="background:#f5f3ff; border:1px solid #ddd6fe; padding:15px; border-radius:6px; margin-bottom:15px;">
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:10px;">
-                        <div class="form-group" style="margin:0;">
-                            <label>Fornitore *</label>
-                            <input type="text" id="merceFornitore" placeholder="Es. Carni Umbre S.r.l.">
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Tipologia Alimento *</label>
-                            <input type="text" id="merceTipo" placeholder="Es. Carni fresche, latticini...">
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Temp. Misurata (°C)</label>
-                            <input type="number" step="0.1" id="merceTemp" placeholder="Es. 3.5">
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Integrità Imballaggi & Mezzo</label>
+                        <div class="form-group" style="margin:0;"><label>Fornitore *</label><input type="text" id="merceFornitore" placeholder="Es. Carni Umbre S.r.l."></div>
+                        <div class="form-group" style="margin:0;"><label>Tipologia Alimento *</label><input type="text" id="merceTipo" placeholder="Es. Carni fresche, latticini..."></div>
+                        <div class="form-group" style="margin:0;"><label>Temp. Misurata (°C)</label><input type="number" step="0.1" id="merceTemp" placeholder="Es. 3.5"></div>
+                        <div class="form-group" style="margin:0;"><label>Integrità Imballaggi & Mezzo</label>
                             <select id="merceImballi">
                                 <option value="Integri e Puliti">Integri e Puliti</option>
                                 <option value="Danneggiati / Sporchi">Danneggiati / Sporchi</option>
                             </select>
                         </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Esito Accettazione *</label>
+                        <div class="form-group" style="margin:0;"><label>Esito Accettazione *</label>
                             <select id="merceEsito">
                                 <option value="ACCETTATA">🟢 Accettata</option>
                                 <option value="CON RISERVA">🟡 Con Riserva</option>
@@ -484,15 +592,29 @@
                             </select>
                         </div>
                     </div>
-                    <div style="display:flex; justify-content:flex-end;">
-                        <button class="btn-primary" style="background:var(--dir-color);" onclick="window.salvaMerce()">Registra Ricezione Merce</button>
+
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px; border-top:1px dashed #ddd6fe; padding-top:12px;">
+                        <div class="signature-box">
+                            <span style="font-size:0.8em; font-weight:bold; color:var(--text-light);">✍️ Firma Operatore (Tablet/Touch):</span>
+                            <canvas id="sigCanvasMerci" class="signature-canvas" width="220" height="70"></canvas>
+                            <button type="button" class="btn-doc" style="padding:2px 8px; font-size:0.75em;" onclick="window.clearSignature('sigCanvasMerci')">Pulisci Tratto</button>
+                        </div>
+                        <button class="btn-primary" style="background:var(--dir-color); padding:10px 20px;" onclick="window.salvaMerce()">Registra Ricezione Merce</button>
                     </div>
+                </div>
+
+                <div class="month-filter-bar">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="font-weight:bold; font-size:0.9em; color:var(--dir-color);">📅 Periodo Visualizzato:</label>
+                        <select id="filterMonthMerci" onchange="window.renderTableMerci()" style="padding:4px 8px; font-size:0.9em; width:auto;"></select>
+                    </div>
+                    <span id="totRecMerciBadge" style="font-size:0.85em; font-weight:bold; color:#64748b;">Forniture: 0</span>
                 </div>
 
                 <div style="overflow-x:auto;">
                     <table class="data-table" id="tableMerci">
                         <thead>
-                            <tr><th>Esito</th><th>Data e Ora</th><th>Fornitore</th><th>Tipologia</th><th>Temp. (°C)</th><th>Imballi</th><th>Operatore</th><th class="restrict-oss">Azione</th></tr>
+                            <tr><th>Esito</th><th>Data e Ora</th><th>Fornitore</th><th>Tipologia</th><th>Temp. (°C)</th><th>Imballi</th><th>Operatore</th><th>Firma</th><th class="restrict-oss">Azione</th></tr>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -500,17 +622,16 @@
             </div>
         </div>
 
-        <!-- 6. WORKSPACE: TRACCIABILITÀ LOTTI (FOTOGRAFICA) -->
+        <!-- 6. WORKSPACE: TRACCIABILITÀ LOTTI (FOTO E MINIATURA IN TABELLA) -->
         <div id="ws-lotti" class="workspace">
             <div class="card" style="border-top:4px solid var(--primary-color);">
                 <div class="card-header">
-                    <h3>🔍 Tracciabilità Fotografica Lotti & Etichette Ingredienti</h3>
+                    <h3>🔍 Tracciabilità Lotti: Scatto Foto Etichette & Miniatura in Tabella</h3>
                 </div>
 
                 <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:6px; margin-bottom:15px;">
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:10px;">
-                        <div class="form-group" style="margin:0;">
-                            <label>Categoria Ingrediente *</label>
+                        <div class="form-group" style="margin:0;"><label>Categoria Ingrediente *</label>
                             <select id="lottoCategoria">
                                 <option value="Carni & Salumi">Carni & Salumi</option>
                                 <option value="Latticini & Formaggi">Latticini & Formaggi</option>
@@ -520,76 +641,108 @@
                                 <option value="Oli & Condimenti">Oli & Condimenti</option>
                             </select>
                         </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Dettaglio / Descrizione Prodotto</label>
-                            <input type="text" id="lottoDescrizione" placeholder="Es. Petto di pollo lotto 9845-A">
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Foto Etichetta / Scansione *</label>
-                            <input type="file" id="lottoFotoFile" accept="image/*" capture="environment" style="background:#fff;">
-                        </div>
+                        <div class="form-group" style="margin:0;"><label>Dettaglio / Descrizione Prodotto</label><input type="text" id="lottoDescrizione" placeholder="Es. Petto di pollo lotto 9845-A"></div>
+                        <div class="form-group" style="margin:0;"><label>📷 Scatta Foto o Carica Etichetta *</label><input type="file" id="lottoFotoFile" accept="image/*" capture="environment" style="background:#fff;"></div>
                     </div>
-                    <div style="display:flex; justify-content:flex-end;">
-                        <button class="btn-primary" onclick="window.salvaLottoFotografico()">📷 Archivia Foto Lotto</button>
+
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px; border-top:1px dashed #cbd5e1; padding-top:12px;">
+                        <div class="signature-box">
+                            <span style="font-size:0.8em; font-weight:bold; color:var(--text-light);">✍️ Firma Operatore (Tablet/Touch):</span>
+                            <canvas id="sigCanvasLotti" class="signature-canvas" width="220" height="70"></canvas>
+                            <button type="button" class="btn-doc" style="padding:2px 8px; font-size:0.75em;" onclick="window.clearSignature('sigCanvasLotti')">Pulisci Tratto</button>
+                        </div>
+                        <button class="btn-primary" style="padding:10px 20px;" onclick="window.salvaLottoFotografico()">📷 Archivia Foto Lotto</button>
                     </div>
                 </div>
 
-                <h4 style="margin:10px 0 8px 0;">Archivio Lotti Alimentari Digitalizzati</h4>
-                <div id="lottiGallery" class="lotti-grid"></div>
+                <div class="month-filter-bar">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="font-weight:bold; font-size:0.9em; color:#0f766e;">📅 Periodo Visualizzato:</label>
+                        <select id="filterMonthLotti" onchange="window.renderLotti()" style="padding:4px 8px; font-size:0.9em; width:auto;"></select>
+                    </div>
+                    <span id="totRecLottiBadge" style="font-size:0.85em; font-weight:bold; color:#64748b;">Lotti: 0</span>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="data-table" id="tableLotti">
+                        <thead>
+                            <tr><th>Foto</th><th>Data</th><th>Categoria</th><th>Descrizione Prodotto</th><th>Operatore</th><th>Firma</th><th class="restrict-oss">Azione</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- 7. WORKSPACE: PEST CONTROL (MONITORAGGIO INFESTANTI) -->
+        <!-- 7. WORKSPACE: PEST CONTROL (SESSIONE UNICA A RIGA SINGOLA) -->
         <div id="ws-pest" class="workspace">
             <div class="card" style="border-top:4px solid var(--warning-color);">
                 <div class="card-header">
-                    <h3 style="color:var(--warning-color);">🪤 Pest Control & Monitoraggio Infestanti</h3>
+                    <h3 style="color:var(--warning-color);">🪤 Pest Control & Monitoraggio Infestanti (Spunta Rapida)</h3>
                     <button class="btn-doc" onclick="window.stampaRegistro('pest')">🖨️ Stampa Verbale PDF/A4</button>
                 </div>
 
                 <div style="background:#fffbeb; border:1px solid #fde68a; padding:15px; border-radius:6px; margin-bottom:15px;">
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:10px;">
-                        <div class="form-group" style="margin:0;">
-                            <label>Postazione Esche *</label>
-                            <select id="pestPostazione">
-                                <option value="P01 - Ingresso Merci Esterno">P01 - Ingresso Merci Esterno</option>
-                                <option value="P02 - Locale Rifiuti Cucina">P02 - Locale Rifiuti Cucina</option>
-                                <option value="P03 - Dispensa Alimentare Secca">P03 - Dispensa Alimentare Secca</option>
-                                <option value="P04 - Corridoio Accesso Cucina">P04 - Corridoio Accesso Cucina</option>
-                                <option value="P05 - Lampada Cattura Insetti Volanti">P05 - Lampada Cattura Insetti Volanti</option>
-                            </select>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+                        <span style="font-weight:bold; color:#b45309;">Seleziona le postazioni esche ispezionate:</span>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn-warning" style="padding:4px 10px; font-size:0.8em;" onclick="window.toggleAllCheckboxes('pestCheckboxes', true)">☑️ Tutte le Postazioni (Esche Integre)</button>
+                            <button class="btn-doc" style="padding:4px 10px; font-size:0.8em;" onclick="window.toggleAllCheckboxes('pestCheckboxes', false)">Deseleziona</button>
                         </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Target Infestante</label>
+                    </div>
+
+                    <div id="pestCheckboxes" class="quick-checklist"></div>
+
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:12px;">
+                        <div class="form-group" style="margin:0;"><label>Target Infestante</label>
                             <select id="pestTarget">
-                                <option value="Roditori">Roditori</option>
-                                <option value="Insetti Striscianti">Insetti Striscianti</option>
-                                <option value="Insetti Volanti">Insetti Volanti</option>
+                                <option value="Roditori & Insetti Striscianti">Roditori & Insetti Striscianti</option>
+                                <option value="Solo Roditori">Solo Roditori</option>
+                                <option value="Insetti Volanti (Lampada UV)">Insetti Volanti (Lampada UV)</option>
                             </select>
                         </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Esito Ispezione *</label>
+                        <div class="form-group" style="margin:0;"><label>Esito Globale Ispezione</label>
                             <select id="pestEsito">
-                                <option value="REGOLARE">🟢 Regolare (Esca intatta)</option>
-                                <option value="ESCA CONSUMATA">🟡 Esca Consumata</option>
-                                <option value="CATTURA RILEVATA">🔴 Cattura Rilevata</option>
-                                <option value="DANNEGGIATA">⚪ Postazione Danneggiata</option>
+                                <option value="REGOLARE">🟢 Regolare (Esche Integre / Nessuna Cattura)</option>
+                                <option value="ESCA CONSUMATA">🟡 Esca Consumata (Reintegrata)</option>
+                                <option value="CATTURA RILEVATA">🔴 Cattura Rilevata (Sanificato)</option>
                             </select>
                         </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Azioni Intraprese</label>
-                            <input type="text" id="pestAzioni" placeholder="Es. Reintegro esca, sanificazione...">
+                        <div class="form-group" style="margin:0;"><label>Azioni Intraprese</label><input type="text" id="pestAzioni" placeholder="Es. Nessuna azione richiesta / Reintegro esca"></div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px; border-top:1px dashed #fde68a; padding-top:12px;">
+                        <div class="signature-box">
+                            <span style="font-size:0.8em; font-weight:bold; color:var(--text-light);">✍️ Firma Operatore (Tablet/Touch):</span>
+                            <canvas id="sigCanvasPest" class="signature-canvas" width="220" height="70"></canvas>
+                            <button type="button" class="btn-doc" style="padding:2px 8px; font-size:0.75em;" onclick="window.clearSignature('sigCanvasPest')">Pulisci Tratto</button>
                         </div>
+                        <button class="btn-warning" style="padding:10px 22px; font-size:0.95em;" onclick="window.salvaSessionePestRapida()">⚡ Registra Ispezione Pest Control (Riga Unica)</button>
                     </div>
-                    <div style="display:flex; justify-content:flex-end;">
-                        <button class="btn-warning" onclick="window.salvaPestControl()">Registra Controllo</button>
+                </div>
+
+                <div class="month-filter-bar">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="font-weight:bold; font-size:0.9em; color:#b45309;">📅 Periodo Visualizzato:</label>
+                        <select id="filterMonthPest" onchange="window.renderTablePest()" style="padding:4px 8px; font-size:0.9em; width:auto;"></select>
                     </div>
+                    <span id="totRecPestBadge" style="font-size:0.85em; font-weight:bold; color:#64748b;">Sessioni: 0</span>
                 </div>
 
                 <div style="overflow-x:auto;">
                     <table class="data-table" id="tablePest">
                         <thead>
-                            <tr><th>Stato</th><th>Data</th><th>Postazione</th><th>Target</th><th>Esito</th><th>Azioni</th><th>Operatore</th><th class="restrict-oss">Azione</th></tr>
+                            <tr>
+                                <th style="width:130px;">Stato</th>
+                                <th style="width:160px;">Data e Ora</th>
+                                <th>Postazioni Ispezionate (Elenco)</th>
+                                <th>Target</th>
+                                <th style="width:120px;">Esito</th>
+                                <th>Azioni / Note</th>
+                                <th style="width:140px;">Operatore</th>
+                                <th style="width:100px;">Firma</th>
+                                <th style="width:70px;" class="restrict-oss">Azione</th>
+                            </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -607,12 +760,8 @@
 
                 <div style="background:#fff1f2; border:1px solid #fecdd3; padding:15px; border-radius:6px; margin-bottom:15px;">
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:10px;">
-                        <div class="form-group" style="margin:0;">
-                            <label>Titolo Documento / Adempimento *</label>
-                            <input type="text" id="sicNome" placeholder="Es. Aggiornamento DVR, Corso Antincendio...">
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Area di Riferimento</label>
+                        <div class="form-group" style="margin:0;"><label>Titolo Documento / Adempimento *</label><input type="text" id="sicNome" placeholder="Es. Aggiornamento DVR, Corso Antincendio..."></div>
+                        <div class="form-group" style="margin:0;"><label>Area di Riferimento</label>
                             <select id="sicArea">
                                 <option value="Documentale Base (DVR, DUVRI, PEE)">Documentale Base (DVR, DUVRI, PEE)</option>
                                 <option value="Formazione Lavoratori (Accordo S.R.)">Formazione Lavoratori (Accordo S.R.)</option>
@@ -621,20 +770,23 @@
                                 <option value="Prevenzione Incendi & CPI">Prevenzione Incendi & CPI</option>
                             </select>
                         </div>
-                        <div class="form-group" style="margin:0;">
-                            <label>Data di Scadenza Obbligo *</label>
-                            <input type="date" id="sicDataScadenza">
-                        </div>
+                        <div class="form-group" style="margin:0;"><label>Data di Scadenza Obbligo *</label><input type="date" id="sicDataScadenza"></div>
                     </div>
-                    <div style="display:flex; justify-content:flex-end;">
-                        <button class="btn-danger" onclick="window.salvaScadenzaSicurezza()">Registra Scadenza 81/08</button>
+
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px; border-top:1px dashed #fecdd3; padding-top:12px;">
+                        <div class="signature-box">
+                            <span style="font-size:0.8em; font-weight:bold; color:var(--text-light);">✍️ Firma RSPP / Referente (Tablet/Touch):</span>
+                            <canvas id="sigCanvasSicurezza" class="signature-canvas" width="220" height="70"></canvas>
+                            <button type="button" class="btn-doc" style="padding:2px 8px; font-size:0.75em;" onclick="window.clearSignature('sigCanvasSicurezza')">Pulisci Tratto</button>
+                        </div>
+                        <button class="btn-danger" style="padding:10px 20px;" onclick="window.salvaScadenzaSicurezza()">Registra Scadenza 81/08</button>
                     </div>
                 </div>
 
                 <div style="overflow-x:auto;">
                     <table class="data-table" id="tableSicurezza">
                         <thead>
-                            <tr><th>Stato</th><th>Scadenza</th><th>Tempo Rimanente</th><th>Adempimento</th><th>Area</th><th>Operatore</th><th class="restrict-oss">Azione</th></tr>
+                            <tr><th>Stato</th><th>Scadenza</th><th>Tempo Rimanente</th><th>Adempimento</th><th>Area</th><th>Operatore</th><th>Firma</th><th class="restrict-oss">Azione</th></tr>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -642,13 +794,39 @@
             </div>
         </div>
 
-        <!-- 9. WORKSPACE: ARCHIVI CLOUD & DRIVE -->
+        <!-- 9. WORKSPACE: CONSERVAZIONE A NORMA, ROTAZIONE 3 MESI & ARCHIVI CLOUD -->
         <div id="ws-cloud" class="workspace">
-            <div class="card" style="border-top:4px solid var(--dir-color);">
+            <div class="card" style="border-top:4px solid var(--secondary-color);">
                 <div class="card-header">
-                    <h3 style="color:var(--dir-color);">📁 Archivi Cloud & Cartelle Documentali Condivise</h3>
+                    <h3 style="color:var(--secondary-color);">📦 Rotazione Trimestrale & Conservazione Sostitutiva (A Prova di Controllo USL/NAS)</h3>
                 </div>
-                <p style="color:var(--text-light); font-size:0.92em; margin-top:0;">Accesso diretto ai moduli di caricamento e alle cartelle Cloud di conservazione delle certificazioni.</p>
+                
+                <div style="background:#f0fdfa; border:1px solid #99f6e4; padding:15px; border-radius:6px; margin-bottom:15px;">
+                    <h4 style="margin:0 0 6px 0; color:#0f766e;">Normativa HACCP & Autocontrollo (Reg. CE 852/2004 e D.Lgs. 193/2007)</h4>
+                    <p style="font-size:0.9em; color:#334155; margin:0 0 10px 0; line-height:1.45;">
+                        I dati operativi correnti (ultimi 90 giorni) restano consultabili live su Firebase da tablet e PC. I registri antecedenti a 3 mesi devono essere conservati per un minimo di 12-24 mesi in formato digitale sicuro.<br>
+                        <strong>Per non appesantire il database</strong>, genera il pacchetto compresso <strong>ZIP</strong> contenente tutti i registri, le firme e le foto lotti. Una volta archiviato su Google Drive o PC locale, potrai effettuare la bonifica dei record storici senza perdere alcuna evidenza legale.
+                    </p>
+                    
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-top:1px dashed #99f6e4; padding-top:12px;">
+                        <div>
+                            <span style="font-weight:bold; color:#0f766e;">Record storici archiviabili (> 90 giorni):</span>
+                            <span id="statRecordArchiviabili" style="background:#fff; border:1px solid #cbd5e1; padding:3px 8px; border-radius:4px; font-weight:bold; margin-left:6px;">0 record</span>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-success" style="padding:10px 18px; font-weight:bold;" onclick="window.esportaArchivioCompressoZIP()">
+                                📦 Scarica Pacchetto ZIP Trimestrale Certificato
+                            </button>
+                            <button id="btnEliminaStorico" class="btn-danger restrict-oss" style="padding:10px 18px; font-weight:bold; opacity:0.6; cursor:not-allowed;" disabled onclick="window.eseguiBonificaDatiStorici()">
+                                🗑️ Esegui Bonifica (> 3 Mesi) da Firebase
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="border-top:4px solid var(--dir-color);">
+                <div class="card-header"><h3 style="color:var(--dir-color);">📁 Cartelle Documentali Cloud Condivise</h3></div>
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:15px;">
                     <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:6px;">
                         <h4 style="margin:0 0 6px 0; color:var(--primary-color);">☁️ Documentale HACCP & Sanificazioni</h4>
@@ -662,6 +840,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
 
     </div>
@@ -693,8 +872,8 @@
         window.activeOperator = sessionStorage.getItem("activeOperator") || "Operatore OSA";
         window.dbTemp = []; window.dbSanif = []; window.dbPulizie = []; 
         window.dbMerci = []; window.dbLotti = []; window.dbPest = []; window.dbSicurezza = [];
+        window.haScaricatoBackupRecente = false;
 
-        // CONFIGURAZIONE DINAMICA PREDEFINITA (SE NON ANCORA PRESENTE SU FIRESTORE)
         window.haccpConfig = {
             frigoriferi: [
                 "Frigo Cucina 1 (0°C / +4°C)",
@@ -717,6 +896,13 @@
                 "Lavaggio & Igienizzazione Pavimenti",
                 "Pulizia Cappa Aspirante e Filtri",
                 "Smaltimento Rifiuti & Svuotamento Bidoni"
+            ],
+            pestPostazioni: [
+                "P01 - Ingresso Merci Esterno",
+                "P02 - Locale Rifiuti Cucina",
+                "P03 - Dispensa Alimentare Secca",
+                "P04 - Corridoio Accesso Cucina",
+                "P05 - Lampada Cattura Insetti Volanti"
             ]
         };
 
@@ -730,240 +916,620 @@
             const target = document.getElementById('ws-' + tabId);
             if(target) target.classList.add('active');
             if(btn) btn.classList.add('active');
+            if(tabId === 'cloud') window.calcolaStatisticheRotazione();
         };
 
-        // =========================================================================
-        // GESTIONE DINAMICA FRIGORIFERI, LOCALI DISINFEZIONE E LOCALI PULIZIE
-        // =========================================================================
+        // GESTIONE FILTRI MESI
+        const MONTH_NAMES = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+
+        window.initMonthFilters = () => {
+            const now = new Date();
+            const currYear = now.getFullYear();
+            const currMonth = now.getMonth();
+
+            const selectIds = ['filterMonthTemp', 'filterMonthSanif', 'filterMonthPulizie', 'filterMonthMerci', 'filterMonthLotti', 'filterMonthPest'];
+
+            selectIds.forEach(id => {
+                const sel = document.getElementById(id);
+                if(!sel) return;
+                sel.innerHTML = '';
+
+                const optCur = document.createElement('option');
+                optCur.value = `${currYear}-${String(currMonth + 1).padStart(2, '0')}`;
+                optCur.innerText = `🌟 Mese in Corso (${MONTH_NAMES[currMonth]} ${currYear})`;
+                optCur.selected = true;
+                sel.appendChild(optCur);
+
+                for (let i = 1; i <= 5; i++) {
+                    const d = new Date(currYear, currMonth - i, 1);
+                    const y = d.getFullYear();
+                    const m = d.getMonth();
+                    const opt = document.createElement('option');
+                    opt.value = `${y}-${String(m + 1).padStart(2, '0')}`;
+                    opt.innerText = `${MONTH_NAMES[m]} ${y}`;
+                    sel.appendChild(opt);
+                }
+
+                const optAll = document.createElement('option');
+                optAll.value = 'ALL';
+                optAll.innerText = '📁 Tutto lo Storico Presente';
+                sel.appendChild(optAll);
+            });
+        };
+
+        window.isRecordInSelectedMonth = (record, selectId) => {
+            const selVal = document.getElementById(selectId)?.value;
+            if(!selVal || selVal === 'ALL') return true;
+
+            const ts = record.ts || 0;
+            if(ts > 0) {
+                const d = new Date(ts);
+                const recYm = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                return recYm === selVal;
+            }
+
+            if(record.dataOra || record.data) {
+                const s = record.dataOra || record.data;
+                const parts = s.split(' ')[0].split('/');
+                if(parts.length === 3) {
+                    const recYm = `${parts[2]}-${parts[1].padStart(2, '0')}`;
+                    return recYm === selVal;
+                }
+            }
+            return true;
+        };
+
+        // GESTIONE FIRME DIGITALI TABLET
+        const canvasIds = ['sigCanvasTemp', 'sigCanvasSanif', 'sigCanvasPulizie', 'sigCanvasMerci', 'sigCanvasLotti', 'sigCanvasPest', 'sigCanvasSicurezza'];
+        const padState = {};
+
+        window.initSignatures = () => {
+            canvasIds.forEach(id => {
+                const cv = document.getElementById(id);
+                if(!cv) return;
+                const ctx = cv.getContext('2d');
+                ctx.lineWidth = 2.5;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = '#0f172a';
+
+                padState[id] = { drawing: false, hasContent: false };
+
+                const getPos = (e) => {
+                    const rect = cv.getBoundingClientRect();
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    return { x: clientX - rect.left, y: clientY - rect.top };
+                };
+
+                const start = (e) => {
+                    padState[id].drawing = true;
+                    padState[id].hasContent = true;
+                    const pos = getPos(e);
+                    ctx.beginPath();
+                    ctx.moveTo(pos.x, pos.y);
+                    if(e.cancelable && e.type.startsWith('touch')) e.preventDefault();
+                };
+
+                const move = (e) => {
+                    if(!padState[id].drawing) return;
+                    const pos = getPos(e);
+                    ctx.lineTo(pos.x, pos.y);
+                    ctx.stroke();
+                    if(e.cancelable && e.type.startsWith('touch')) e.preventDefault();
+                };
+
+                const stop = () => { padState[id].drawing = false; };
+
+                cv.addEventListener('mousedown', start);
+                cv.addEventListener('mousemove', move);
+                window.addEventListener('mouseup', stop);
+
+                cv.addEventListener('touchstart', start, { passive: false });
+                cv.addEventListener('touchmove', move, { passive: false });
+                cv.addEventListener('touchend', stop);
+            });
+        };
+
+        window.clearSignature = (id) => {
+            const cv = document.getElementById(id);
+            if(!cv) return;
+            const ctx = cv.getContext('2d');
+            ctx.clearRect(0, 0, cv.width, cv.height);
+            padState[id].hasContent = false;
+        };
+
+        window.getSignatureBase64 = (id) => {
+            if(!padState[id] || !padState[id].hasContent) return '';
+            const cv = document.getElementById(id);
+            return cv ? cv.toDataURL('image/png') : '';
+        };
+
+        window.toggleAllCheckboxes = (containerId, checkVal) => {
+            const container = document.getElementById(containerId);
+            if(!container) return;
+            container.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = checkVal);
+        };
+
+        // GESTIONE CONFIGURAZIONI DINAMICHE
         window.renderConfigLists = () => {
-            // 1. Render Lista Frigoriferi
-            const cFrigo = document.getElementById('cfgListFrigoriferi');
-            const selFrigo = document.getElementById('tempUnita');
-            if(cFrigo) {
-                cFrigo.innerHTML = '';
-                (window.haccpConfig.frigoriferi || []).forEach((item, index) => {
-                    cFrigo.innerHTML += `
-                        <div class="config-item">
-                            <span>❄️ ${item}</span>
-                            <button class="btn-danger restrict-oss" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaElementoConfig('frigoriferi', ${index})">✕</button>
+            ['frigoriferi', 'sanificazione', 'pulizie'].forEach(tipo => {
+                const boxId = tipo === 'frigoriferi' ? 'cfgListFrigoriferi' : (tipo === 'sanificazione' ? 'cfgListSanificazione' : 'cfgListPulizie');
+                const box = document.getElementById(boxId);
+                if(box) {
+                    box.innerHTML = '';
+                    (window.haccpConfig[tipo] || []).forEach((item, index) => {
+                        box.innerHTML += `
+                            <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; padding:6px 10px; border-radius:4px; font-size:0.88em;">
+                                <span>${item}</span>
+                                <button class="btn-danger restrict-oss" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaElementoConfig('${tipo}', ${index})">✕</button>
+                            </div>`;
+                    });
+                }
+            });
+
+            // 1. Tabellone Temperature Rapide
+            const qGrid = document.getElementById('quickTempGrid');
+            if(qGrid) {
+                qGrid.innerHTML = '';
+                (window.haccpConfig.frigoriferi || []).forEach((f, idx) => {
+                    qGrid.innerHTML += `
+                        <div style="background:#fff; border:1px solid #cbd5e1; padding:8px 10px; border-radius:6px; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">
+                                <strong style="font-size:0.88em; color:var(--text-main);">${f}</strong>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" step="0.1" id="qTemp_${idx}" placeholder="°C" style="width:75px; padding:5px; text-align:center; font-weight:bold;" onkeyup="window.checkLiveConformita(${idx}, '${f}')">
+                                <span id="qBadge_${idx}" style="font-size:0.8em; font-weight:bold; color:#64748b;">-</span>
+                            </div>
                         </div>`;
                 });
             }
-            if(selFrigo) {
-                selFrigo.innerHTML = '';
-                (window.haccpConfig.frigoriferi || []).forEach(item => {
-                    selFrigo.innerHTML += `<option value="${item}">${item}</option>`;
-                });
-            }
 
-            // 2. Render Lista Sanificazione
-            const cSanif = document.getElementById('cfgListSanificazione');
-            const selSanif = document.getElementById('sanifArea');
-            if(cSanif) {
-                cSanif.innerHTML = '';
-                (window.haccpConfig.sanificazione || []).forEach((item, index) => {
-                    cSanif.innerHTML += `
-                        <div class="config-item">
+            // 2. Checklist Sanificazioni
+            const sCheck = document.getElementById('sanifCheckboxes');
+            if(sCheck) {
+                sCheck.innerHTML = '';
+                (window.haccpConfig.sanificazione || []).forEach((item) => {
+                    sCheck.innerHTML += `
+                        <label class="quick-check-item">
+                            <input type="checkbox" name="chkSanif" value="${item}">
                             <span>✨ ${item}</span>
-                            <button class="btn-danger restrict-oss" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaElementoConfig('sanificazione', ${index})">✕</button>
-                        </div>`;
-                });
-            }
-            if(selSanif) {
-                selSanif.innerHTML = '';
-                (window.haccpConfig.sanificazione || []).forEach(item => {
-                    selSanif.innerHTML += `<option value="${item}">${item}</option>`;
+                        </label>`;
                 });
             }
 
-            // 3. Render Lista Pulizie
-            const cPul = document.getElementById('cfgListPulizie');
-            const selPul = document.getElementById('puliziaTipo');
-            if(cPul) {
-                cPul.innerHTML = '';
-                (window.haccpConfig.pulizie || []).forEach((item, index) => {
-                    cPul.innerHTML += `
-                        <div class="config-item">
+            // 3. Checklist Pulizie
+            const pCheck = document.getElementById('pulizieCheckboxes');
+            if(pCheck) {
+                pCheck.innerHTML = '';
+                (window.haccpConfig.pulizie || []).forEach((item) => {
+                    pCheck.innerHTML += `
+                        <label class="quick-check-item">
+                            <input type="checkbox" name="chkPulizie" value="${item}">
                             <span>🧹 ${item}</span>
-                            <button class="btn-danger restrict-oss" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaElementoConfig('pulizie', ${index})">✕</button>
-                        </div>`;
+                        </label>`;
                 });
             }
-            if(selPul) {
-                selPul.innerHTML = '';
-                (window.haccpConfig.pulizie || []).forEach(item => {
-                    selPul.innerHTML += `<option value="${item}">${item}</option>`;
+
+            // 4. Checklist Pest Control
+            const pestCheck = document.getElementById('pestCheckboxes');
+            if(pestCheck) {
+                pestCheck.innerHTML = '';
+                (window.haccpConfig.pestPostazioni || []).forEach((item) => {
+                    pestCheck.innerHTML += `
+                        <label class="quick-check-item">
+                            <input type="checkbox" name="chkPest" value="${item}">
+                            <span>🪤 ${item}</span>
+                        </label>`;
                 });
             }
+        };
+
+        window.checkLiveConformita = (idx, unitaStr) => {
+            const inp = document.getElementById(`qTemp_${idx}`);
+            const badge = document.getElementById(`qBadge_${idx}`);
+            if(!inp || !badge) return;
+            const v = parseFloat(inp.value);
+            if(isNaN(v)) { badge.innerText = '-'; badge.style.color = '#64748b'; return; }
+
+            const conforme = window.calcolaConformitaTemp(unitaStr, v);
+            badge.innerText = conforme ? '🟢 OK' : '🔴 ALLARME';
+            badge.style.color = conforme ? '#166534' : '#991b1b';
+        };
+
+        window.calcolaConformitaTemp = (unita, v) => {
+            const u = unita.toLowerCase();
+            if(u.includes('freezer') || u.includes('surgelat')) return v <= -17;
+            if(u.includes('verdur')) return v >= 3 && v <= 8;
+            if(u.includes('carn')) return v >= 0 && v <= 3.5;
+            if(u.includes('farmac')) return v >= 2 && v <= 8;
+            return v >= 0 && v <= 4.5;
+        };
+
+        window.compilaAutomaticamenteTemperatureConformi = () => {
+            const frigoriferi = window.haccpConfig.frigoriferi || [];
+            if(frigoriferi.length === 0) return window.showToast("⚠️ Nessun frigorifero censito");
+
+            frigoriferi.forEach((f, idx) => {
+                const inp = document.getElementById(`qTemp_${idx}`);
+                if(!inp) return;
+                const u = f.toLowerCase();
+                let tempConforme = 2.5;
+
+                if(u.includes('freezer') || u.includes('surgelat')) tempConforme = -19.0;
+                else if(u.includes('carn')) tempConforme = 1.8;
+                else if(u.includes('verdur')) tempConforme = 5.2;
+                else if(u.includes('farmac')) tempConforme = 4.0;
+                else tempConforme = 2.5;
+
+                inp.value = tempConforme;
+                window.checkLiveConformita(idx, f);
+            });
+            window.showToast("🎯 Tutte le temperature compilate con valori conformi!");
+        };
+
+        window.svuotaCampiTemperature = () => {
+            const frigoriferi = window.haccpConfig.frigoriferi || [];
+            frigoriferi.forEach((f, idx) => {
+                const inp = document.getElementById(`qTemp_${idx}`);
+                const b = document.getElementById(`qBadge_${idx}`);
+                if(inp) inp.value = '';
+                if(b) { b.innerText = '-'; b.style.color = '#64748b'; }
+            });
         };
 
         window.aggiungiElementoConfig = async (tipo) => {
-            let inputId = tipo === 'frigoriferi' ? 'newCfgFrigo' : (tipo === 'sanificazione' ? 'newCfgSanif' : 'newCfgPulizie');
+            const inputId = tipo === 'frigoriferi' ? 'newCfgFrigo' : (tipo === 'sanificazione' ? 'newCfgSanif' : 'newCfgPulizie');
             const val = document.getElementById(inputId).value.trim();
-            if(!val) return window.showToast("⚠️ Inserisci la denominazione dell'elemento da aggiungere");
+            if(!val) return window.showToast("⚠️ Inserisci la denominazione dell'elemento");
 
             if(!window.haccpConfig[tipo]) window.haccpConfig[tipo] = [];
             window.haccpConfig[tipo].push(val);
 
-            // Salvataggio permanente su Firestore
             await setDoc(doc(db, "impostazioni", "haccp_config"), window.haccpConfig, { merge: true });
             document.getElementById(inputId).value = '';
             window.renderConfigLists();
-            window.showToast("✅ Configurazione aggiornata con successo!");
+            window.showToast("✅ Configurazione aggiornata!");
         };
 
         window.eliminaElementoConfig = async (tipo, index) => {
-            if(!confirm(`Sei sicuro di voler rimuovere questo elemento dalla lista attiva?`)) return;
+            if(!confirm(`Rimuovere questo elemento dalla configurazione attiva?`)) return;
             window.haccpConfig[tipo].splice(index, 1);
             await setDoc(doc(db, "impostazioni", "haccp_config"), window.haccpConfig, { merge: true });
             window.renderConfigLists();
-            window.showToast("Elemento rimosso dalla configurazione");
+            window.showToast("Elemento rimosso");
         };
 
-        // GESTIONE TEMPERATURE
-        window.salvaTemperatura = async () => {
-            const u = document.getElementById('tempUnita').value;
-            const v = parseFloat(document.getElementById('tempValore').value);
-            const dt = document.getElementById('tempDataOra').value ? document.getElementById('tempDataOra').value.replace('T', ' ') : window.getTimestamp();
-            const az = document.getElementById('tempAzione').value.trim();
+        // =========================================================================
+        // 1. SALVATAGGIO TEMPERATURE (RIGA UNICA A SESSIONE)
+        // =========================================================================
+        window.salvaSessioneTemperatureUnica = async () => {
+            const frigoriferi = window.haccpConfig.frigoriferi || [];
+            const sig = window.getSignatureBase64('sigCanvasTemp');
+            const ts = Date.now();
+            const dateStr = window.getTimestamp();
+            
+            let rilevazioni = [];
+            let anomaliePresenti = false;
 
-            if(!u) return window.showToast("⚠️ Seleziona un impianto frigorifero");
-            if(isNaN(v)) return window.showToast("⚠️ Inserisci un valore di temperatura valido");
+            for (let i = 0; i < frigoriferi.length; i++) {
+                const inp = document.getElementById(`qTemp_${i}`);
+                if(!inp || inp.value === '') continue;
 
-            let conforme = true;
-            if(u.toLowerCase().includes('freezer') || u.toLowerCase().includes('surgelat')) {
-                if(v > -17) conforme = false;
-            } else if(u.toLowerCase().includes('verdur')) {
-                if(v < 3 || v > 8) conforme = false;
-            } else if(u.toLowerCase().includes('carn')) {
-                if(v < 0 || v > 3.5) conforme = false;
-            } else if(u.toLowerCase().includes('farmac')) {
-                if(v < 2 || v > 8) conforme = false;
-            } else {
-                if(v < 0 || v > 4.5) conforme = false;
+                const v = parseFloat(inp.value);
+                const unita = frigoriferi[i];
+                const conforme = window.calcolaConformitaTemp(unita, v);
+                if(!conforme) anomaliePresenti = true;
+
+                rilevazioni.push({
+                    unita: unita,
+                    valore: v,
+                    conforme: conforme
+                });
+            }
+
+            if(rilevazioni.length === 0) {
+                return window.showToast("⚠️ Inserisci le temperature o clicca 'Compila Temperature Conformi'!");
             }
 
             await addDoc(collection(db, "haccp_temperature"), {
-                unita: u,
-                valore: v,
-                dataOra: dt,
-                conforme: conforme,
-                azione: az || (conforme ? 'Nessuna (Nella norma)' : 'ATTENZIONE: Fuori range termico'),
+                dataOra: dateStr,
                 op: window.activeOperator,
-                ts: Date.now()
+                firma: sig,
+                conformeGlobale: !anomaliePresenti,
+                rilevazioni: rilevazioni,
+                ts: ts
             });
 
-            document.getElementById('tempValore').value = '';
-            document.getElementById('tempAzione').value = '';
-            window.showToast("✅ Temperatura registrata!");
+            window.svuotaCampiTemperature();
+            window.clearSignature('sigCanvasTemp');
+            window.showToast("✅ Sessione registrata su riga unica con firma!");
         };
 
         window.renderTableTemp = () => {
             const tb = document.querySelector('#tableTemp tbody'); if(!tb) return;
             tb.innerHTML = '';
-            window.dbTemp.sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 30).forEach(r => {
-                const badge = r.conforme ? `<span class="badge-status status-ok">🟢 CONFORME</span>` : `<span class="badge-status status-err">🔴 ANOMALIA</span>`;
+            
+            const filtered = window.dbTemp.filter(r => window.isRecordInSelectedMonth(r, 'filterMonthTemp'));
+            document.getElementById('totRecTempBadge').innerText = `Sessioni: ${filtered.length}`;
+
+            if(filtered.length === 0) {
+                tb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">Nessuna sessione di temperatura per il periodo selezionato.</td></tr>`;
+                return;
+            }
+
+            filtered.sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 30).forEach(r => {
+                let chipsHtml = '';
+                let conformeGlobale = true;
+
+                if (Array.isArray(r.rilevazioni)) {
+                    conformeGlobale = r.conformeGlobale !== false;
+                    r.rilevazioni.forEach(item => {
+                        const icon = item.conforme ? '🟢' : '🔴';
+                        const extraClass = item.conforme ? 'chip-ok' : 'chip-err';
+                        chipsHtml += `<span class="haccp-chip ${extraClass}">${icon} <strong>${item.unita}</strong>: ${item.valore}°C</span>`;
+                    });
+                } else {
+                    conformeGlobale = r.conforme !== false;
+                    const icon = conformeGlobale ? '🟢' : '🔴';
+                    chipsHtml = `<span class="haccp-chip ${conformeGlobale ? 'chip-ok' : 'chip-err'}">${icon} <strong>${r.unita||'Frigo'}</strong>: ${r.valore}°C</span>`;
+                }
+
+                const badgeGlobale = conformeGlobale 
+                    ? `<span class="badge-status status-ok">🟢 TUTTI CONFORMI</span>` 
+                    : `<span class="badge-status status-err">🔴 CON ANOMALIE</span>`;
+                
+                const firmaImg = r.firma ? `<img src="${r.firma}" class="signature-thumb" alt="Firma">` : `<small style="color:#64748b;">Siglato</small>`;
+
                 tb.innerHTML += `
                     <tr>
-                        <td>${badge}</td>
+                        <td>${badgeGlobale}</td>
                         <td><strong>${r.dataOra}</strong></td>
-                        <td>${r.unita}</td>
-                        <td><strong>${r.valore} °C</strong></td>
-                        <td><small style="color:${r.conforme ? '#475569' : '#b91c1c'};">${r.azione}</small></td>
-                        <td>${r.op}</td>
-                        <td class="restrict-oss"><button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_temperature','${r.id}')">✕</button></td>
+                        <td>${chipsHtml}</td>
+                        <td><strong>${r.op}</strong></td>
+                        <td>${firmaImg}</td>
+                        <td class="restrict-oss">
+                            <button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_temperature','${r.id}')">✕</button>
+                        </td>
                     </tr>`;
             });
         };
 
-        // GESTIONE SANIFICAZIONI
-        window.salvaSanificazione = async () => {
-            const a = document.getElementById('sanifArea').value;
-            const p = document.getElementById('sanifProdotto').value.trim();
-            const n = document.getElementById('sanifNote').value.trim() || 'Regolare';
+        // =========================================================================
+        // 2. SALVATAGGIO SANIFICAZIONI (RIGA UNICA A SESSIONE)
+        // =========================================================================
+        window.salvaSanificazioniRapide = async () => {
+            const checked = Array.from(document.querySelectorAll('input[name="chkSanif"]:checked')).map(e => e.value);
+            if(checked.length === 0) return window.showToast("⚠️ Seleziona almeno un'area sanificata!");
 
-            if(!a) return window.showToast("⚠️ Seleziona un'area di sanificazione");
+            const prod = document.getElementById('sanifProdotto').value.trim();
+            const note = document.getElementById('sanifNote').value.trim() || 'Regolare';
+            const sig = window.getSignatureBase64('sigCanvasSanif');
+            const ts = Date.now();
+            const dateStr = window.getTimestamp();
 
+            // Salvataggio di 1 SINGOLO documento consolidato
             await addDoc(collection(db, "haccp_sanificazioni"), {
-                area: a, prodotto: p, note: n, op: window.activeOperator, dataOra: window.getTimestamp(), ts: Date.now()
+                aree: checked,
+                prodotto: prod,
+                note: note,
+                op: window.activeOperator,
+                firma: sig,
+                dataOra: dateStr,
+                ts: ts
             });
-            window.showToast("✅ Sanificazione registrata!");
+
+            window.toggleAllCheckboxes('sanifCheckboxes', false);
+            window.clearSignature('sigCanvasSanif');
+            window.showToast(`✅ Sessione sanificazioni (${checked.length} aree) registrata su riga unica con firma!`);
         };
 
         window.renderTableSanif = () => {
             const tb = document.querySelector('#tableSanif tbody'); if(!tb) return;
             tb.innerHTML = '';
-            window.dbSanif.sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 30).forEach(r => {
+            const filtered = window.dbSanif.filter(r => window.isRecordInSelectedMonth(r, 'filterMonthSanif'));
+            document.getElementById('totRecSanifBadge').innerText = `Sessioni: ${filtered.length}`;
+
+            if(filtered.length === 0) {
+                tb.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px; color:#64748b;">Nessuna sessione di sanificazione per il periodo selezionato.</td></tr>`;
+                return;
+            }
+
+            filtered.sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 30).forEach(r => {
+                let areeHtml = '';
+                if(Array.isArray(r.aree)) {
+                    areeHtml = r.aree.map(a => `<span class="haccp-chip chip-ok">✨ ${a}</span>`).join(' ');
+                } else {
+                    areeHtml = `<span class="haccp-chip chip-ok">✨ ${r.area||'Area'}</span>`;
+                }
+
+                const firmaImg = r.firma ? `<img src="${r.firma}" class="signature-thumb" alt="Firma">` : `<small style="color:#64748b;">Siglato</small>`;
                 tb.innerHTML += `
                     <tr>
                         <td><span class="badge-status status-ok">🟢 ESEGUITO</span></td>
                         <td><strong>${r.dataOra}</strong></td>
-                        <td><strong>${r.area}</strong></td>
-                        <td>${r.prodotto}</td>
-                        <td><small>${r.note}</small></td>
-                        <td>${r.op}</td>
+                        <td>${areeHtml}</td>
+                        <td>${r.prodotto||'-'}</td>
+                        <td><small>${r.note||'-'}</small></td>
+                        <td><strong>${r.op}</strong></td>
+                        <td>${firmaImg}</td>
                         <td class="restrict-oss"><button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_sanificazioni','${r.id}')">✕</button></td>
                     </tr>`;
             });
         };
 
-        // GESTIONE PULIZIE (MOD. 05)
-        window.salvaPulizia = async () => {
-            const t = document.getElementById('puliziaTipo').value;
-            const e = document.getElementById('puliziaEsito').value;
-            const n = document.getElementById('puliziaNote').value.trim() || 'Regolare';
+        // =========================================================================
+        // 3. SALVATAGGIO PULIZIE (MOD. 05 - RIGA UNICA A SESSIONE)
+        // =========================================================================
+        window.salvaPulizieRapide = async () => {
+            const checked = Array.from(document.querySelectorAll('input[name="chkPulizie"]:checked')).map(e => e.value);
+            if(checked.length === 0) return window.showToast("⚠️ Seleziona almeno un'operazione o locale pulito!");
 
-            if(!t) return window.showToast("⚠️ Seleziona un locale o operazione di pulizia");
+            const esito = document.getElementById('puliziaEsito').value;
+            const note = document.getElementById('puliziaNote').value.trim() || 'Regolare';
+            const sig = window.getSignatureBase64('sigCanvasPulizie');
+            const ts = Date.now();
+            const dateStr = window.getTimestamp();
 
+            // Salvataggio di 1 SINGOLO documento consolidato
             await addDoc(collection(db, "haccp_pulizie"), {
-                tipo: t, esito: e, note: n, op: window.activeOperator, dataOra: window.getTimestamp(), ts: Date.now()
+                operazioni: checked,
+                esito: esito,
+                note: note,
+                op: window.activeOperator,
+                firma: sig,
+                dataOra: dateStr,
+                ts: ts
             });
-            window.showToast("✅ Scheda pulizia registrata!");
+
+            window.toggleAllCheckboxes('pulizieCheckboxes', false);
+            window.clearSignature('sigCanvasPulizie');
+            window.showToast(`✅ Scheda pulizie (${checked.length} operazioni) registrata su riga unica con firma!`);
         };
 
         window.renderTablePulizie = () => {
             const tb = document.querySelector('#tablePulizie tbody'); if(!tb) return;
             tb.innerHTML = '';
-            window.dbPulizie.sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 30).forEach(r => {
-                const b = r.esito === 'CONFORME' ? `<span class="badge-status status-ok">🟢 CONFORME</span>` : `<span class="badge-status status-err">🔴 NON CONF.</span>`;
+            const filtered = window.dbPulizie.filter(r => window.isRecordInSelectedMonth(r, 'filterMonthPulizie'));
+            document.getElementById('totRecPulizieBadge').innerText = `Sessioni: ${filtered.length}`;
+
+            if(filtered.length === 0) {
+                tb.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px; color:#64748b;">Nessuna scheda pulizia per il periodo selezionato.</td></tr>`;
+                return;
+            }
+
+            filtered.sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 30).forEach(r => {
+                const b = (r.esito === 'CONFORME') ? `<span class="badge-status status-ok">🟢 CONFORME</span>` : `<span class="badge-status status-err">🔴 NON CONF.</span>`;
+                
+                let opHtml = '';
+                if(Array.isArray(r.operazioni)) {
+                    opHtml = r.operazioni.map(o => `<span class="haccp-chip chip-ok">🧹 ${o}</span>`).join(' ');
+                } else {
+                    opHtml = `<span class="haccp-chip chip-ok">🧹 ${r.tipo||'Pulizia'}</span>`;
+                }
+
+                const firmaImg = r.firma ? `<img src="${r.firma}" class="signature-thumb" alt="Firma">` : `<small style="color:#64748b;">Siglato</small>`;
                 tb.innerHTML += `
                     <tr>
                         <td>${b}</td>
                         <td><strong>${r.dataOra}</strong></td>
-                        <td>${r.tipo}</td>
+                        <td>${opHtml}</td>
                         <td><strong>${r.esito}</strong></td>
-                        <td><small>${r.note}</small></td>
-                        <td>${r.op}</td>
+                        <td><small>${r.note||'-'}</small></td>
+                        <td><strong>${r.op}</strong></td>
+                        <td>${firmaImg}</td>
                         <td class="restrict-oss"><button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_pulizie','${r.id}')">✕</button></td>
                     </tr>`;
             });
         };
 
-        // GESTIONE MERCI IN ARRIVO
+        // =========================================================================
+        // 4. SALVATAGGIO PEST CONTROL (RIGA UNICA A SESSIONE)
+        // =========================================================================
+        window.salvaSessionePestRapida = async () => {
+            const checked = Array.from(document.querySelectorAll('input[name="chkPest"]:checked')).map(e => e.value);
+            if(checked.length === 0) return window.showToast("⚠️️ Seleziona almeno una postazione esca ispezionata!");
+
+            const t = document.getElementById('pestTarget').value;
+            const e = document.getElementById('pestEsito').value;
+            const az = document.getElementById('pestAzioni').value.trim() || 'Nessuna azione richiesta';
+            const sig = window.getSignatureBase64('sigCanvasPest');
+            const ts = Date.now();
+            const dateStr = window.getTimestamp();
+
+            // Salvataggio di 1 SINGOLO documento consolidato per l'intera ispezione
+            await addDoc(collection(db, "haccp_pest"), {
+                postazioni: checked,
+                target: t,
+                esito: e,
+                azioni: az,
+                op: window.activeOperator,
+                firma: sig,
+                dataOra: dateStr,
+                ts: ts
+            });
+
+            window.toggleAllCheckboxes('pestCheckboxes', false);
+            document.getElementById('pestAzioni').value = '';
+            window.clearSignature('sigCanvasPest');
+            window.showToast(`✅ Ispezione Pest Control (${checked.length} postazioni) registrata su riga unica con firma!`);
+        };
+
+        window.renderTablePest = () => {
+            const tb = document.querySelector('#tablePest tbody'); if(!tb) return;
+            tb.innerHTML = '';
+            const filtered = window.dbPest.filter(r => window.isRecordInSelectedMonth(r, 'filterMonthPest'));
+            document.getElementById('totRecPestBadge').innerText = `Sessioni: ${filtered.length}`;
+
+            if(filtered.length === 0) {
+                tb.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:15px; color:#64748b;">Nessun controllo infestanti per il periodo selezionato.</td></tr>`;
+                return;
+            }
+
+            filtered.sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 30).forEach(r => {
+                let badgeClass = r.esito === 'REGOLARE' ? 'status-ok' : (r.esito === 'ESCA CONSUMATA' ? 'status-warn' : 'status-err');
+                
+                let postHtml = '';
+                if(Array.isArray(r.postazioni)) {
+                    postHtml = r.postazioni.map(p => `<span class="haccp-chip chip-ok">🪤 ${p}</span>`).join(' ');
+                } else {
+                    postHtml = `<span class="haccp-chip chip-ok">🪤 ${r.postazione||'Postazione'}</span>`;
+                }
+
+                const firmaImg = r.firma ? `<img src="${r.firma}" class="signature-thumb" alt="Firma">` : `<small style="color:#64748b;">Siglato</small>`;
+                tb.innerHTML += `
+                    <tr>
+                        <td><span class="badge-status ${badgeClass}">${r.esito}</span></td>
+                        <td><strong>${r.dataOra}</strong></td>
+                        <td>${postHtml}</td>
+                        <td>${r.target}</td>
+                        <td><strong>${r.esito}</strong></td>
+                        <td><small>${r.azioni||'-'}</small></td>
+                        <td><strong>${r.op}</strong></td>
+                        <td>${firmaImg}</td>
+                        <td class="restrict-oss"><button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_pest','${r.id}')">✕</button></td>
+                    </tr>`;
+            });
+        };
+
+        // ==========================================
+        // 5. MERCI & LOTTI
+        // ==========================================
         window.salvaMerce = async () => {
             const f = document.getElementById('merceFornitore').value.trim();
             const t = document.getElementById('merceTipo').value.trim();
             const tmp = document.getElementById('merceTemp').value;
             const imb = document.getElementById('merceImballi').value;
             const es = document.getElementById('merceEsito').value;
+            const sig = window.getSignatureBase64('sigCanvasMerci');
 
             if(!f || !t) return window.showToast("⚠️ Fornitore e Tipologia Alimento sono obbligatori");
 
             await addDoc(collection(db, "haccp_merci"), {
-                fornitore: f, tipo: t, temp: tmp ? `${tmp}°C` : 'N/D', imballi: imb, esito: es, op: window.activeOperator, dataOra: window.getTimestamp(), ts: Date.now()
+                fornitore: f, tipo: t, temp: tmp ? `${tmp}°C` : 'N/D', imballi: imb, esito: es, op: window.activeOperator, firma: sig, dataOra: window.getTimestamp(), ts: Date.now()
             });
 
             document.getElementById('merceFornitore').value = '';
             document.getElementById('merceTipo').value = '';
             document.getElementById('merceTemp').value = '';
-            window.showToast("✅ Ricezione merce archiviata!");
+            window.clearSignature('sigCanvasMerci');
+            window.showToast("✅ Ricezione merce archiviata con firma!");
         };
 
         window.renderTableMerci = () => {
             const tb = document.querySelector('#tableMerci tbody'); if(!tb) return;
             tb.innerHTML = '';
-            window.dbMerci.sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 30).forEach(r => {
+            const filtered = window.dbMerci.filter(r => window.isRecordInSelectedMonth(r, 'filterMonthMerci'));
+            document.getElementById('totRecMerciBadge').innerText = `Forniture: ${filtered.length}`;
+
+            if(filtered.length === 0) {
+                tb.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:15px; color:#64748b;">Nessuna fornitura per il periodo selezionato.</td></tr>`;
+                return;
+            }
+
+            filtered.sort((a,b) => (b.ts||0) - (a.ts||0)).forEach(r => {
                 let badgeClass = r.esito === 'ACCETTATA' ? 'status-ok' : (r.esito === 'CON RISERVA' ? 'status-warn' : 'status-err');
+                const firmaImg = r.firma ? `<img src="${r.firma}" class="signature-thumb" alt="Firma">` : `<small style="color:#64748b;">Siglato</small>`;
                 tb.innerHTML += `
                     <tr>
                         <td><span class="badge-status ${badgeClass}">${r.esito}</span></td>
@@ -972,20 +1538,21 @@
                         <td>${r.tipo}</td>
                         <td>${r.temp}</td>
                         <td><small>${r.imballi}</small></td>
-                        <td>${r.op}</td>
+                        <td><strong>${r.op}</strong></td>
+                        <td>${firmaImg}</td>
                         <td class="restrict-oss"><button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_merci','${r.id}')">✕</button></td>
                     </tr>`;
             });
         };
 
-        // TRACCIABILITÀ LOTTI (FOTOGRAFICA)
         window.salvaLottoFotografico = async () => {
             const cat = document.getElementById('lottoCategoria').value;
-            const desc = document.getElementById('lottoDescrizione').value.trim() || 'Etichetta ingrediente';
+            const desc = document.getElementById('lottoDescrizione').value.trim() || 'Etichetta lotto';
             const fileInput = document.getElementById('lottoFotoFile');
+            const sig = window.getSignatureBase64('sigCanvasLotti');
 
             if(!fileInput.files || fileInput.files.length === 0) {
-                return window.showToast("⚠️ Seleziona o scatta una foto dell'etichetta del lotto!");
+                return window.showToast("⚠️ Scatta o seleziona una foto dell'etichetta del lotto!");
             }
 
             const file = fileInput.files[0];
@@ -995,21 +1562,22 @@
                 img.onload = async () => {
                     const canvas = document.createElement('canvas');
                     let w = img.width, h = img.height;
-                    const maxDim = 900;
+                    const maxDim = 850;
                     if(w > maxDim || h > maxDim) {
                         if(w > h) { h = Math.round((h * maxDim)/w); w = maxDim; }
                         else { w = Math.round((w * maxDim)/h); h = maxDim; }
                     }
                     canvas.width = w; canvas.height = h;
                     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    const b64 = canvas.toDataURL('image/jpeg', 0.70);
+                    const b64 = canvas.toDataURL('image/jpeg', 0.65);
 
                     await addDoc(collection(db, "haccp_lotti"), {
-                        categoria: cat, desc: desc, imgBase64: b64, op: window.activeOperator, data: window.getTimestamp(), ts: Date.now()
+                        categoria: cat, desc: desc, imgBase64: b64, op: window.activeOperator, firma: sig, data: window.getTimestamp(), ts: Date.now()
                     });
                     fileInput.value = '';
                     document.getElementById('lottoDescrizione').value = '';
-                    window.showToast("✅ Foto lotto archiviata!");
+                    window.clearSignature('sigCanvasLotti');
+                    window.showToast("✅ Foto lotto archiviata in tabella!");
                 };
                 img.src = e.target.result;
             };
@@ -1017,25 +1585,32 @@
         };
 
         window.renderLotti = () => {
-            const gallery = document.getElementById('lottiGallery'); if(!gallery) return;
-            gallery.innerHTML = '';
-            if(window.dbLotti.length === 0) {
-                gallery.innerHTML = '<p style="color:#64748b; font-size:0.85em;">Nessun lotto alimentare fotografato.</p>';
+            const tb = document.querySelector('#tableLotti tbody'); if(!tb) return;
+            tb.innerHTML = '';
+            const filtered = window.dbLotti.filter(r => window.isRecordInSelectedMonth(r, 'filterMonthLotti'));
+            document.getElementById('totRecLottiBadge').innerText = `Lotti: ${filtered.length}`;
+
+            if(filtered.length === 0) {
+                tb.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:15px; color:#64748b;">Nessun lotto alimentare registrato per il periodo selezionato.</td></tr>`;
                 return;
             }
-            window.dbLotti.sort((a,b) => (b.ts||0) - (a.ts||0)).forEach(l => {
-                gallery.innerHTML += `
-                    <div class="lotto-card">
-                        <img src="${l.imgBase64}" class="lotto-thumb" onclick="window.apriLightbox('${l.imgBase64}', '${l.categoria}: ${l.desc} (${l.data})')">
-                        <div style="padding:8px; font-size:0.8em; flex-grow:1;">
-                            <strong style="color:var(--primary-color);">${l.categoria}</strong><br>
-                            <span>${l.desc}</span><br>
-                            <small style="color:#64748b;">${l.data} (${l.op})</small>
-                            <div style="margin-top:6px; display:flex; justify-content:flex-end;">
-                                <button class="btn-danger restrict-oss" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_lotti','${l.id}')">🗑️</button>
-                            </div>
-                        </div>
-                    </div>`;
+
+            filtered.sort((a,b) => (b.ts||0) - (a.ts||0)).forEach(l => {
+                const firmaImg = l.firma ? `<img src="${l.firma}" class="signature-thumb" alt="Firma">` : `<small style="color:#64748b;">Siglato</small>`;
+                tb.innerHTML += `
+                    <tr>
+                        <td style="text-align:center; width:65px;">
+                            <img src="${l.imgBase64}" class="table-lotto-thumb" onclick="window.apriLightbox('${l.imgBase64}', '${l.categoria}: ${l.desc} (${l.data})')" title="Clicca per ingrandire">
+                        </td>
+                        <td><strong>${l.data}</strong></td>
+                        <td><strong style="color:var(--primary-color);">${l.categoria}</strong></td>
+                        <td>${l.desc}</td>
+                        <td><strong>${l.op}</strong></td>
+                        <td>${firmaImg}</td>
+                        <td class="restrict-oss">
+                            <button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_lotti','${l.id}')">🗑️</button>
+                        </td>
+                    </tr>`;
             });
         };
 
@@ -1045,53 +1620,22 @@
             document.getElementById('lightboxModal').style.display = 'flex';
         };
 
-        // PEST CONTROL
-        window.salvaPestControl = async () => {
-            const p = document.getElementById('pestPostazione').value;
-            const t = document.getElementById('pestTarget').value;
-            const e = document.getElementById('pestEsito').value;
-            const az = document.getElementById('pestAzioni').value.trim() || 'Nessuna azione richiesta';
-
-            await addDoc(collection(db, "haccp_pest"), {
-                postazione: p, target: t, esito: e, azioni: az, op: window.activeOperator, dataOra: window.getTimestamp(), ts: Date.now()
-            });
-            document.getElementById('pestAzioni').value = '';
-            window.showToast("✅ Controllo infestanti registrato!");
-        };
-
-        window.renderTablePest = () => {
-            const tb = document.querySelector('#tablePest tbody'); if(!tb) return;
-            tb.innerHTML = '';
-            window.dbPest.sort((a,b) => (b.ts||0) - (a.ts||0)).slice(0, 30).forEach(r => {
-                let badgeClass = r.esito === 'REGOLARE' ? 'status-ok' : (r.esito === 'ESCA CONSUMATA' ? 'status-warn' : 'status-err');
-                tb.innerHTML += `
-                    <tr>
-                        <td><span class="badge-status ${badgeClass}">${r.esito}</span></td>
-                        <td><strong>${r.dataOra}</strong></td>
-                        <td>${r.postazione}</td>
-                        <td>${r.target}</td>
-                        <td><strong>${r.esito}</strong></td>
-                        <td><small>${r.azioni}</small></td>
-                        <td>${r.op}</td>
-                        <td class="restrict-oss"><button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('haccp_pest','${r.id}')">✕</button></td>
-                    </tr>`;
-            });
-        };
-
-        // SICUREZZA SUL LAVORO (D.LGS 81/08)
+        // 6. SICUREZZA 81/08
         window.salvaScadenzaSicurezza = async () => {
             const n = document.getElementById('sicNome').value.trim();
             const a = document.getElementById('sicArea').value;
             const d = document.getElementById('sicDataScadenza').value;
+            const sig = window.getSignatureBase64('sigCanvasSicurezza');
 
             if(!n || !d) return window.showToast("⚠️ Titolo dell'adempimento e Data di Scadenza sono obbligatori!");
 
             await addDoc(collection(db, "sicurezza_8108"), {
-                nome: n, area: a, dataScadenza: d, op: window.activeOperator, ts: Date.now()
+                nome: n, area: a, dataScadenza: d, op: window.activeOperator, firma: sig, ts: Date.now()
             });
 
             document.getElementById('sicNome').value = '';
             document.getElementById('sicDataScadenza').value = '';
+            window.clearSignature('sigCanvasSicurezza');
             window.showToast("✅ Scadenza sicurezza 81/08 registrata!");
         };
 
@@ -1119,6 +1663,8 @@
                     diffText = `Tra ${diffDays} gg`;
                 }
 
+                const firmaImg = r.firma ? `<img src="${r.firma}" class="signature-thumb" alt="Firma">` : `<small style="color:#64748b;">Siglato</small>`;
+
                 tb.innerHTML += `
                     <tr>
                         <td>${badge}</td>
@@ -1126,7 +1672,8 @@
                         <td>${diffText}</td>
                         <td><strong>${r.nome}</strong></td>
                         <td><small>${r.area}</small></td>
-                        <td>${r.op}</td>
+                        <td><strong>${r.op}</strong></td>
+                        <td>${firmaImg}</td>
                         <td class="restrict-oss"><button class="btn-danger" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaRecord('sicurezza_8108','${r.id}')">✕</button></td>
                     </tr>`;
             });
@@ -1136,20 +1683,154 @@
             }
         };
 
-        // AGGIORNAMENTO KPI TOTALI
-        window.aggiornaKpiGenerali = () => {
-            const tot = window.dbTemp.length + window.dbSanif.length + window.dbPulizie.length + window.dbMerci.length + window.dbPest.length;
-            const anomalie = window.dbTemp.filter(t => !t.conforme).length + window.dbMerci.filter(m => m.esito === 'RESPINTA').length;
+        // ROTAZIONE TRIMESTRALE & ESPORTAZIONE ZIP
+        const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
 
-            if(document.getElementById('kpi-totali')) document.getElementById('kpi-totali').innerText = tot;
+        window.calcolaStatisticheRotazione = () => {
+            const cutoff = Date.now() - NINETY_DAYS_MS;
+            let countOld = 0;
+
+            const allDatasets = [window.dbTemp, window.dbSanif, window.dbPulizie, window.dbMerci, window.dbLotti, window.dbPest];
+            allDatasets.forEach(list => {
+                list.forEach(r => {
+                    if((r.ts || 0) < cutoff && (r.ts || 0) > 0) countOld++;
+                });
+            });
+
+            const statSpan = document.getElementById('statRecordArchiviabili');
+            if(statSpan) statSpan.innerText = `${countOld} sessioni`;
+
+            const btnElimina = document.getElementById('btnEliminaStorico');
+            if(btnElimina) {
+                if(countOld > 0 && window.haScaricatoBackupRecente) {
+                    btnElimina.disabled = false;
+                    btnElimina.style.opacity = '1';
+                    btnElimina.style.cursor = 'pointer';
+                } else {
+                    btnElimina.disabled = true;
+                    btnElimina.style.opacity = '0.6';
+                    btnElimina.style.cursor = 'not-allowed';
+                }
+            }
+        };
+
+        window.esportaArchivioCompressoZIP = async () => {
+            window.showToast("⏳ Generazione pacchetto ZIP compresso in corso...");
+
+            try {
+                const zip = new JSZip();
+                const timestampArchivio = new Date().toISOString().replace(/[:.]/g, '-');
+                const cutoff = Date.now() - NINETY_DAYS_MS;
+
+                const archivioDati = {
+                    generatoIl: window.getTimestamp(),
+                    struttura: document.getElementById('haccpDenominazione')?.value || 'Nuova Villa Silvana',
+                    operatoreResponsabile: window.activeOperator,
+                    periodo: "Archivio Storico > 90 giorni (Autocontrollo HACCP)",
+                    temperature: window.dbTemp.filter(r => (r.ts||0) < cutoff),
+                    sanificazioni: window.dbSanif.filter(r => (r.ts||0) < cutoff),
+                    pulizie: window.dbPulizie.filter(r => (r.ts||0) < cutoff),
+                    merciInArrivo: window.dbMerci.filter(r => (r.ts||0) < cutoff),
+                    lotti: window.dbLotti.filter(r => (r.ts||0) < cutoff),
+                    pestControl: window.dbPest.filter(r => (r.ts||0) < cutoff)
+                };
+
+                zip.file(`registro_storico_haccp_${timestampArchivio}.json`, JSON.stringify(archivioDati, null, 2));
+
+                const cartellaLotti = zip.folder("foto_etichette_lotti");
+                archivioDati.lotti.forEach((l, idx) => {
+                    if(l.imgBase64 && l.imgBase64.includes(',')) {
+                        const rawB64 = l.imgBase64.split(',')[1];
+                        cartellaLotti.file(`lotto_${idx + 1}_${(l.categoria||'ingrediente').replace(/[^a-z0-9]/gi, '_')}.jpg`, rawB64, { base64: true });
+                    }
+                });
+
+                const zipBlob = await zip.generateAsync({ type: "blob" });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(zipBlob);
+                a.download = `HACCP_ARCHIVIO_CERTIFICATO_${timestampArchivio}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+
+                window.haScaricatoBackupRecente = true;
+                window.calcolaStatisticheRotazione();
+                window.showToast("✅ Pacchetto ZIP scaricato! Ora puoi procedere con la bonifica protetta.");
+            } catch(err) {
+                console.error("Errore compressione ZIP:", err);
+                window.showToast("❌ Errore durante la generazione dello ZIP.");
+            }
+        };
+
+        window.eseguiBonificaDatiStorici = async () => {
+            if(!window.haScaricatoBackupRecente) {
+                return window.showToast("⚠️ Devi prima scaricare il pacchetto ZIP certificato per tutelare i controlli USL/NAS!");
+            }
+
+            const cutoff = Date.now() - NINETY_DAYS_MS;
+            if(!confirm("Confermi la bonifica definitiva dei record più vecchi di 3 mesi da Firebase? (Tutti i dati sono già salvati nel tuo ZIP scaricato).")) return;
+
+            window.showToast("⏳ Bonifica record storici in corso...");
+            let rimossi = 0;
+
+            const collectionsToClean = [
+                { col: "haccp_temperature", list: window.dbTemp },
+                { col: "haccp_sanificazioni", list: window.dbSanif },
+                { col: "haccp_pulizie", list: window.dbPulizie },
+                { col: "haccp_merci", list: window.dbMerci },
+                { col: "haccp_lotti", list: window.dbLotti },
+                { col: "haccp_pest", list: window.dbPest }
+            ];
+
+            for (const item of collectionsToClean) {
+                const vecchi = item.list.filter(r => (r.ts||0) < cutoff && (r.ts||0) > 0);
+                for (const rec of vecchi) {
+                    await deleteDoc(doc(db, item.col, rec.id));
+                    rimossi++;
+                }
+            }
+
+            window.haScaricatoBackupRecente = false;
+            window.calcolaStatisticheRotazione();
+            window.showToast(`✅ Bonifica completata! ${rimossi} sessioni storiche rimosse da Firebase.`);
+        };
+
+        // AGGIORNAMENTO KPI MESE ATTIVO
+        window.aggiornaKpiGenerali = () => {
+            const now = new Date();
+            const currYm = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+            const isInMonth = (r) => {
+                if(r.ts) {
+                    const d = new Date(r.ts);
+                    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` === currYm;
+                }
+                return true;
+            };
+
+            const totMonth = [window.dbTemp, window.dbSanif, window.dbPulizie, window.dbMerci, window.dbPest]
+                .reduce((acc, list) => acc + list.filter(isInMonth).length, 0);
+
+            let anomalieTemp = 0;
+            window.dbTemp.filter(isInMonth).forEach(t => {
+                if(Array.isArray(t.rilevazioni)) {
+                    if(t.rilevazioni.some(item => !item.conforme)) anomalieTemp++;
+                } else if(t.conforme === false) {
+                    anomalieTemp++;
+                }
+            });
+
+            const anomalieMerci = window.dbMerci.filter(isInMonth).filter(m => m.esito === 'RESPINTA').length;
+            const anomalie = anomalieTemp + anomalieMerci;
+
+            if(document.getElementById('kpi-totali')) document.getElementById('kpi-totali').innerText = totMonth;
             if(document.getElementById('kpi-anomalie')) document.getElementById('kpi-anomalie').innerText = anomalie;
             if(document.getElementById('kpi-conformita')) {
-                const perc = tot > 0 ? Math.round(((tot - anomalie) / tot) * 100) : 100;
+                const perc = totMonth > 0 ? Math.round(((totMonth - anomalie) / totMonth) * 100) : 100;
                 document.getElementById('kpi-conformita').innerText = `${perc}%`;
             }
         };
 
-        // SALVATAGGIO INFORMAZIONI STRUTTURA
         window.salvaDatiStruttura = async () => {
             const d = {
                 denominazione: document.getElementById('haccpDenominazione').value.trim(),
@@ -1163,7 +1844,6 @@
             window.showToast("✅ Dati struttura salvati!");
         };
 
-        // ELIMINAZIONE RECORD
         window.eliminaRecord = async (colName, id) => {
             if(confirm("Eliminare definitivamente questo record di autocontrollo?")) {
                 await deleteDoc(doc(db, colName, id));
@@ -1171,7 +1851,7 @@
             }
         };
 
-        // STAMPA VERBALI FORMALI IN PDF/A4
+        // STAMPE VERBALI CON FIRMA
         window.stampaRegistro = (tipo) => {
             const dNome = document.getElementById('haccpDenominazione')?.value || 'NUOVA VILLA SILVANA';
             const dInd = document.getElementById('haccpIndirizzo')?.value || 'Terni';
@@ -1182,39 +1862,57 @@
 
             if(tipo === 'temp') {
                 titolo = "REGISTRO CONTROLLO TEMPERATURE FRIGORIFERI E CELLE";
-                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Impianto</th><th>Temp. Rilevata</th><th>Azione Correttiva</th><th>Operatore (OSA)</th></tr></thead><tbody>`;
+                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Rilevazioni Impianti</th><th>Esito Globale</th><th>Operatore</th><th>Firma</th></tr></thead><tbody>`;
                 window.dbTemp.forEach(r => {
-                    rowsHtml += `<tr><td>${r.dataOra}</td><td>${r.unita}</td><td><strong>${r.valore} °C</strong></td><td>${r.azione}</td><td>${r.op}</td></tr>`;
+                    const fImg = r.firma ? `<img src="${r.firma}" style="max-height:26px;">` : 'Firmato';
+                    let dettaglio = '';
+                    let conformeGlob = true;
+                    if(Array.isArray(r.rilevazioni)) {
+                        conformeGlob = r.conformeGlobale !== false;
+                        dettaglio = r.rilevazioni.map(x => `${x.unita}: ${x.valore}°C (${x.conforme ? 'OK' : 'ALLARME'})`).join(' | ');
+                    } else {
+                        conformeGlob = r.conforme !== false;
+                        dettaglio = `${r.unita||'Frigo'}: ${r.valore}°C`;
+                    }
+                    rowsHtml += `<tr><td>${r.dataOra}</td><td><small>${dettaglio}</small></td><td><strong>${conformeGlob ? 'Conforme' : 'Anomalia'}</strong></td><td>${r.op}</td><td>${fImg}</td></tr>`;
                 });
             } else if(tipo === 'sanif') {
                 titolo = "REGISTRO SANIFICAZIONE E DISINFEZIONE AMBIENTI";
-                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Area Trattata</th><th>Detergente / Disinfettante</th><th>Note</th><th>Operatore (OSA)</th></tr></thead><tbody>`;
+                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Aree Trattate</th><th>Detergente</th><th>Note</th><th>Operatore</th><th>Firma</th></tr></thead><tbody>`;
                 window.dbSanif.forEach(r => {
-                    rowsHtml += `<tr><td>${r.dataOra}</td><td>${r.area}</td><td>${r.prodotto}</td><td>${r.note}</td><td>${r.op}</td></tr>`;
+                    const fImg = r.firma ? `<img src="${r.firma}" style="max-height:26px;">` : 'Firmato';
+                    const areeStr = Array.isArray(r.aree) ? r.aree.join(', ') : (r.area || '-');
+                    rowsHtml += `<tr><td>${r.dataOra}</td><td>${areeStr}</td><td>${r.prodotto}</td><td>${r.note}</td><td>${r.op}</td><td>${fImg}</td></tr>`;
                 });
             } else if(tipo === 'pulizie') {
                 titolo = "REGISTRO PULIZIE GIORNALIERE E PERIODICHE (MOD. 05)";
-                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Operazione / Locale</th><th>Esito Controllo</th><th>Note</th><th>Operatore (OSA)</th></tr></thead><tbody>`;
+                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Operazioni / Locali Eseguiti</th><th>Esito</th><th>Note</th><th>Operatore</th><th>Firma</th></tr></thead><tbody>`;
                 window.dbPulizie.forEach(r => {
-                    rowsHtml += `<tr><td>${r.dataOra}</td><td>${r.tipo}</td><td>${r.esito}</td><td>${r.note}</td><td>${r.op}</td></tr>`;
+                    const fImg = r.firma ? `<img src="${r.firma}" style="max-height:26px;">` : 'Firmato';
+                    const opStr = Array.isArray(r.operazioni) ? r.operazioni.join(', ') : (r.tipo || '-');
+                    rowsHtml += `<tr><td>${r.dataOra}</td><td>${opStr}</td><td>${r.esito}</td><td>${r.note}</td><td>${r.op}</td><td>${fImg}</td></tr>`;
                 });
             } else if(tipo === 'merci') {
                 titolo = "REGISTRO CONTROLLO RICEZIONE MERCI E ALIMENTI";
-                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Fornitore</th><th>Tipologia Merce</th><th>Temp. (°C)</th><th>Esito</th><th>Operatore (OSA)</th></tr></thead><tbody>`;
+                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Fornitore</th><th>Tipologia</th><th>Temp.</th><th>Esito</th><th>Operatore</th><th>Firma</th></tr></thead><tbody>`;
                 window.dbMerci.forEach(r => {
-                    rowsHtml += `<tr><td>${r.dataOra}</td><td>${r.fornitore}</td><td>${r.tipo}</td><td>${r.temp}</td><td>${r.esito}</td><td>${r.op}</td></tr>`;
+                    const fImg = r.firma ? `<img src="${r.firma}" style="max-height:26px;">` : 'Firmato';
+                    rowsHtml += `<tr><td>${r.dataOra}</td><td>${r.fornitore}</td><td>${r.tipo}</td><td>${r.temp}</td><td>${r.esito}</td><td>${r.op}</td><td>${fImg}</td></tr>`;
                 });
             } else if(tipo === 'pest') {
                 titolo = "REGISTRO MONITORAGGIO INFESTANTI (PEST CONTROL)";
-                rowsHtml = `<thead><tr><th>Data</th><th>Postazione</th><th>Target</th><th>Esito Rilevato</th><th>Azioni</th><th>Operatore (OSA)</th></tr></thead><tbody>`;
+                rowsHtml = `<thead><tr><th>Data/Ora</th><th>Postazioni Ispezionate</th><th>Target</th><th>Esito</th><th>Azioni</th><th>Operatore</th><th>Firma</th></tr></thead><tbody>`;
                 window.dbPest.forEach(r => {
-                    rowsHtml += `<tr><td>${r.dataOra}</td><td>${r.postazione}</td><td>${r.target}</td><td>${r.esito}</td><td>${r.azioni}</td><td>${r.op}</td></tr>`;
+                    const fImg = r.firma ? `<img src="${r.firma}" style="max-height:26px;">` : 'Firmato';
+                    const postStr = Array.isArray(r.postazioni) ? r.postazioni.join(', ') : (r.postazione || '-');
+                    rowsHtml += `<tr><td>${r.dataOra}</td><td>${postStr}</td><td>${r.target}</td><td>${r.esito}</td><td>${r.azioni}</td><td>${r.op}</td><td>${fImg}</td></tr>`;
                 });
             } else if(tipo === 'sicurezza') {
                 titolo = "SCADENZARIO SICUREZZA SUL LAVORO (D.LGS 81/08)";
-                rowsHtml = `<thead><tr><th>Adempimento Obbligatorio</th><th>Area di Riferimento</th><th>Data di Scadenza</th><th>Stato</th></tr></thead><tbody>`;
+                rowsHtml = `<thead><tr><th>Adempimento</th><th>Area</th><th>Data Scadenza</th><th>Stato</th><th>Firma RSPP</th></tr></thead><tbody>`;
                 window.dbSicurezza.forEach(r => {
-                    rowsHtml += `<tr><td>${r.nome}</td><td>${r.area}</td><td>${window.formatDateSafe(r.dataScadenza)}</td><td>Registrato</td></tr>`;
+                    const fImg = r.firma ? `<img src="${r.firma}" style="max-height:26px;">` : 'Firmato';
+                    rowsHtml += `<tr><td>${r.nome}</td><td>${r.area}</td><td>${window.formatDateSafe(r.dataScadenza)}</td><td>Registrato</td><td>${fImg}</td></tr>`;
                 });
             }
 
@@ -1225,11 +1923,9 @@
                     <h1>${dNome}</h1>
                     <p style="margin:4px 0; font-size:10pt;">${dInd} | P.IVA: ${dPiva}</p>
                     <h3 style="margin:12px 0 4px 0; color:#0f766e;">${titolo}</h3>
-                    <p style="font-size:9pt; color:#64748b;">Rapporto ufficiale estratto dal Sistema di Autocontrollo NVS Masterpiece</p>
+                    <p style="font-size:9pt; color:#64748b;">Rapporto ufficiale estratto con firma digitale - NVS Masterpiece</p>
                 </div>
-                <table class="print-table">
-                    ${rowsHtml}
-                </table>
+                <table class="print-table">${rowsHtml}</table>
                 <div style="margin-top:35px; display:flex; justify-content:space-between; font-size:9pt;">
                     <div>Emesso il: ${window.getTimestamp()}</div>
                     <div style="text-align:center;">
@@ -1245,26 +1941,25 @@
         };
 
         // REAL-TIME FIRESTORE LISTENERS
-        onSnapshot(collection(db, "haccp_temperature"), snap => { window.dbTemp = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTableTemp(); window.aggiornaKpiGenerali(); });
-        onSnapshot(collection(db, "haccp_sanificazioni"), snap => { window.dbSanif = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTableSanif(); window.aggiornaKpiGenerali(); });
-        onSnapshot(collection(db, "haccp_pulizie"), snap => { window.dbPulizie = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTablePulizie(); window.aggiornaKpiGenerali(); });
-        onSnapshot(collection(db, "haccp_merci"), snap => { window.dbMerci = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTableMerci(); window.aggiornaKpiGenerali(); });
-        onSnapshot(collection(db, "haccp_lotti"), snap => { window.dbLotti = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderLotti(); });
-        onSnapshot(collection(db, "haccp_pest"), snap => { window.dbPest = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTablePest(); window.aggiornaKpiGenerali(); });
+        onSnapshot(collection(db, "haccp_temperature"), snap => { window.dbTemp = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTableTemp(); window.aggiornaKpiGenerali(); window.calcolaStatisticheRotazione(); });
+        onSnapshot(collection(db, "haccp_sanificazioni"), snap => { window.dbSanif = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTableSanif(); window.aggiornaKpiGenerali(); window.calcolaStatisticheRotazione(); });
+        onSnapshot(collection(db, "haccp_pulizie"), snap => { window.dbPulizie = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTablePulizie(); window.aggiornaKpiGenerali(); window.calcolaStatisticheRotazione(); });
+        onSnapshot(collection(db, "haccp_merci"), snap => { window.dbMerci = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTableMerci(); window.aggiornaKpiGenerali(); window.calcolaStatisticheRotazione(); });
+        onSnapshot(collection(db, "haccp_lotti"), snap => { window.dbLotti = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderLotti(); window.calcolaStatisticheRotazione(); });
+        onSnapshot(collection(db, "haccp_pest"), snap => { window.dbPest = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTablePest(); window.aggiornaKpiGenerali(); window.calcolaStatisticheRotazione(); });
         onSnapshot(collection(db, "sicurezza_8108"), snap => { window.dbSicurezza = snap.docs.map(d=>({id:d.id, ...d.data()})); window.renderTableSicurezza(); });
 
-        // ASCOLTO CONFIGURAZIONE DINAMICA IMPIANTI & LOCALI
         onSnapshot(doc(db, "impostazioni", "haccp_config"), docSnap => {
             if(docSnap.exists()) {
                 const cfg = docSnap.data();
                 if(cfg.frigoriferi) window.haccpConfig.frigoriferi = cfg.frigoriferi;
                 if(cfg.sanificazione) window.haccpConfig.sanificazione = cfg.sanificazione;
                 if(cfg.pulizie) window.haccpConfig.pulizie = cfg.pulizie;
+                if(cfg.pestPostazioni) window.haccpConfig.pestPostazioni = cfg.pestPostazioni;
             }
             window.renderConfigLists();
         });
 
-        // LETTURA DATI STRUTTURA SALVATI
         onSnapshot(doc(db, "impostazioni", "haccp_struttura"), docSnap => {
             if(docSnap.exists()) {
                 const s = docSnap.data();
@@ -1278,8 +1973,9 @@
 
         window.onload = () => {
             document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
-            document.getElementById('tempOperatore').value = window.activeOperator;
+            window.initMonthFilters();
             window.renderConfigLists();
+            window.initSignatures();
         };
     </script>
 </body>
