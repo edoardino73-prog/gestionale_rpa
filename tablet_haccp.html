@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - HACCP & Autocontrollo Tablet (10/11")</title>
+
+    <style>
+        :root {
+            --bg-body: #f1f5f9;
+            --surface: #ffffff;
+            --primary: #0f766e;
+            --primary-dark: #115e59;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+            --danger: #e11d48;
+            --warning: #d97706;
+            --success: #059669;
+            --radius: 8px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0; padding: 0;
+            background: var(--bg-body);
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex; flex-direction: column;
+            overflow: hidden; font-size: 14px;
+        }
+
+        .topbar {
+            background: var(--primary);
+            color: #ffffff; padding: 10px 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .topbar-brand { font-size: 1.15em; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .nav-btn {
+            background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3);
+            color: #ffffff; padding: 7px 12px; border-radius: 6px; font-weight: 700;
+            font-size: 0.85em; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center;
+        }
+
+        .tab-bar-haccp {
+            display: flex; background: #ffffff; border-bottom: 2px solid var(--border);
+            overflow-x: auto; flex-shrink: 0; padding: 4px 8px; gap: 6px;
+        }
+        .tab-btn {
+            padding: 9px 14px; border: 1px solid var(--border); border-radius: 6px;
+            background: #f1f5f9; font-weight: 700; font-size: 0.88em; color: var(--text-muted);
+            cursor: pointer; white-space: nowrap; flex: 0 0 auto;
+        }
+        .tab-btn.active { background: var(--primary); color: #ffffff; border-color: var(--primary-dark); }
+
+        .haccp-scroll-content { flex: 1; overflow-y: auto; padding: 14px; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .card-touch {
+            background: #ffffff; border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .card-touch h3 { margin: 0 0 12px 0; font-size: 1.05em; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
+
+        .grid-temp-touch {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-bottom: 12px;
+        }
+        .box-temp-single {
+            background: #f8fafc; border: 1px solid var(--border); padding: 8px 12px;
+            border-radius: 6px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .box-temp-single input { width: 75px; padding: 6px; font-size: 1.1em; font-weight: bold; text-align: center; border: 2px solid var(--border); border-radius: 4px; }
+
+        .quick-checklist {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px;
+            background: #fff; padding: 10px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 12px;
+        }
+        .check-pill {
+            background: #f8fafc; border: 1px solid var(--border); padding: 8px 10px;
+            border-radius: 4px; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.85em; cursor: pointer;
+        }
+        .check-pill input { transform: scale(1.2); }
+
+        .sig-container {
+            border: 2px dashed var(--border); border-radius: 6px; background: #fff;
+            padding: 6px; display: inline-flex; flex-direction: column; align-items: center; gap: 4px;
+        }
+        .sig-canvas { border: 1px solid var(--border); background: #ffffff; border-radius: 4px; touch-action: none; cursor: crosshair; }
+
+        .btn-full {
+            width: 100%; padding: 12px; border: none; border-radius: 6px;
+            font-size: 1em; font-weight: 800; color: #ffffff; cursor: pointer; margin-top: 10px;
+        }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.85em; background: #ffffff; }
+        .data-table th, .data-table td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; }
+        .data-table th { background: var(--primary); color: white; text-transform: uppercase; font-size: 0.8em; }
+
+        #toast-box {
+            position: fixed; bottom: 20px; right: 20px;
+            background: #0f172a; color: #ffffff; padding: 10px 18px; border-radius: 6px;
+            font-weight: 700; z-index: 100000; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+        }
+        #toast-box.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div id="toast-box"></div>
+
+    <div class="topbar">
+        <div class="topbar-brand">
+            <span>🛡️ NVS Tablet - HACCP & Autocontrollo</span>
+            <small style="font-weight:normal; opacity:0.85;">[10/11"]</small>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <span id="badgeOpTop" style="font-weight:700; background:rgba(255,255,255,0.2); padding:5px 10px; border-radius:4px; font-size:0.85em;">👤 Op</span>
+            <button class="nav-btn" onclick="window.location.href='tablet_hub.html'">📱 Hub</button>
+            <button class="nav-btn" onclick="window.location.href='index.html'">🏠 Home</button>
+        </div>
+    </div>
+
+    <!-- SUB-BARRA A SCHEDE HACCP -->
+    <div class="tab-bar-haccp">
+        <button class="tab-btn active" onclick="window.switchTab('temp', this)">🌡️ Temperature</button>
+        <button class="tab-btn" onclick="window.switchTab('sanif', this)">✨ Sanificazione</button>
+        <button class="tab-btn" onclick="window.switchTab('pulizie', this)">🧹 Pulizie (Mod. 05)</button>
+        <button class="tab-btn" onclick="window.switchTab('merci', this)">📦 Merci in Arrivo</button>
+        <button class="tab-btn" onclick="window.switchTab('lotti', this)">📷 Tracciabilità Lotti</button>
+        <button class="tab-btn" onclick="window.switchTab('pest', this)">🪤 Pest Control</button>
+    </div>
+
+    <div class="haccp-scroll-content">
+        
+        <!-- 1. TEMPERATURE FRIGO -->
+        <div id="pane-temp" class="tab-pane active">
+            <div class="card-touch" style="border-top:4px solid #0284c7;">
+                <h3>
+                    <span>🌡️ Registrazione Rapida Temperature & Celle</span>
+                    <button onclick="window.autoCompilaTemp()" style="background:#059669; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer;">
+                        🎯 Compila Valori Conformi
+                    </button>
+                </h3>
+
+                <div class="grid-temp-touch" id="gridTempBox">Caricamento impianti...</div>
+
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:10px;">
+                    <div class="sig-container">
+                        <span style="font-size:0.75em; font-weight:800; color:var(--text-muted);">✍️ Firma Operatore (Touch):</span>
+                        <canvas id="sigTemp" class="sig-canvas" width="220" height="70"></canvas>
+                        <button onclick="window.clearSig('sigTemp')" style="background:#64748b; color:#fff; border:none; padding:2px 8px; border-radius:3px; font-size:0.75em; cursor:pointer;">Pulisci</button>
+                    </div>
+                    <button class="btn-full" style="background:#0284c7; flex:1; min-width:200px;" onclick="window.salvaTemperature()">
+                        ⚡ Registra Sessione Temperature
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-touch">
+                <h3><span>📋 Ultime Sessioni Temperature</span></h3>
+                <div style="overflow-x:auto;"><table class="data-table" id="tableTemp"><thead><tr><th>Data</th><th>Valori Registrati</th><th>Operatore</th><th>Firma</th></tr></thead><tbody></tbody></table></div>
+            </div>
+        </div>
+
+        <!-- 2. SANIFICAZIONI -->
+        <div id="pane-sanif" class="tab-pane">
+            <div class="card-touch" style="border-top:4px solid var(--primary);">
+                <h3>
+                    <span>✨ Registro Sanificazione Aree</span>
+                    <button onclick="window.toggleAll('chkSanif', true)" style="background:#059669; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-weight:bold; cursor:pointer;">☑️ Spunta Tutte</button>
+                </h3>
+                <div class="quick-checklist" id="boxSanifAreas"></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+                    <input type="text" id="sanifProd" value="Clorattivo 2% / Sgrassatore Igienizzante" placeholder="Detergente / Disinfettante">
+                    <input type="text" id="sanifNote" placeholder="Note sanificazione...">
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:10px;">
+                    <div class="sig-container">
+                        <span style="font-size:0.75em; font-weight:800; color:var(--text-muted);">✍️ Firma Operatore (Touch):</span>
+                        <canvas id="sigSanif" class="sig-canvas" width="220" height="70"></canvas>
+                        <button onclick="window.clearSig('sigSanif')" style="background:#64748b; color:#fff; border:none; padding:2px 8px; border-radius:3px; font-size:0.75em; cursor:pointer;">Pulisci</button>
+                    </div>
+                    <button class="btn-full" style="background:var(--primary); flex:1; min-width:200px;" onclick="window.salvaSanificazioni()">
+                        ⚡ Registra Sessione Sanificazione
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. PULIZIE MOD. 05 -->
+        <div id="pane-pulizie" class="tab-pane">
+            <div class="card-touch" style="border-top:4px solid #d97706;">
+                <h3>
+                    <span>🧹 Registro Pulizie Giornaliere e Periodiche (Mod. 05)</span>
+                    <button onclick="window.toggleAll('chkPul', true)" style="background:#d97706; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-weight:bold; cursor:pointer;">☑️ Spunta Tutte</button>
+                </h3>
+                <div class="quick-checklist" id="boxPulizieOps"></div>
+                <div style="margin-bottom:10px;"><input type="text" id="pulNote" placeholder="Note o esito..."></div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:10px;">
+                    <div class="sig-container">
+                        <span style="font-size:0.75em; font-weight:800; color:var(--text-muted);">✍️ Firma Operatore (Touch):</span>
+                        <canvas id="sigPul" class="sig-canvas" width="220" height="70"></canvas>
+                        <button onclick="window.clearSig('sigPul')" style="background:#64748b; color:#fff; border:none; padding:2px 8px; border-radius:3px; font-size:0.75em; cursor:pointer;">Pulisci</button>
+                    </div>
+                    <button class="btn-full" style="background:#d97706; flex:1; min-width:200px;" onclick="window.salvaPulizie()">
+                        ⚡ Registra Sessione Pulizie
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. MERCI IN ARRIVO -->
+        <div id="pane-merci" class="tab-pane">
+            <div class="card-touch" style="border-top:4px solid #4f46e5;">
+                <h3 style="color:#4f46e5;"><span>📦 Controllo Merci & Alimenti in Arrivo</span></h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:10px;">
+                    <input type="text" id="mFornitore" placeholder="Fornitore *">
+                    <input type="text" id="mTipo" placeholder="Alimento / Prodotto *">
+                    <input type="number" step="0.1" id="mTemp" placeholder="Temp. (°C)">
+                    <select id="mEsito" style="font-weight:bold;"><option value="ACCETTATA">🟢 Accettata</option><option value="CON RISERVA">🟡 Con Riserva</option><option value="RESPINTA">🔴 Respinta</option></select>
+                </div>
+                <button class="btn-full" style="background:#4f46e5;" onclick="window.salvaMerce()">📦 Registra Controllo Merce</button>
+            </div>
+        </div>
+
+        <!-- 5. TRACCIABILITÀ LOTTI CON FOTO -->
+        <div id="pane-lotti" class="tab-pane">
+            <div class="card-touch" style="border-top:4px solid var(--primary);">
+                <h3><span>🔍 Scatto Foto Etichette & Tracciabilità Lotti</span></h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+                    <select id="lottoCat" style="font-weight:bold;">
+                        <option value="Carni & Salumi">Carni & Salumi</option>
+                        <option value="Latticini & Formaggi">Latticini & Formaggi</option>
+                        <option value="Ortofrutta Fresca">Ortofrutta Fresca</option>
+                        <option value="Prodotti Surgelati">Prodotti Surgelati</option>
+                        <option value="Farine & Cereali">Farine & Cereali</option>
+                    </select>
+                    <input type="text" id="lottoDesc" placeholder="Descrizione prodotto...">
+                </div>
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                    <input type="file" id="lottoFile" accept="image/*" capture="environment" style="flex:1;">
+                    <button onclick="window.salvaLotto()" style="background:var(--primary); color:#fff; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">📷 Archivia Foto</button>
+                </div>
+                <div id="lottiGallery" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:10px;"></div>
+            </div>
+        </div>
+
+        <!-- 6. PEST CONTROL -->
+        <div id="pane-pest" class="tab-pane">
+            <div class="card-touch" style="border-top:4px solid #b45309;">
+                <h3 style="color:#b45309;">
+                    <span>🪤 Pest Control & Monitoraggio Infestanti</span>
+                    <button onclick="window.toggleAll('chkPest', true)" style="background:#b45309; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-weight:bold; cursor:pointer;">☑️ Tutte Integre</button>
+                </h3>
+                <div class="quick-checklist" id="boxPestPostazioni"></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+                    <select id="pestEsito" style="font-weight:bold;"><option value="REGOLARE">🟢 Regolare (Esche Integre)</option><option value="ESCA CONSUMATA">🟡 Esca Consumata</option><option value="CATTURA RILEVATA">🔴 Cattura Rilevata</option></select>
+                    <input type="text" id="pestAzioni" placeholder="Azioni intraprese...">
+                </div>
+                <button class="btn-full" style="background:#b45309;" onclick="window.salvaPest()">🪤 Registra Ispezione Pest Control</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.activeOp = sessionStorage.getItem("activeOperator") || "Operatore OSA";
+        window.dbTemp = []; window.dbLotti = [];
+
+        window.configHACCP = {
+            frigoriferi: ["Frigo Cucina 1 (0/+4°C)", "Frigo Cucina 2 (0/+4°C)", "Cella Carni (0/+3°C)", "Cella Verdure (+4/+7°C)", "Freezer Surgelati (≤-18°C)"],
+            sanificazione: ["Piani Lavoro Cucina", "Zona Lavaggio Stoviglie", "Dispensa & Celle", "Refettorio Ospiti", "Bagni Personale"],
+            pulizie: ["Sgrassaggio Fornelli", "Pulizia Piani & Affettatrice", "Lavaggio Pavimenti", "Filtri Cappa", "Svuotamento Bidoni Rifiuti"],
+            pest: ["P01 - Ingresso Merci", "P02 - Locale Rifiuti", "P03 - Dispensa Secca", "P04 - Corridoio Cucina", "P05 - Lampada UV"]
+        };
+
+        window.showToast = (msg) => {
+            const t = document.getElementById('toast-box');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        };
+
+        window.getTimestamp = () => {
+            const n = new Date();
+            return `${n.toLocaleDateString('it-IT')} ore ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`;
+        };
+
+        window.switchTab = (id, btn) => {
+            document.querySelectorAll('.tab-pane, .tab-bar-haccp .tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('pane-' + id).classList.add('active');
+            if(btn) btn.classList.add('active');
+        };
+
+        window.initSignatures = () => {
+            ['sigTemp', 'sigSanif', 'sigPul'].forEach(id => {
+                const cv = document.getElementById(id);
+                if(!cv) return;
+                const ctx = cv.getContext('2d');
+                ctx.lineWidth = 2.5; ctx.strokeStyle = '#0f172a';
+                let drawing = false;
+
+                const getPos = (e) => {
+                    const r = cv.getBoundingClientRect();
+                    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+                    return { x: cx - r.left, y: cy - r.top };
+                };
+                cv.addEventListener('mousedown', (e) => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+                cv.addEventListener('mousemove', (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+                window.addEventListener('mouseup', () => drawing = false);
+                cv.addEventListener('touchstart', (e) => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }, {passive:false});
+                cv.addEventListener('touchmove', (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }, {passive:false});
+                cv.addEventListener('touchend', () => drawing = false);
+            });
+        };
+
+        window.clearSig = (id) => {
+            const cv = document.getElementById(id);
+            if(cv) cv.getContext('2d').clearRect(0,0,cv.width,cv.height);
+        };
+
+        window.toggleAll = (name, val) => {
+            document.querySelectorAll(`input[name="${name}"]`).forEach(cb => cb.checked = val);
+        };
+
+        // RENDERING DINAMICO CONTROLLI
+        window.renderHaccpGrids = () => {
+            const tGrid = document.getElementById('gridTempBox');
+            tGrid.innerHTML = '';
+            window.configHACCP.frigoriferi.forEach((f, idx) => {
+                tGrid.innerHTML += `
+                    <div class="box-temp-single">
+                        <strong>${f}</strong>
+                        <input type="number" step="0.1" id="inpTemp_${idx}" placeholder="°C">
+                    </div>`;
+            });
+
+            const sBox = document.getElementById('boxSanifAreas');
+            sBox.innerHTML = '';
+            window.configHACCP.sanificazione.forEach(a => {
+                sBox.innerHTML += `<label class="check-pill"><input type="checkbox" name="chkSanif" value="${a}"> <span>✨ ${a}</span></label>`;
+            });
+
+            const pBox = document.getElementById('boxPulizieOps');
+            pBox.innerHTML = '';
+            window.configHACCP.pulizie.forEach(o => {
+                pBox.innerHTML += `<label class="check-pill"><input type="checkbox" name="chkPul" value="${o}"> <span>🧹 ${o}</span></label>`;
+            });
+
+            const pestBox = document.getElementById('boxPestPostazioni');
+            pestBox.innerHTML = '';
+            window.configHACCP.pest.forEach(p => {
+                pestBox.innerHTML += `<label class="check-pill"><input type="checkbox" name="chkPest" value="${p}"> <span>🪤 ${p}</span></label>`;
+            });
+        };
+
+        window.autoCompilaTemp = () => {
+            window.configHACCP.frigoriferi.forEach((f, idx) => {
+                const inp = document.getElementById(`inpTemp_${idx}`);
+                if(!inp) return;
+                const u = f.toLowerCase();
+                inp.value = u.includes('freezer') ? -19.0 : (u.includes('verdure') ? 5.0 : 2.5);
+            });
+            window.showToast("🎯 Tutte le temperature compilate a norma!");
+        };
+
+        // SALVATAGGI FIRESTORE
+        window.salvaTemperature = async () => {
+            let rile = [];
+            window.configHACCP.frigoriferi.forEach((f, idx) => {
+                const v = parseFloat(document.getElementById(`inpTemp_${idx}`)?.value);
+                if(!isNaN(v)) rile.push({ unita: f, valore: v, conforme: true });
+            });
+            if(rile.length === 0) return window.showToast("⚠️ Inserisci le temperature!");
+
+            const cv = document.getElementById('sigTemp');
+            await addDoc(collection(db, "haccp_temperature"), {
+                dataOra: window.getTimestamp(),
+                op: window.activeOp,
+                firma: cv.toDataURL('image/png'),
+                conformeGlobale: true,
+                rilevazioni: rile,
+                ts: Date.now()
+            });
+            window.clearSig('sigTemp');
+            window.showToast("✅ Sessione temperature salvata!");
+        };
+
+        window.salvaSanificazioni = async () => {
+            const aree = Array.from(document.querySelectorAll('input[name="chkSanif"]:checked')).map(e => e.value);
+            if(aree.length === 0) return window.showToast("⚠️ Spunta almeno un'area!");
+            const cv = document.getElementById('sigSanif');
+            await addDoc(collection(db, "haccp_sanificazioni"), {
+                dataOra: window.getTimestamp(),
+                aree: aree,
+                prodotto: document.getElementById('sanifProd').value,
+                note: document.getElementById('sanifNote').value,
+                op: window.activeOp,
+                firma: cv.toDataURL('image/png'),
+                ts: Date.now()
+            });
+            window.toggleAll('chkSanif', false);
+            window.clearSig('sigSanif');
+            window.showToast("✅ Sanificazione salvata!");
+        };
+
+        window.salvaPulizie = async () => {
+            const ops = Array.from(document.querySelectorAll('input[name="chkPul"]:checked')).map(e => e.value);
+            if(ops.length === 0) return window.showToast("⚠️ Spunta le pulizie eseguite!");
+            const cv = document.getElementById('sigPul');
+            await addDoc(collection(db, "haccp_pulizie"), {
+                dataOra: window.getTimestamp(),
+                operazioni: ops,
+                note: document.getElementById('pulNote').value || 'Regolare',
+                esito: 'CONFORME',
+                op: window.activeOp,
+                firma: cv.toDataURL('image/png'),
+                ts: Date.now()
+            });
+            window.toggleAll('chkPul', false);
+            window.clearSig('sigPul');
+            window.showToast("✅ Scheda pulizie salvata!");
+        };
+
+        window.salvaMerce = async () => {
+            const f = document.getElementById('mFornitore').value.trim();
+            const t = document.getElementById('mTipo').value.trim();
+            if(!f || !t) return window.showToast("⚠️ Fornitore e tipo alimento obbligatori!");
+            await addDoc(collection(db, "haccp_merci"), {
+                dataOra: window.getTimestamp(),
+                fornitore: f,
+                tipo: t,
+                temp: document.getElementById('mTemp').value ? document.getElementById('mTemp').value + '°C' : 'N/D',
+                esito: document.getElementById('mEsito').value,
+                op: window.activeOp,
+                ts: Date.now()
+            });
+            document.getElementById('mFornitore').value = '';
+            document.getElementById('mTipo').value = '';
+            window.showToast("✅ Controllo merce salvato!");
+        };
+
+        window.salvaLotto = () => {
+            const f = document.getElementById('lottoFile');
+            if(!f.files || f.files.length === 0) return window.showToast("⚠️ Scatta o seleziona una foto!");
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = async () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    const maxDim = 800;
+                    if(w > maxDim || h > maxDim) {
+                        if(w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                        else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                    }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    const b64 = canvas.toDataURL('image/jpeg', 0.65);
+
+                    await addDoc(collection(db, "haccp_lotti"), {
+                        data: window.getTimestamp(),
+                        categoria: document.getElementById('lottoCat').value,
+                        desc: document.getElementById('lottoDesc').value || 'Lotto',
+                        imgBase64: b64,
+                        op: window.activeOp,
+                        ts: Date.now()
+                    });
+                    f.value = '';
+                    window.showToast("✅ Foto lotto archiviata!");
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(f.files[0]);
+        };
+
+        window.salvaPest = async () => {
+            const post = Array.from(document.querySelectorAll('input[name="chkPest"]:checked')).map(e => e.value);
+            if(post.length === 0) return window.showToast("⚠️ Spunta le postazioni!");
+            await addDoc(collection(db, "haccp_pest"), {
+                dataOra: window.getTimestamp(),
+                postazioni: post,
+                target: 'Roditori & Insetti Striscianti',
+                esito: document.getElementById('pestEsito').value,
+                azioni: document.getElementById('pestAzioni').value || 'Regolare',
+                op: window.activeOp,
+                ts: Date.now()
+            });
+            window.toggleAll('chkPest', false);
+            window.showToast("✅ Pest Control registrato!");
+        };
+
+        // SNAPSHOT FIRESTORE
+        onSnapshot(collection(db, "haccp_temperature"), snap => {
+            window.dbTemp = snap.docs.map(d=>d.data()).sort((a,b)=>(b.ts||0)-(a.ts||0));
+            const tb = document.querySelector('#tableTemp tbody');
+            if(!tb) return;
+            tb.innerHTML = '';
+            window.dbTemp.slice(0, 5).forEach(r => {
+                let chips = (r.rilevazioni||[]).map(x=>`${x.unita}: ${x.valore}°C`).join(' | ');
+                tb.innerHTML += `<tr><td><strong>${r.dataOra}</strong></td><td><small>${chips}</small></td><td>${r.op}</td><td>${r.firma ? `<img src="${r.firma}" style="max-height:22px;">` : '✓'}</td></tr>`;
+            });
+        });
+
+        onSnapshot(collection(db, "haccp_lotti"), snap => {
+            const box = document.getElementById('lottiGallery');
+            if(!box) return;
+            box.innerHTML = '';
+            snap.docs.map(d=>d.data()).sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0, 6).forEach(l => {
+                box.innerHTML += `<div style="background:#fff; border:1px solid #cbd5e1; border-radius:4px; overflow:hidden; padding:4px;"><img src="${l.imgBase64}" style="width:100%; height:90px; object-fit:cover; border-radius:3px;"><small style="font-weight:bold;">${l.categoria}</small></div>`;
+            });
+        });
+
+        window.onload = () => {
+            document.getElementById('badgeOpTop').innerText = `👤 ${window.activeOp}`;
+            window.renderHaccpGrids();
+            window.initSignatures();
+        };
+    </script>
+</body>
+</html>
