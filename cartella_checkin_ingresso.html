@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - Check-in Ingresso, Anamnesi & Lesioni Cutanee</title>
+
+    <style>
+        :root {
+            --bg-color: #f1f5f9;         
+            --box-bg: #ffffff;
+            --primary-color: #0d9488; 
+            --secondary-color: #0f766e;  
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --input-bg: #ffffff;
+            --border-color: #cbd5e1;     
+            --error-color: #e11d48; 
+            --warning-color: #d97706; 
+            --success-color: #059669; 
+            --dir-color: #4f46e5;
+            --base-font-size: 14px;      
+            --radius: 6px;               
+            --transition: all 0.2s ease;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; min-height: 100vh; }
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+        body[data-qualifica="OSS"] textarea.restrict-oss-input, body[data-qualifica="OSS"] input.restrict-oss-input, body[data-qualifica="OSS"] select.restrict-oss-input { pointer-events: none; opacity: 0.6; background-color: #f1f5f9; }
+
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1em; }
+        .nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 14px; border-radius: var(--radius); cursor: pointer; text-decoration:none; font-weight: 600; display:inline-flex; align-items:center; }
+        .nav-btn:hover { background: rgba(255,255,255,0.25); }
+        .current-op-badge { background: #ffffff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+
+        .container { max-width: 1300px; width: 96%; margin: 15px auto; flex-grow: 1; }
+        .card { background: var(--box-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--primary-color); padding-bottom: 8px; flex-wrap: wrap; gap:10px; }
+        .card-header h3 { margin: 0; color: var(--primary-color); font-size: 1.1em; text-transform: uppercase; }
+
+        .global-active-patient-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-left: 8px solid var(--primary-color);
+            border-radius: var(--radius);
+            padding: 12px 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .gap-info-left { display: flex; align-items: center; gap: 14px; }
+        .gap-avatar { width: 52px; height: 52px; border-radius: 6px; object-fit: cover; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 1.8em; border: 1px solid var(--border-color); overflow: hidden; flex-shrink: 0; }
+        .gap-name-block h2 { margin: 0; font-size: 1.25em; color: var(--text-main); }
+        .gap-sub { font-size: 0.85em; color: var(--text-light); margin-top: 3px; }
+        .gap-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        .badge-disfagia { background: var(--warning-color); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+        .badge-infezione { background: var(--error-color); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+        .badge-contenzione { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 0.85em; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85em; color: var(--text-main); }
+        input[type="text"], input[type="date"], input[type="number"], select, textarea { width: 100%; padding: 8px; border: 1px solid #94a3b8; border-radius: 4px; box-sizing: border-box; background-color: var(--input-bg); color: var(--text-main); font-family: inherit; font-size: 0.95em; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-color); outline: none; background-color: #f0fdfa; }
+
+        .btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-doc { color: white; border: none; padding: 8px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.9em; transition: 0.2s; }
+        .btn-primary { background: var(--secondary-color); }
+        .btn-success { background: var(--success-color); }
+        .btn-danger { background: var(--error-color); }
+        .btn-warning { background: var(--warning-color); }
+        .btn-doc { background: #475569; }
+
+        /* Stile Assistente Selezione Patologie */
+        .patologia-selector-box {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--radius);
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+        .patologia-actions-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-top: 6px;
+        }
+
+        .body-marker { 
+            position: absolute; width: 22px; height: 22px; background-color: var(--error-color); color: #ffffff; 
+            border: 2px solid #ffffff; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; user-select: none;
+        }
+        
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.88em; background: #ffffff; }
+        .data-table th, .data-table td { border: 1px solid var(--border-color); padding: 8px; text-align: left; vertical-align: middle; }
+        .data-table th { background-color: var(--primary-color); color: white; font-weight: normal; text-transform: uppercase; font-size: 0.82em; }
+        .data-table tr:nth-child(even) { background-color: #f8fafc; }
+
+        .photo-lesioni-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 14px; margin-top: 12px; }
+        .photo-thumb-card { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.06); display: flex; flex-direction: column; position: relative; }
+        .photo-thumb-img { width: 100%; height: 125px; object-fit: cover; cursor: pointer; background: #f1f5f9; display: block; transition: transform 0.2s; }
+        .photo-thumb-img:hover { transform: scale(1.02); }
+        .photo-thumb-info { padding: 8px; font-size: 0.78em; line-height: 1.35; flex-grow: 1; }
+        
+        .punto-marker-badge {
+            position: absolute; top: 6px; left: 6px; background: var(--error-color); color: #fff;
+            font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.4); border: 1px solid #fff; z-index: 5;
+        }
+
+        .stadio-badge { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.75em; font-weight: bold; margin-bottom: 3px; }
+        .stadio-1 { background: #fef08a; color: #854d0e; }
+        .stadio-2 { background: #fed7aa; color: #9a3412; }
+        .stadio-3 { background: #fecaca; color: #991b1b; }
+        .stadio-4 { background: #f43f5e; color: #fff; }
+        .stadio-dti { background: #7e22ce; color: #fff; }
+
+        /* PRIVACY SHIELD OVERLAY */
+        #privacyShield {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 100000;
+            display: none;
+            align-items: center; justify-content: center; flex-direction: column;
+            color: white; text-align: center;
+        }
+        .shield-icon { font-size: 4em; margin-bottom: 15px; }
+        .shield-text { font-size: 1.5em; font-weight: bold; letter-spacing: 1px; }
+        .shield-sub { font-size: 0.9em; color: #cbd5e1; margin-top: 8px; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
+        .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
+        .toast.show { opacity: 1; }
+
+        #printArea { display: none; }
+        /* CORREZIONE BUG DI STAMPA PDF (page break preservati) */
+        @media print {
+            body * { visibility: hidden; } 
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { display: block !important; position: relative; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 20px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 8.5pt; } 
+            .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 4px 6px; text-align: left; } 
+            .print-table th { background: #f1f5f9 !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-photo-item { display: inline-block; width: 46%; margin: 8px 1.5%; vertical-align: top; border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; page-break-inside: avoid; background:#ffffff; box-sizing: border-box; }
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    <div id="printArea"></div>
+
+    <!-- PRIVACY SHIELD (OSCURAMENTO ANTI-CURIOSI) -->
+    <div id="privacyShield" onclick="window.sbloccaSchermoPrivacy()">
+        <div class="shield-icon">👁️‍🗨️</div>
+        <div class="shield-text">Schermo Oscurato per Privacy</div>
+        <div class="shield-sub">Tocca lo schermo o muovi il mouse per sbloccare</div>
+    </div>
+
+    <!-- MODALE ANTEPRIMA & INGRANDIMENTO FOTO LESIONE -->
+    <div id="photoPreviewModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:46000; align-items:center; justify-content:center; padding:15px; box-sizing:border-box;">
+        <div style="background:#fff; border-radius:8px; max-width:800px; width:100%; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.5); max-height:92vh;">
+            <div style="padding:12px 18px; background:#0f172a; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+                <h4 id="photoModalTitle" style="margin:0; font-size:1.05em;">Dettaglio Fotografia Lesione</h4>
+                <button onclick="document.getElementById('photoPreviewModal').style.display='none'" style="background:transparent; border:none; color:#fff; font-size:1.5em; cursor:pointer;">&times;</button>
+            </div>
+            <div style="padding:15px; text-align:center; background:#111827; overflow-y:auto; flex-grow:1; display:flex; align-items:center; justify-content:center;">
+                <img id="photoModalImg" src="" style="max-height:550px; max-width:100%; object-fit:contain; border-radius:4px; box-shadow:0 4px 12px rgba(0,0,0,0.5);">
+            </div>
+            <div style="padding:12px 18px; font-size:0.9em; background:#f8fafc; border-top:1px solid #e2e8f0; line-height:1.4;" id="photoModalDesc"></div>
+            <div style="padding:10px 18px; background:#fff; border-top:1px solid #cbd5e1; display:flex; justify-content:space-between; align-items:center;">
+                <button class="btn-primary" style="background:var(--error-color);" onclick="window.stampaSingolaFotoLesione()">🖨️ Stampa Singola Foto</button>
+                <button class="btn-doc" onclick="document.getElementById('photoPreviewModal').style.display='none'">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVBAR SATELLITE -->
+    <div class="navbar">
+        <div class="navbar-brand">
+            <span>📋 NVS - Sezione 1: Check-in Ingresso, Anamnesi & Lesioni</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+            <button class="nav-btn" style="background:var(--dir-color);" onclick="window.navigaA('cartella_valutazioni_pai.html')">➡️ Vai a B.I.N.A., Scale & P.A.I.</button>
+            <button class="nav-btn" onclick="window.navigaA('index.html')">🏠 Home Reparto</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- BANNER OSPITE PERSISTENTE -->
+        <div id="globalActivePatientBanner" class="global-active-patient-card">
+            <div class="gap-info-left">
+                <div id="gapAvatar" class="gap-avatar">👤</div>
+                <div class="gap-name-block">
+                    <h2 id="gapNome">NESSUN OSPITE SELEZIONATO</h2>
+                    <div class="gap-sub" id="gapDettagli">Stanza: - | CF: -</div>
+                </div>
+            </div>
+            <div class="gap-badges" id="gapBadges"></div>
+        </div>
+
+        <!-- SELETTORE OSPITE -->
+        <div class="card" style="padding:15px;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:0.95em; color:var(--primary-color); font-weight:bold;">Seleziona Fascicolo Paziente per il Check-in di Ingresso</label>
+                <select id="clinicalGuestSelect" onchange="window.handlePatientSelect(this.value)" style="padding:9px; font-weight:bold; border-color:var(--primary-color);">
+                    <option value="" disabled selected>Seleziona un paziente...</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="clinicalContent" style="display:none;">
+
+            <!-- BARRA STRUMENTI -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px; background:#f0fdfa; border:1px solid #99f6e4; padding:12px 16px; border-radius:8px;">
+                <div>
+                    <h3 style="margin:0; color:var(--primary-color); font-size:1.15em;">🩺 Scheda Check-in Ingresso, Cute & Lesioni</h3>
+                    <small style="color:var(--text-light);">Anamnesi d'ingresso, parametri corporei, infezioni ICA, mappa manichino e foto piaghe.</small>
+                </div>
+                <button class="btn-success restrict-oss" style="padding:8px 16px; font-weight:bold;" onclick="window.saveCheckinData()">
+                    💾 Salva Dati Check-in & Lesioni
+                </button>
+            </div>
+
+            <!-- SCHEDA PATOLOGIE IN ATTO & PREGRESSE -->
+            <div class="card" style="border-top: 4px solid var(--error-color);">
+                <div class="card-header"><h3 style="color:var(--error-color);">🩺 Patologie in Atto & Storia Clinica Pregressa</h3></div>
+                
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:18px; margin-bottom:14px;">
+                    
+                    <!-- PATOLOGIE ATTIVE -->
+                    <div class="form-group" style="margin:0;">
+                        <label style="color:#991b1b; font-weight:bold; font-size:0.95em;">Patologie in Atto / Diagnosi Attive di Ricovero *</label>
+                        
+                        <div class="patologia-selector-box restrict-oss">
+                            <label style="font-size:0.8em; color:var(--text-light); margin-bottom:4px; font-weight:600;">Seleziona da elenco ragionato:</label>
+                            <div style="display:flex; gap:6px;">
+                                <select id="selPresetPatologiaAttiva" style="padding:5px; font-size:0.88em; border-color:#cbd5e1;"></select>
+                                <button type="button" class="btn-primary" style="padding:4px 10px; font-size:0.82em; white-space:nowrap;" onclick="window.inserisciDaPreset('selPresetPatologiaAttiva', 'clinPatologieAttive')">➕ Inserisci</button>
+                            </div>
+                            
+                            <div class="patologia-actions-row">
+                                <input type="text" id="customInputAttiva" placeholder="Oppure scrivi patologia libera..." style="padding:5px; font-size:0.88em;">
+                                <button type="button" class="btn-doc" style="padding:4px 10px; font-size:0.82em; white-space:nowrap;" onclick="window.inserisciDaCustom('customInputAttiva', 'clinPatologieAttive')">Aggiungi</button>
+                            </div>
+                        </div>
+
+                        <textarea id="clinPatologieAttive" class="restrict-oss-input" rows="4" placeholder="Modifica liberamente o seleziona dalla lista in alto. Es. Ipertensione Arteriosa, Diabete Mellito Tipo 2..." style="line-height:1.4;"></textarea>
+                    </div>
+
+                    <!-- PATOLOGIE PREGRESSE -->
+                    <div class="form-group" style="margin:0;">
+                        <label style="color:#0369a1; font-weight:bold; font-size:0.95em;">Anamnesi Patologica Remota / Patologie Pregresse *</label>
+                        
+                        <div class="patologia-selector-box restrict-oss">
+                            <label style="font-size:0.8em; color:var(--text-light); margin-bottom:4px; font-weight:600;">Seleziona da elenco ragionato:</label>
+                            <div style="display:flex; gap:6px;">
+                                <select id="selPresetPatologiaPregressa" style="padding:5px; font-size:0.88em; border-color:#cbd5e1;"></select>
+                                <button type="button" class="btn-primary" style="padding:4px 10px; font-size:0.82em; white-space:nowrap;" onclick="window.inserisciDaPreset('selPresetPatologiaPregressa', 'clinPatologiePregresse')">➕ Inserisci</button>
+                            </div>
+                            
+                            <div class="patologia-actions-row">
+                                <input type="text" id="customInputPregressa" placeholder="Oppure scrivi evento / patologia pregressa..." style="padding:5px; font-size:0.88em;">
+                                <button type="button" class="btn-doc" style="padding:4px 10px; font-size:0.82em; white-space:nowrap;" onclick="window.inserisciDaCustom('customInputPregressa', 'clinPatologiePregresse')">Aggiungi</button>
+                            </div>
+                        </div>
+
+                        <textarea id="clinPatologiePregresse" class="restrict-oss-input" rows="4" placeholder="Modifica liberamente o seleziona dalla lista in alto. Es. Pregresso TIA (2020), Pregressa Frattura Collo Femore sx..." style="line-height:1.4;"></textarea>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:12px;">
+                    <div class="form-group" style="margin:0;"><label>Interventi Chirurgici Subiti</label><input type="text" id="clinInterventiChirurgici" class="restrict-oss-input"></div>
+                    <div class="form-group" style="margin:0;"><label>Traumi & Fratture Pregresse</label><input type="text" id="clinTraumi" class="restrict-oss-input"></div>
+                    <div class="form-group" style="margin:0;"><label>Terapia Farmacologica all'Ingresso</label><input type="text" id="clinTerapiaIngresso" class="restrict-oss-input"></div>
+                </div>
+            </div>
+
+            <!-- SCHEDA ANAMNESTICA & ESAME OBIETTIVO -->
+            <div class="card" style="border-top: 4px solid var(--primary-color);">
+                <div class="card-header"><h3>📋 Scheda Anamnestica Completa & Esame Obiettivo d'Ingresso</h3></div>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-bottom:12px;">
+                    <div class="form-group" style="margin:0;"><label>Anamnesi Familiare</label><textarea id="clinAnamnesiFamiliare" class="restrict-oss-input" rows="2"></textarea></div>
+                    <div class="form-group" style="margin:0;"><label>Anamnesi Fisiologica</label><textarea id="clinAnamnesiFisiologica" class="restrict-oss-input" rows="2"></textarea></div>
+                    <div class="form-group" style="margin:0;"><label style="color:#b91c1c; font-weight:bold;">Allergie & Intolleranze Note</label><textarea id="clinAllergie" class="restrict-oss-input" rows="2"></textarea></div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:15px;">
+                    <div class="form-group" style="margin:0;"><label>Protesi & Ausili in Uso</label><input type="text" id="clinProtesi" class="restrict-oss-input"></div>
+                    <div class="form-group" style="margin:0;"><label>Stato Vaccinale</label><input type="text" id="clinVaccinazioni" class="restrict-oss-input"></div>
+                    <div class="form-group" style="margin:0;"><label>Motivo del Ricovero</label><input type="text" id="clinMotivoRicovero" class="restrict-oss-input"></div>
+                </div>
+
+                <h4 style="margin:10px 0 8px 0; color:var(--text-main); font-size:0.95em; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🩺 Esame Obiettivo Generale all'Ingresso</h4>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-bottom:10px;">
+                    <div class="form-group" style="margin:0;"><label>Altezza (cm)</label><input type="number" id="clinAltezza" class="restrict-oss-input" oninput="window.calcolaBmiClinico()"></div>
+                    <div class="form-group" style="margin:0;"><label>Peso (kg)</label><input type="number" step="0.1" id="clinPeso" class="restrict-oss-input" oninput="window.calcolaBmiClinico()"></div>
+                    <div class="form-group" style="margin:0;"><label>B.M.I.</label><input type="text" id="clinBmi" readonly style="background:#f1f5f9; font-weight:bold; color:var(--primary-color);"></div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Stato Nutrizionale</label>
+                        <select id="clinStatoNutrizionale" class="restrict-oss-input">
+                            <option value="Normopeso">Normopeso</option>
+                            <option value="Sottopeso">Sottopeso / Rischio Malnutrizione</option>
+                            <option value="Sovrappeso">Sovrappeso</option>
+                            <option value="Obesità Grado I">Obesità Grado I</option>
+                            <option value="Obesità Grave">Obesità Grave</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Tipo Costituzionale</label>
+                        <select id="clinTipoCostituzionale" class="restrict-oss-input">
+                            <option value="Normotipo">Normotipo</option>
+                            <option value="Brevilineo">Brevilineo</option>
+                            <option value="Longilineo">Longilineo</option>
+                            <option value="Cachettico">Cachettico</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:10px;">
+                    <div class="form-group" style="margin:0;"><label>Decubito / Postura</label><input type="text" id="clinDecubito" class="restrict-oss-input"></div>
+                    <div class="form-group" style="margin:0;"><label>Facies</label><input type="text" id="clinFacies" class="restrict-oss-input"></div>
+                    <div class="form-group" style="margin:0;"><label>Psiche & Sensorio</label><input type="text" id="clinPsicheSensorio" class="restrict-oss-input"></div>
+                    <div class="form-group" style="margin:0;"><label>Cute & Mucose</label><input type="text" id="clinCuteMucose" class="restrict-oss-input"></div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div class="form-group" style="margin:0;"><label>Masse Muscolari & Tono</label><input type="text" id="clinMasseMuscolari" class="restrict-oss-input"></div>
+                    <div class="form-group" style="margin:0;"><label>Apparato Locomotore</label><input type="text" id="clinApparatoLocomotore" class="restrict-oss-input"></div>
+                </div>
+            </div>
+
+            <!-- STATUS NUTRIZIONALE E ICA -->
+            <div class="card restrict-oss" style="border-top: 5px solid var(--warning-color);">
+                <div class="card-header"><h3 style="color:var(--warning-color);">⚠ Status Nutrizionale & Rischio Infettivo (ICA)</h3></div>
+                <div style="display:flex; gap:15px; flex-wrap:wrap; background:#fffbeb; padding:15px; border-radius:4px;">
+                    <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer;">
+                        <input type="checkbox" id="chkDisfagia" style="transform:scale(1.2);"> <span>🥣 Paziente Disfagico (Rischio Soffocamento)</span>
+                    </label>
+                    <div class="form-group" style="flex:1; min-width:200px; margin:0;">
+                        <label>Isolamento Infettivo (ICA)</label>
+                        <select id="selInfezione">
+                            <option value="">Nessuno (Condizione ordinaria)</option>
+                            <option value="Clostridium Difficile">Clostridium Difficile</option>
+                            <option value="MRSA">MRSA</option>
+                            <option value="Scabbia">Scabbia</option>
+                            <option value="KPC / Enterobatteri">KPC / Enterobatteri resistenti</option>
+                            <option value="COVID-19">COVID-19</option>
+                            <option value="Altra Infezione">Altra Infezione con isolamento</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; align-items:flex-end;"><button class="btn-warning" onclick="window.saveCheckinData()">💾 Salva Status</button></div>
+                </div>
+            </div>
+
+            <!-- SCADENZA TRIMESTRALE CHECK-IN (90 GG) -->
+            <div class="card restrict-oss" style="border-top: 4px solid #4f46e5;">
+                <div class="card-header"><h3 style="color:#4f46e5;">🔄 Scadenza Trimestrale Check-in & Rivalutazioni (90 Giorni)</h3></div>
+                <div style="display:flex; gap:15px; flex-wrap:wrap; background:#f0fdf4; padding:15px; border-radius:4px; margin-bottom:15px;">
+                    <div class="form-group" style="flex:1; margin:0;"><label>Data Valutazione Iniziale / Ultima</label><input type="date" id="tab-checkinDataValutazione" onchange="window.updateCheckinExpirationPreview()"></div>
+                    <div class="form-group" style="flex:1; margin:0;"><label>Scadenza Trimestrale (90gg)</label><input type="text" id="tab-checkinDataScadenzaPreview" readonly></div>
+                    <div class="form-group" style="flex:1; margin:0;"><label>Stato Validità</label><div id="checkinValidityBadge" style="padding:8px; font-weight:bold; background:#fff; border-radius:4px; text-align:center;">-</div></div>
+                </div>
+                <div style="display:flex; gap:15px; flex-wrap:wrap; background:#f8fafc; padding:15px; border-radius:4px;">
+                    <div class="form-group" style="flex:1; margin:0;"><label>Esito Rivalutazione</label><select id="tab-integrazioneEsito"><option value="Miglioramento / Guarigione">Miglioramento / Guarigione</option><option value="Stazionario">Stazionario</option><option value="Peggioramento / Nuova Lesione">Peggioramento / Nuova Lesione</option></select></div>
+                    <div class="form-group" style="flex:2; margin:0;"><label>Note di Rivalutazione</label><input type="text" id="tab-integrazioneNote" placeholder="Descrivi l'evoluzione..."></div>
+                    <div style="display:flex; align-items:flex-end;"><button class="btn-primary" style="background:#4f46e5;" onclick="window.addIntegrazioneCheckin()">➕ Rinnova Trimestre</button></div>
+                </div>
+                <div id="checkinIntegrazioniList" style="margin-top:10px;"></div>
+            </div>
+
+            <!-- MAPPA ANATOMICA INTERATTIVA & MINIATURE FOTO LESIONI -->
+            <div class="card" style="border-top: 4px solid var(--error-color);">
+                <div class="card-header">
+                    <h3 style="color:var(--error-color);">🩹 Mappatura Lesioni Cutanee & Cartella Fotografica Multipla</h3>
+                    <button class="btn-primary" style="background:var(--error-color);" onclick="window.stampaSchedaLesioni()">🖨️ Stampa Scheda Clinica & Galleria Foto</button>
+                </div>
+
+                <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+                    
+                    <!-- MANICHINO ANATOMICO -->
+                    <div style="flex:1.2; min-width:320px;">
+                        <label style="font-weight:bold; color:var(--text-main); display:block; margin-bottom:4px;">
+                            Mappa Anatomica (Fronte e Retro): Tocca per posizionare il punto numerato
+                        </label>
+                        <div id="bodyMapWrapper" style="position:relative; width: 100%; max-width: 440px; margin: 6px auto; border: 1px solid var(--border-color); background: #ffffff; border-radius:6px; cursor:crosshair; overflow:hidden;" onclick="window.handleBodyMapClick(event)">
+                            <img id="bodyMapImage" src="corpo_umano.png" alt="Mappa Anatomica" draggable="false" style="width:100%; height:auto; display:block; pointer-events:none; user-select:none;">
+                            <div id="bodyMarkersLayer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                            <small style="color:#64748b;">Tocca il cerchietto numerato per rimuoverlo.</small>
+                            <button class="btn-doc" style="padding:4px 10px; font-size:0.75em;" onclick="window.clearBodyMarkers()">🗑 Cancella Punti</button>
+                        </div>
+                    </div>
+
+                    <!-- FORM ACQUISIZIONE FOTO LESIONI MULTIPLE & MINIATURE -->
+                    <div style="flex:1.5; min-width:320px;">
+                        <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:12px; border-radius:6px; margin-bottom:12px;">
+                            <h4 style="margin:0 0 10px 0; font-size:0.95em;">📷 Acquisizione / Caricamento Fotografico Multiplo</h4>
+                            
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+                                <div class="form-group" style="margin:0;">
+                                    <label>Associa a Punto Mappa</label>
+                                    <select id="fotoLesionePunto">
+                                        <option value="">Generica / Non associata</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Sede Anatomica *</label>
+                                    <input type="text" id="fotoLesioneSede" placeholder="Es. Regione Sacrale..." list="sediLesioniList">
+                                    <datalist id="sediLesioniList">
+                                        <option value="Regione Sacrale"><option value="Tallone Destro"><option value="Tallone Sinistro">
+                                        <option value="Grande Trocantere Destro"><option value="Grande Trocantere Sinistro">
+                                        <option value="Regione Ischiatica"><option value="Scapola"><option value="Malleolo Esterno">
+                                    </datalist>
+                                </div>
+                            </div>
+
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+                                <div class="form-group" style="margin:0;">
+                                    <label>Stadiazione NPUAP *</label>
+                                    <select id="fotoLesioneStadio">
+                                        <option value="Stadio I">Stadio I (Eritema fisso)</option>
+                                        <option value="Stadio II">Stadio II (Perdita cutanea parziale)</option>
+                                        <option value="Stadio III">Stadio III (Perdita a tutto spessore)</option>
+                                        <option value="Stadio IV">Stadio IV (Coinvolgimento muscolo/osso)</option>
+                                        <option value="Non Stadiabile">Non Stadiabile (Escara / slough)</option>
+                                        <option value="DTI">DTI (Danno tissutale profondo)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Dimensioni (cm)</label>
+                                    <input type="text" id="fotoLesioneDimensioni" placeholder="Es. 3 x 2 cm">
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:8px;">
+                                <label>Medicazione Avanzata Applicata</label>
+                                <input type="text" id="fotoLesioneMedicazione" placeholder="Es. Idrocolloide / Schiuma di poliuretano...">
+                            </div>
+
+                            <div style="display:flex; gap:10px; align-items:center; margin-top:8px; flex-wrap:wrap;">
+                                <input type="file" id="fotoLesioneInput" accept="image/*" multiple style="padding:4px; font-size:0.85em; flex:1;">
+                                <button class="btn-success restrict-oss" id="btnSalvaFotoLesione" style="padding:8px 14px; font-size:0.85em;" onclick="window.salvaFotoLesione()">Salva Foto in Cartella</button>
+                            </div>
+                            <small style="color:var(--text-light); display:block; margin-top:4px;">💡 È possibile selezionare più foto contemporaneamente (o scattarne più di una consecutivamente).</small>
+                        </div>
+
+                        <!-- GALLERIA MINIATURE CONSULTABILI -->
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h4 style="margin:10px 0 6px 0; font-size:0.95em;">Miniature Fotografiche Salve (Tocca per ingrandire & stampare)</h4>
+                            <span id="fotoCountBadge" style="font-size:0.8em; color:var(--text-light); font-weight:bold;">0 Foto archiviate</span>
+                        </div>
+                        <div id="fotoLesioniGallery" class="photo-lesioni-grid">
+                            <small style="color:#64748b;">Nessuna immagine registrata per questo ospite.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABELLA DETTAGLIATA LESIONI -->
+                <div style="margin-top:18px; border-top:1px solid #cbd5e1; padding-top:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+                        <h4 style="margin:0; font-size:0.95em;">📋 Registro Dettagliato Lesioni dei Punti Numerati</h4>
+                        <button type="button" class="btn-primary" style="padding:4px 10px; font-size:0.8em;" onclick="window.aggiungiRigaDettaglioLesione()">➕ Aggiungi Dettaglio Lesione</button>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="data-table" id="tableDettagliLesioni" style="font-size:0.82em;">
+                            <thead>
+                                <tr style="background:var(--error-color);">
+                                    <th style="width:50px; text-align:center;">Punto</th>
+                                    <th>Sede Anatomica</th>
+                                    <th>Stadio / Grado</th>
+                                    <th>Dimensioni (cm)</th>
+                                    <th>Fondo & Essudato</th>
+                                    <th>Protocollo Medicazione</th>
+                                    <th style="width:40px; text-align:center;">X</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="margin-top:15px; display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                    <div class="form-group" style="margin:0;"><label>Condizioni Cutanee Generali all'Ingresso</label><textarea id="chkGen" class="restrict-oss-input" rows="2"></textarea></div>
+                    <div class="form-group" style="margin:0;"><label>Note su Piaghe, Medicazioni e Prevenzione</label><textarea id="chkPiaghe" class="restrict-oss-input" rows="2"></textarea></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- FIREBASE LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // CATALOGO PATOLOGIE RAGIONATO PER RSA / STRUTTURE PROTETTE
+        window.CATALOGO_PATOLOGIE = [
+            {
+                categoria: "1. Cardiovascolare & Cerebrovascolare",
+                items: [
+                    "Ipertensione Arteriosa (IA)",
+                    "Cardiopatia Ischemica Cronica / Pregresso IMA",
+                    "Scompenso Cardiaco Congestizio (NYHA I-IV)",
+                    "Fibrillazione Atriale (FA) / Aritmie",
+                    "Pregresso Ictus Ischemico / Emorragico",
+                    "TIA (Attacco Ischemico Transitorio)",
+                    "Arteriopatia Obliterante Periferica (AOP)",
+                    "Insufficienza Venosa Cronica / Tromboflebite"
+                ]
+            },
+            {
+                categoria: "2. Neurologico & Cognitivo",
+                items: [
+                    "Demenza di Alzheimer",
+                    "Demenza Vascolare / Mista",
+                    "Deterioramento Cognitivo Lieve (MCI)",
+                    "Malattia di Parkinson / Parkinsonismi",
+                    "Epilessia / Pregresse crisi comiziali",
+                    "Polineuropatia periferica"
+                ]
+            },
+            {
+                categoria: "3. Psichiatrico & Comportamentale",
+                items: [
+                    "Disturbo Ansioso-Depressivo",
+                    "BPSD (Disturbi comportamentali demenza / wandering)",
+                    "Disturbo Bipolare",
+                    "Psicosi / Sindrome Paranoide",
+                    "Insonnia Cronica"
+                ]
+            },
+            {
+                categoria: "4. Metabolico & Endocrino",
+                items: [
+                    "Diabete Mellito Tipo 2 (Ipoglicemizzanti orali)",
+                    "Diabete Mellito Tipo 2 (Insulino-trattato)",
+                    "Ipotiroidismo / Ipertiroidismo",
+                    "Dislipidemia",
+                    "Iperuricemia / Gotta",
+                    "Obesità Grave / Malnutrizione proteico-calorica"
+                ]
+            },
+            {
+                categoria: "5. Respiratorio",
+                items: [
+                    "BPCO (Broncopneumopatia Cronica Ostruttiva)",
+                    "Insufficienza Respiratoria Cronica (in O2LT)",
+                    "Asma Bronchiale",
+                    "Pregressa Polmonite / Polmonite ab ingestis"
+                ]
+            },
+            {
+                categoria: "6. Gastrointestinale & Nutrizionale",
+                items: [
+                    "Disfagia (liquidi, semisolidi, solidi)",
+                    "Malattia da Reflusso Gastroesofageo (MRGE)",
+                    "Gastrite Cronica / Pregressa Ulcera Peptica",
+                    "Stipsi Cronica Ostinata / Fecalomi ricorrenti",
+                    "Epatopatia Cronica / Cirrosi Epatica",
+                    "Portatore di PEG o SNG"
+                ]
+            },
+            {
+                categoria: "7. Nefro-Urologico",
+                items: [
+                    "Insufficienza Renale Cronica (IRC)",
+                    "Ipertrofia Prostatica Benigna (IPB)",
+                    "Incontinenza Urinaria (da sforzo / urgenza / totale)",
+                    "Portatore Catetere Vescicale a permanenza",
+                    "Infezioni Vie Urinarie ricorrenti (IVU)"
+                ]
+            },
+            {
+                categoria: "8. Osteoarticolare & Scheletrico",
+                items: [
+                    "Artrosi diffusa / Gonartrosi / Coxartrosi",
+                    "Osteoporosi Severa",
+                    "Pregressa Frattura Collo Femore (con/senza protesi)",
+                    "Pregresse Fratture vertebrali da schiacciamento",
+                    "Amputazione arti (superiore / inferiore)"
+                ]
+            },
+            {
+                categoria: "9. Sensoriale, Cute & Altro",
+                items: [
+                    "Deficit Visivo Grave / Cecità / Maculopatia",
+                    "Ipoacusia Grave / Sordità",
+                    "Pregressa Lesione da Pressione (LdP)",
+                    "Neoplasia (in anamnesi o attiva)",
+                    "Allergie farmacologiche note"
+                ]
+            }
+        ];
+
+        window.dbOspiti = []; window.dbClinica = {}; window.dbContenzioni = [];
+        window.globalSelectedPatient = sessionStorage.getItem("globalSelectedPatient") || "";
+        window.activeOperator = sessionStorage.getItem("activeOperator") || "Operatore";
+        window.activeOperatorRole = sessionStorage.getItem("activeRole") || "user";
+        window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica") || "";
+        window.currentBodyMarkers = [];
+        window.listaDettagliLesioni = [];
+        window.fotoAttivaInModal = null; // Memorizza la foto attiva per la stampa singola
+
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
+        window.formatDateSafe = (d) => { if (!d) return '-'; if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/'); return d; };
+        window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
+        window.getTodayString = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
+        window.checkOssRestriction = () => { if(window.activeOperatorQualifica==='OSS' && window.activeOperatorRole!=='admin') { window.showToast("🚫 Azione non consentita al profilo OSS"); return true; } return false; };
+        window.navigaA = (url) => { window.location.href = url; };
+
+        // ==========================================
+        // SICUREZZA & PRIVACY SHIELD (Anti-Curiosi)
+        // ==========================================
+        const TIMEOUT_IDLE_SHIELD_MS = 60 * 1000; // 1 minuto
+        let timerInattivitaPrivacy = null;
+
+        window.attivaSchermoPrivacy = () => {
+            if(window.activeOperator) document.getElementById('privacyShield').style.display = 'flex';
+        };
+
+        window.sbloccaSchermoPrivacy = () => {
+            document.getElementById('privacyShield').style.display = 'none';
+            window.resetSicurezzaPrivacy();
+        };
+
+        window.resetSicurezzaPrivacy = () => {
+            clearTimeout(timerInattivitaPrivacy);
+            timerInattivitaPrivacy = setTimeout(window.attivaSchermoPrivacy, TIMEOUT_IDLE_SHIELD_MS);
+        };
+
+        ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
+            window.addEventListener(evt, window.resetSicurezzaPrivacy, { passive: true });
+        });
+
+        window.addEventListener('visibilitychange', () => {
+            if (document.hidden) window.attivaSchermoPrivacy();
+        });
+        
+        window.addEventListener('mouseleave', () => {
+            timerInattivitaPrivacy = setTimeout(window.attivaSchermoPrivacy, 3000); 
+        });
+
+        // POPOLAMENTO SELECT TENDINE PATOLOGIE
+        window.popolaTendinePatologie = () => {
+            const tendine = ['selPresetPatologiaAttiva', 'selPresetPatologiaPregressa'];
+            tendine.forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                sel.innerHTML = '<option value="" selected disabled>-- Scegli da elenco ragionato --</option>';
+                window.CATALOGO_PATOLOGIE.forEach(cat => {
+                    const group = document.createElement('optgroup');
+                    group.label = cat.categoria;
+                    cat.items.forEach(item => {
+                        const opt = document.createElement('option');
+                        opt.value = item;
+                        opt.textContent = item;
+                        group.appendChild(opt);
+                    });
+                    sel.appendChild(group);
+                });
+            });
+        };
+
+        window.inserisciDaPreset = (selectId, textareaId) => {
+            if (window.checkOssRestriction()) return;
+            const sel = document.getElementById(selectId);
+            const txt = document.getElementById(textareaId);
+            if (!sel || !txt || !sel.value) return;
+
+            const valoreScelto = sel.value;
+            const attuale = txt.value.trim();
+
+            if (attuale.length > 0) {
+                txt.value = attuale + ", " + valoreScelto;
+            } else {
+                txt.value = valoreScelto;
+            }
+            sel.selectedIndex = 0;
+            txt.focus();
+            window.showToast("Patologia aggiunta al campo!");
+        };
+
+        window.inserisciDaCustom = (inputId, textareaId) => {
+            if (window.checkOssRestriction()) return;
+            const inp = document.getElementById(inputId);
+            const txt = document.getElementById(textareaId);
+            if (!inp || !txt) return;
+
+            const valoreManuale = inp.value.trim();
+            if (!valoreManuale) return window.showToast("⚠️ Inserisci prima il nome della patologia");
+
+            const attuale = txt.value.trim();
+            if (attuale.length > 0) {
+                txt.value = attuale + ", " + valoreManuale;
+            } else {
+                txt.value = valoreManuale;
+            }
+            inp.value = '';
+            txt.focus();
+            window.showToast("Patologia personalizzata aggiunta!");
+        };
+
+        window.renderGlobalPatientBanner = () => {
+            const n = window.globalSelectedPatient;
+            const bannerNome = document.getElementById('gapNome');
+            const bannerDet = document.getElementById('gapDettagli');
+            const bannerBadges = document.getElementById('gapBadges');
+            const bannerAv = document.getElementById('gapAvatar');
+
+            if(!n) {
+                bannerNome.innerText = "NESSUN OSPITE SELEZIONATO";
+                bannerDet.innerText = "Stanza: - | CF: -";
+                bannerBadges.innerHTML = '';
+                bannerAv.innerHTML = `👤`;
+                return;
+            }
+
+            const g = window.dbOspiti.find(x => x.name === n) || {};
+            const pD = window.dbClinica[n] || {};
+
+            bannerNome.innerText = n;
+            bannerDet.innerHTML = `Stanza: <strong>${g.room || '-'}</strong> | CF: <strong>${g.cf || '-'}</strong> | Nato il: <strong>${window.formatDateSafe(g.dob)}</strong>`;
+            bannerAv.innerHTML = g.photo ? `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">` : `👤`;
+
+            let badges = '';
+            if(pD.disfagia) badges += `<div class="badge-disfagia">🥣 Disfagico</div>`;
+            if(pD.infezione) badges += `<div class="badge-infezione">☣ ${pD.infezione}</div>`;
+            const hasCont = window.dbContenzioni.some(c => c.ospite === n && c.stato === 'ATTIVA');
+            if(hasCont) badges += `<div class="badge-contenzione">🔒 Contenzione Attiva</div>`;
+            bannerBadges.innerHTML = badges;
+        };
+
+        window.loadGuestSelector = () => {
+            const s = document.getElementById('clinicalGuestSelect');
+            if(!s) return;
+            s.innerHTML = '<option value="" disabled selected>Seleziona un paziente...</option>';
+            window.dbOspiti.filter(g => !g.decesso && !g.dimissione).sort((a,b) => a.name.localeCompare(b.name)).forEach(g => {
+                s.innerHTML += `<option value="${g.name}">${g.name}</option>`;
+            });
+            if(window.globalSelectedPatient) {
+                s.value = window.globalSelectedPatient;
+                window.handlePatientSelect(window.globalSelectedPatient);
+            }
+        };
+
+        window.calcolaBmiClinico = () => {
+            const hCm = parseFloat(document.getElementById('clinAltezza')?.value);
+            const pKg = parseFloat(document.getElementById('clinPeso')?.value);
+            const bmiField = document.getElementById('clinBmi');
+            const statoField = document.getElementById('clinStatoNutrizionale');
+
+            if (!hCm || !pKg || hCm <= 0 || pKg <= 0) {
+                if (bmiField) bmiField.value = '-';
+                return;
+            }
+
+            const bmi = (pKg / ((hCm/100) * (hCm/100))).toFixed(1);
+            if (bmiField) bmiField.value = bmi;
+
+            if (statoField) {
+                if (bmi < 18.5) statoField.value = "Sottopeso";
+                else if (bmi < 25) statoField.value = "Normopeso";
+                else if (bmi < 30) statoField.value = "Sovrappeso";
+                else if (bmi < 35) statoField.value = "Obesità Grado I";
+                else statoField.value = "Obesità Grave";
+            }
+        };
+
+        window.aggiornaTendinaPuntiFoto = () => {
+            const sel = document.getElementById('fotoLesionePunto');
+            if (!sel) return;
+            const currVal = sel.value;
+            sel.innerHTML = '<option value="">Generica / Non associata</option>';
+            window.currentBodyMarkers.forEach((m, idx) => {
+                sel.innerHTML += `<option value="${idx + 1}">Punto #${idx + 1}</option>`;
+            });
+            sel.value = currVal;
+        };
+
+        window.aggiungiRigaDettaglioLesione = (dati = null) => {
+            const idx = window.listaDettagliLesioni.length + 1;
+            const item = dati || {
+                punto: idx,
+                sede: "Regione Sacrale",
+                stadio: "Stadio II (Perdita cutanea parziale)",
+                dimensioni: "2 x 2 cm",
+                fondo: "Fondo granuleggiante",
+                medicazione: "Idrocolloide / Schiuma"
+            };
+            window.listaDettagliLesioni.push(item);
+            window.renderTabellaDettagliLesioni();
+        };
+
+        window.renderTabellaDettagliLesioni = () => {
+            const tb = document.querySelector('#tableDettagliLesioni tbody');
+            if (!tb) return;
+            tb.innerHTML = '';
+            if (window.listaDettagliLesioni.length === 0) {
+                tb.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:10px; color:#64748b;">Nessun dettaglio lesione registrato.</td></tr>`;
+                return;
+            }
+            window.listaDettagliLesioni.forEach((l, index) => {
+                tb.innerHTML += `
+                    <tr>
+                        <td style="text-align:center;"><span style="background:var(--error-color); color:white; border-radius:50%; padding:2px 7px; font-weight:bold; font-size:0.85em;">${index + 1}</span></td>
+                        <td><input type="text" value="${l.sede}" style="padding:4px; font-size:0.9em;" onchange="window.listaDettagliLesioni[${index}].sede=this.value"></td>
+                        <td>
+                            <select style="padding:4px; font-size:0.9em;" onchange="window.listaDettagliLesioni[${index}].stadio=this.value">
+                                <option value="Stadio I (Eritema fisso)" ${l.stadio.includes('Stadio I')?'selected':''}>Stadio I</option>
+                                <option value="Stadio II (Perdita parziale)" ${l.stadio.includes('Stadio II')?'selected':''}>Stadio II</option>
+                                <option value="Stadio III (Cute profonda)" ${l.stadio.includes('Stadio III')?'selected':''}>Stadio III</option>
+                                <option value="Stadio IV (Esteso)" ${l.stadio.includes('Stadio IV')?'selected':''}>Stadio IV</option>
+                                <option value="Non Stadiabile" ${l.stadio.includes('Non Stadiabile')?'selected':''}>Non Stadiabile</option>
+                                <option value="DTI" ${l.stadio.includes('DTI')?'selected':''}>DTI</option>
+                            </select>
+                        </td>
+                        <td><input type="text" value="${l.dimensioni}" style="padding:4px; font-size:0.9em;" onchange="window.listaDettagliLesioni[${index}].dimensioni=this.value"></td>
+                        <td><input type="text" value="${l.fondo}" style="padding:4px; font-size:0.9em;" onchange="window.listaDettagliLesioni[${index}].fondo=this.value"></td>
+                        <td><input type="text" value="${l.medicazione}" style="padding:4px; font-size:0.9em;" onchange="window.listaDettagliLesioni[${index}].medicazione=this.value"></td>
+                        <td style="text-align:center;"><button type="button" class="btn-danger restrict-oss" style="padding:2px 6px; font-size:0.75em;" onclick="window.rimuoviDettaglioLesione(${index})">✕</button></td>
+                    </tr>`;
+            });
+        };
+
+        window.rimuoviDettaglioLesione = (index) => {
+            window.listaDettagliLesioni.splice(index, 1);
+            window.renderTabellaDettagliLesioni();
+        };
+
+        const CAMPI_CHECKIN = [
+            'clinPatologieAttive', 'clinPatologiePregresse', 'clinInterventiChirurgici', 'clinTraumi', 'clinTerapiaIngresso',
+            'clinAnamnesiFamiliare', 'clinAnamnesiFisiologica', 'clinAllergie', 'clinProtesi', 'clinVaccinazioni', 'clinMotivoRicovero',
+            'clinAltezza', 'clinPeso', 'clinBmi', 'clinStatoNutrizionale', 'clinTipoCostituzionale',
+            'clinDecubito', 'clinFacies', 'clinPsicheSensorio', 'clinCuteMucose', 'clinMasseMuscolari', 'clinApparatoLocomotore'
+        ];
+
+        window.handlePatientSelect = (n) => {
+            if(!n) return;
+            window.globalSelectedPatient = n;
+            sessionStorage.setItem("globalSelectedPatient", n);
+            document.getElementById('clinicalContent').style.display = 'block';
+
+            window.renderGlobalPatientBanner();
+
+            let d = window.dbClinica[n] || {chkMarkers:[], checkinIntegrazioni:[], fotoLesioni:[], dettagliLesioni:[]};
+
+            CAMPI_CHECKIN.forEach(fid => {
+                const el = document.getElementById(fid);
+                if(el) el.value = d[fid] || "";
+            });
+
+            ['chkGen','chkPiaghe'].forEach(fid => {
+                const el = document.getElementById(fid);
+                if(el) el.value = d[fid] || "";
+            });
+
+            document.getElementById('chkDisfagia').checked = !!d.disfagia;
+            document.getElementById('selInfezione').value = d.infezione || "";
+
+            const valDateEl = document.getElementById('tab-checkinDataValutazione');
+            if(valDateEl) valDateEl.value = d.checkinDataUltima || d.checkinDataValutazione || window.getTodayString();
+            window.updateCheckinExpirationPreview();
+            window.renderIntegrazioniList(d);
+
+            window.calcolaBmiClinico();
+            window.currentBodyMarkers = d.chkMarkers ? [...d.chkMarkers] : [];
+            window.renderBodyMarkers();
+            window.aggiornaTendinaPuntiFoto();
+
+            window.listaDettagliLesioni = Array.isArray(d.dettagliLesioni) ? [...d.dettagliLesioni] : [];
+            window.renderTabellaDettagliLesioni();
+            window.renderFotoLesioni(d);
+        };
+
+        window.handleBodyMapClick = (e) => { 
+            if(window.checkOssRestriction()) return; 
+            const w = document.getElementById('bodyMapWrapper'); if(!w) return; 
+            const r = w.getBoundingClientRect(); 
+            const x = Math.round(((e.clientX - r.left) / r.width) * 1000) / 10;
+            const y = Math.round(((e.clientY - r.top) / r.height) * 1000) / 10;
+            window.currentBodyMarkers.push({ x, y, n: window.currentBodyMarkers.length + 1 }); 
+            window.renderBodyMarkers(); 
+            window.aggiornaTendinaPuntiFoto();
+        };
+
+        window.renderBodyMarkers = () => { 
+            const l = document.getElementById('bodyMarkersLayer'); if(!l) return; l.innerHTML = ''; 
+            window.currentBodyMarkers.forEach((m, i) => { 
+                const d = document.createElement('div'); 
+                d.className = 'body-marker'; 
+                d.style.left = m.x + '%'; 
+                d.style.top = m.y + '%'; 
+                d.innerText = i + 1;
+                d.title = `Punto #${i + 1}`;
+                d.onclick = (ev) => {
+                    ev.stopPropagation(); 
+                    window.currentBodyMarkers.splice(i, 1); 
+                    window.renderBodyMarkers(); 
+                    window.aggiornaTendinaPuntiFoto();
+                }; 
+                l.appendChild(d); 
+            }); 
+        };
+
+        window.clearBodyMarkers = () => { 
+            if(confirm("Cancellare tutti i punti posizionati sulla mappa?")) {
+                window.currentBodyMarkers = []; 
+                window.renderBodyMarkers(); 
+                window.aggiornaTendinaPuntiFoto();
+            }
+        };
+
+        function ridimensionaImmagine(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const maxDim = 900;
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > maxDim || h > maxDim) {
+                            if (w > h) {
+                                h = Math.round((h * maxDim) / w);
+                                w = maxDim;
+                            } else {
+                                w = Math.round((w * maxDim) / h);
+                                h = maxDim;
+                            }
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', 0.72));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        window.salvaFotoLesione = async () => {
+            const n = window.globalSelectedPatient; 
+            if(!n) return window.showToast("⚠️ Seleziona prima un paziente!");
+            
+            const fileInput = document.getElementById('fotoLesioneInput');
+            const sede = document.getElementById('fotoLesioneSede').value.trim();
+            const stadio = document.getElementById('fotoLesioneStadio').value;
+            const dim = document.getElementById('fotoLesioneDimensioni').value.trim();
+            const med = document.getElementById('fotoLesioneMedicazione').value.trim();
+            const punto = document.getElementById('fotoLesionePunto')?.value || '';
+
+            if(!sede) return window.showToast("⚠️ Inserisci la sede della lesione!");
+            if(!fileInput.files || fileInput.files.length === 0) return window.showToast("⚠️ Seleziona almeno una foto!");
+
+            const btn = document.getElementById('btnSalvaFotoLesione');
+            btn.disabled = true;
+            btn.innerText = "Elaborazione in corso...";
+
+            try {
+                let d = window.dbClinica[n] || {};
+                if(!Array.isArray(d.fotoLesioni)) d.fotoLesioni = [];
+
+                const files = Array.from(fileInput.files);
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const base64 = await ridimensionaImmagine(file);
+                    
+                    d.fotoLesioni.unshift({
+                        id: 'les_' + Date.now() + '_' + i,
+                        data: window.getTimestamp(),
+                        punto: punto,
+                        sede: sede,
+                        stadio: stadio,
+                        dimensioni: dim,
+                        medicazione: med,
+                        imgBase64: base64,
+                        op: window.activeOperator
+                    });
+                }
+
+                await setDoc(doc(db, "cartelle_cliniche", n), d, { merge: true });
+                fileInput.value = '';
+                document.getElementById('fotoLesioneDimensioni').value = '';
+                document.getElementById('fotoLesioneMedicazione').value = '';
+                window.showToast(`📷 ${files.length} Fotografia/e salvata/e nel fascicolo!`);
+                window.renderFotoLesioni(d);
+            } catch (err) {
+                console.error("Errore salvataggio foto:", err);
+                window.showToast("❌ Errore durante il caricamento delle fotografie");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Salva Foto in Cartella";
+            }
+        };
+
+        window.renderFotoLesioni = (d) => {
+            const gallery = document.getElementById('fotoLesioniGallery'); 
+            const countBadge = document.getElementById('fotoCountBadge');
+            if(!gallery) return;
+            
+            const fotoList = d.fotoLesioni || [];
+            if(countBadge) countBadge.innerText = `${fotoList.length} Foto archiviate`;
+
+            if(fotoList.length === 0) {
+                gallery.innerHTML = '<small style="color:#64748b; padding:10px 0;">Nessuna immagine registrata.</small>';
+                return;
+            }
+
+            gallery.innerHTML = '';
+            fotoList.forEach((f, idx) => {
+                let badgeClass = 'stadio-1';
+                if(f.stadio.includes('II')) badgeClass = 'stadio-2';
+                if(f.stadio.includes('III')) badgeClass = 'stadio-3';
+                if(f.stadio.includes('IV')) badgeClass = 'stadio-4';
+                if(f.stadio.includes('DTI')) badgeClass = 'stadio-dti';
+
+                const puntoBadgeHtml = f.punto ? `<span class="punto-marker-badge">Punto #${f.punto}</span>` : '';
+
+                const card = document.createElement('div');
+                card.className = 'photo-thumb-card';
+                card.innerHTML = `
+                    ${puntoBadgeHtml}
+                    <img src="${f.imgBase64}" class="photo-thumb-img" onclick="window.apriPreviewFoto(${idx})" title="Tocca per ingrandire & stampare">
+                    <div class="photo-thumb-info">
+                        <span class="stadio-badge ${badgeClass}">${f.stadio}</span><br>
+                        <strong>${f.sede}</strong><br>
+                        <small style="color:#64748b;">${f.data.split(' alle ')[0]} (${f.op||'Op'})</small>
+                        <div style="margin-top:6px; display:flex; justify-content:space-between; align-items:center;">
+                            <button class="btn-danger restrict-oss" style="padding:2px 6px; font-size:0.75em;" onclick="window.eliminaFotoLesione('${f.id}')" title="Elimina">🗑️</button>
+                            <button class="btn-doc" style="padding:2px 6px; font-size:0.75em;" onclick="window.apriPreviewFoto(${idx})">🔍 Ingrandisci</button>
+                        </div>
+                    </div>
+                `;
+                gallery.appendChild(card);
+            });
+        };
+
+        window.apriPreviewFoto = (idx) => {
+            const n = window.globalSelectedPatient;
+            const d = window.dbClinica[n] || {};
+            const f = (d.fotoLesioni || [])[idx];
+            if(!f) return;
+
+            window.fotoAttivaInModal = f;
+
+            document.getElementById('photoModalTitle').innerText = `${f.sede} - ${f.stadio} ${f.punto ? '(Punto #' + f.punto + ')' : ''}`;
+            document.getElementById('photoModalImg').src = f.imgBase64;
+            document.getElementById('photoModalDesc').innerHTML = `
+                <div><strong>Data Rilevazione:</strong> ${f.data} | <strong>Operatore:</strong> ${f.op || 'Non specificato'}</div>
+                <div><strong>Dimensioni Rilevate:</strong> ${f.dimensions || f.dimensioni || 'Non specificate'}</div>
+                <div><strong>Protocollo Medicazione:</strong> ${f.medicazione || 'Nessuna specifica registrata'}</div>
+            `;
+            document.getElementById('photoPreviewModal').style.display = 'flex';
+        };
+
+        window.stampaSingolaFotoLesione = () => {
+            const f = window.fotoAttivaInModal;
+            const n = window.globalSelectedPatient;
+            if (!f || !n) return;
+
+            const g = window.dbOspiti.find(x => x.name === n) || { name: n };
+            const printArea = document.getElementById('printArea');
+
+            printArea.innerHTML = `
+                <div style="text-align:center; border-bottom:2px solid #e11d48; padding-bottom:8px; margin-bottom:14px;">
+                    <h1 style="margin:0; font-size:18pt; color:#0f766e;">NUOVA VILLA SILVANA S.R.L.</h1>
+                    <p style="margin:2px 0; font-size:9.5pt;">Residenza Protetta per Anziani | Terni (TR)</p>
+                    <h2 style="margin:6px 0 0 0; font-size:13pt; text-transform:uppercase; color:#e11d48;">
+                        REFERTO FOTOGRAFICO SINGOLA LESIONE CUTANEA
+                    </h2>
+                    <p style="margin:2px 0; font-size:8.5pt; color:#475569;">Stampa estratta il ${window.getTimestamp()}</p>
+                </div>
+                <div style="border:1px solid #94a3b8; padding:10px 14px; margin-bottom:14px; border-radius:4px; font-size:9pt; background:#f8fafc;">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <tr><td style="width:50%;">Ospite: <strong style="font-size:1.15em;">${g.name}</strong></td><td>Stanza: <strong>Stanza ${g.room || '-'}</strong></td></tr>
+                        <tr><td>Codice Fiscale: <strong>${g.cf || '-'}</strong></td><td>Data Rilevazione: <strong>${f.data}</strong></td></tr>
+                    </table>
+                </div>
+                <div style="border:1px solid #cbd5e1; padding:14px; border-radius:6px; text-align:center; margin-bottom:14px; background:#fff;">
+                    <img src="${f.imgBase64}" style="max-height:480px; max-width:95%; object-fit:contain; border:1px solid #64748b; border-radius:4px; margin-bottom:12px; display:inline-block;">
+                    <div style="text-align:left; font-size:9.5pt; line-height:1.6; border-top:1px solid #cbd5e1; padding-top:10px;">
+                        <div><strong>Sede Anatomica:</strong> ${f.sede} ${f.punto ? ' - (Riferimento Mappa: Punto #' + f.punto + ')' : ''}</div>
+                        <div><strong>Stadiazione Clinica (NPUAP):</strong> <strong style="color:#e11d48;">${f.stadio}</strong></div>
+                        <div><strong>Dimensioni:</strong> ${f.dimensioni || 'Non specificate'}</div>
+                        <div><strong>Medicazione / Trattamento in atto:</strong> ${f.medicazione || 'Nessuna specifica registrata'}</div>
+                        <div><strong>Rilevatore:</strong> ${f.op || 'Operatore'}</div>
+                    </div>
+                </div>
+                <div style="margin-top:40px; display:flex; justify-content:space-between; font-size:9pt;">
+                    <div>Data: <strong>${new Date().toLocaleDateString('it-IT')}</strong></div>
+                    <div style="text-align:center;">Firma Infermiere / Medico di Reparto:<br><br>________________________________________</div>
+                </div>
+            `;
+
+            setTimeout(() => { window.print(); }, 350);
+        };
+
+        window.eliminaFotoLesione = async (idFoto) => {
+            if(window.checkOssRestriction()) return;
+            if(!confirm("Eliminare questa fotografia?")) return;
+            const n = window.globalSelectedPatient;
+            let d = window.dbClinica[n] || {};
+            d.fotoLesioni = (d.fotoLesioni || []).filter(f => f.id !== idFoto);
+            await setDoc(doc(db, "cartelle_cliniche", n), d, { merge: true });
+            window.showToast("Fotografia rimossa");
+            window.renderFotoLesioni(d);
+        };
+
+        window.updateCheckinExpirationPreview = () => {
+            const dateInput = document.getElementById('tab-checkinDataValutazione');
+            const previewInput = document.getElementById('tab-checkinDataScadenzaPreview');
+            const badge = document.getElementById('checkinValidityBadge');
+            if(!dateInput || !previewInput) return;
+            if(!dateInput.value) { previewInput.value = ''; return; }
+
+            const evalDate = new Date(dateInput.value);
+            const expDate = new Date(evalDate.getTime() + 90 * 24 * 60 * 60 * 1000);
+            const diffDays = Math.ceil((expDate - new Date()) / (1000 * 60 * 60 * 24));
+            previewInput.value = window.formatDateSafe(expDate.toISOString().split('T')[0]);
+
+            if(badge) {
+                if(diffDays < 0) { badge.innerText = `🚨 SCADUTO (${Math.abs(diffDays)} gg fa)`; badge.style.color = "#b91c1c"; }
+                else if(diffDays <= 15) { badge.innerText = `⚠️ In Scadenza (${diffDays} gg)`; badge.style.color = "#b45309"; }
+                else { badge.innerText = `✅ Valido (${diffDays} gg)`; badge.style.color = "#15803d"; }
+            }
+        };
+
+        window.addIntegrazioneCheckin = async () => {
+            if(window.checkOssRestriction()) return;
+            const n = window.globalSelectedPatient; if(!n) return;
+            const dataVal = document.getElementById('tab-checkinDataValutazione')?.value || window.getTodayString();
+            const esitoVal = document.getElementById('tab-integrazioneEsito')?.value;
+            const noteVal = document.getElementById('tab-integrazioneNote')?.value.trim();
+            if(!noteVal) return window.showToast("⚠️ Inserisci le note di rivalutazione");
+
+            let d = window.dbClinica[n] || {};
+            if(!d.checkinIntegrazioni) d.checkinIntegrazioni = [];
+            d.checkinIntegrazioni.unshift({ data: dataVal, op: window.activeOperator, esito: esitoVal, note: noteVal });
+            d.checkinDataUltima = dataVal;
+
+            await setDoc(doc(db, "cartelle_cliniche", n), d, { merge: true });
+            document.getElementById('tab-integrazioneNote').value = '';
+            window.showToast("✅ Rivalutazione Trimestrale Registrata");
+            window.handlePatientSelect(n);
+        };
+
+        window.renderIntegrazioniList = (d) => {
+            const list = document.getElementById('checkinIntegrazioniList'); if(!list) return;
+            list.innerHTML = '';
+            (d.checkinIntegrazioni || []).forEach(item => {
+                list.innerHTML += `<div style="background:#f8fafc; border:1px solid #cbd5e1; padding:8px; border-radius:4px; margin-bottom:5px; font-size:0.85em;"><strong>${window.formatDateSafe(item.data)}</strong> (${item.op}) - <em>${item.esito}</em>: ${item.note}</div>`;
+            });
+        };
+
+        // SALVATAGGIO GENERALE SEZIONE 1
+        window.saveCheckinData = async () => { 
+            if(window.checkOssRestriction()) return; 
+            const n = window.globalSelectedPatient; if(!n) return window.showToast("⚠️ Seleziona un paziente."); 
+            let d = window.dbClinica[n] || {}; 
+
+            CAMPI_CHECKIN.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) d[id] = el.value.trim();
+            });
+
+            ['chkGen','chkPiaghe'].forEach(id=>{
+                if(document.getElementById(id)) d[id]=document.getElementById(id).value;
+            }); 
+            
+            d.disfagia = document.getElementById('chkDisfagia').checked; 
+            d.infezione = document.getElementById('selInfezione').value; 
+            d.chkMarkers = window.currentBodyMarkers ? [...window.currentBodyMarkers] : []; 
+            d.dettagliLesioni = window.listaDettagliLesioni || [];
+
+            // REGISTRAZIONE NELLO STORICO CARTELLA (AUDIT TRAIL)
+            const auditEntry = {
+                data: window.getTimestamp(),
+                timestamp: Date.now(),
+                ospite: n,
+                operatore: window.activeOperator,
+                qualifica: window.activeOperatorQualifica,
+                azione: "AGGIORNAMENTO_CHECKIN_LESIONI",
+                dettaglio: `Aggiornata la scheda check-in, anamnesi e mappa lesioni cutanee.`
+            };
+
+            await addDoc(collection(db, "audit_trail"), auditEntry);
+
+            if(!d.auditTrail) d.auditTrail = [];
+            d.auditTrail.unshift(auditEntry);
+
+            await setDoc(doc(db, "cartelle_cliniche", n), d, { merge: true }); 
+            window.showToast("💾 Dati Check-in, Mappa e Lesioni Salvati con Successo!"); 
+            window.handlePatientSelect(n);
+        };
+
+        window.stampaSchedaLesioni = () => {
+            const n = window.globalSelectedPatient;
+            if (!n) return window.showToast("⚠️ Seleziona un paziente!");
+
+            const g = window.dbOspiti.find(x => x.name === n) || { name: n };
+            const clin = window.dbClinica[n] || {};
+
+            const markers = window.currentBodyMarkers || clin.chkMarkers || [];
+            let markersHtml = '';
+            markers.forEach((m, idx) => {
+                markersHtml += `
+                    <div style="position:absolute; left:${m.x}%; top:${m.y}%; width:18px; height:18px; background:#e11d48; color:#ffffff; border:2px solid #ffffff; border-radius:50%; transform:translate(-50%, -50%); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; box-shadow:0 1px 3px rgba(0,0,0,0.4); -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                        ${idx + 1}
+                    </div>`;
+            });
+
+            const dettagli = (clin.dettagliLesioni && clin.dettagliLesioni.length > 0) ? clin.dettagliLesioni : (window.listaDettagliLesioni || []);
+            let righeLesioniHtml = '';
+            if (dettagli.length > 0) {
+                dettagli.forEach((l, idx) => {
+                    righeLesioniHtml += `
+                        <tr>
+                            <td style="border:1px solid #000; padding:5px; text-align:center; font-weight:bold; background:#fee2e2;">${idx + 1}</td>
+                            <td style="border:1px solid #000; padding:5px;"><strong>${l.sede || '-'}</strong></td>
+                            <td style="border:1px solid #000; padding:5px;">${l.stadio || '-'}</td>
+                            <td style="border:1px solid #000; padding:5px; text-align:center;">${l.dimensioni || '-'}</td>
+                            <td style="border:1px solid #000; padding:5px;">${l.fondo || '-'}</td>
+                            <td style="border:1px solid #000; padding:5px;">${l.medicazione || '-'}</td>
+                        </tr>`;
+                });
+            } else {
+                righeLesioniHtml = `<tr><td colspan="6" style="border:1px solid #000; padding:8px; text-align:center;">Nessuna lesione attiva.</td></tr>`;
+            }
+
+            const fotoList = clin.fotoLesioni || [];
+            let fotoHtml = '';
+            if (fotoList.length > 0) {
+                fotoList.forEach((f, idx) => {
+                    fotoHtml += `
+                        <div class="print-photo-item">
+                            <img src="${f.imgBase64}" style="max-height:140px; max-width:100%; display:block; margin:0 auto 6px auto; object-fit:contain; border:1px solid #94a3b8; border-radius:3px;">
+                            <p style="margin:2px 0; font-size:8.5pt;"><strong>${idx + 1}. ${f.sede}</strong> ${f.punto ? '(Punto #' + f.punto + ')' : ''} - <em style="color:#e11d48;">${f.stadio}</em></p>
+                            <p style="margin:2px 0; font-size:8pt; color:#475569;">Data: ${f.data} | Op: ${f.op || 'Op'}</p>
+                            <p style="margin:2px 0; font-size:8pt;">Dim: <strong>${f.dimensioni || '-'}</strong> | Med: ${f.medicazione || '-'}</p>
+                        </div>`;
+                });
+            } else {
+                fotoHtml = '<p style="font-size:9pt; color:#64748b; font-style:italic;">Nessuna fotografia registrata.</p>';
+            }
+
+            const printArea = document.getElementById('printArea');
+            printArea.innerHTML = `
+                <div style="text-align:center; border-bottom:2px solid #e11d48; padding-bottom:8px; margin-bottom:14px;">
+                    <h1 style="margin:0; font-size:18pt; color:#0f766e;">NUOVA VILLA SILVANA S.R.L.</h1>
+                    <p style="margin:2px 0; font-size:9.5pt;">Residenza Protetta per Anziani | Terni (TR)</p>
+                    <h2 style="margin:6px 0 0 0; font-size:13pt; text-transform:uppercase; color:#e11d48;">
+                        SCHEDA CLINICA MAPPATURA LESIONI CUTANEE & GALLERIA FOTOGRAFICA
+                    </h2>
+                    <p style="margin:2px 0; font-size:8.5pt; color:#475569;">Stampa estratta il ${window.getTimestamp()}</p>
+                </div>
+                <div style="border:1px solid #94a3b8; padding:10px 14px; margin-bottom:12px; border-radius:4px; font-size:9pt; background:#f8fafc;">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <tr><td style="width:50%;">Ospite: <strong style="font-size:1.1em;">${g.name}</strong></td><td>Stanza: <strong>Stanza ${g.room || '-'}</strong></td></tr>
+                        <tr><td>Codice Fiscale: <strong>${g.cf || '-'}</strong></td><td>Data Ingresso: <strong>${window.formatDateSafe(g.ingresso)}</strong></td></tr>
+                    </table>
+                </div>
+                <div style="border:1px solid #94a3b8; padding:12px; margin-bottom:12px; border-radius:4px; page-break-inside:avoid;">
+                    <h3 style="margin:0 0 8px 0; font-size:10.5pt; color:#e11d48;">MAPPATURA ANATOMICA (FRONTE E RETRO)</h3>
+                    <div style="display:flex; gap:16px; align-items:center; justify-content:center; margin-bottom:10px;">
+                        <div style="position:relative; width:260px; max-width:40%; border:1px solid #cbd5e1; background:#ffffff; border-radius:4px; overflow:hidden;">
+                            <img src="corpo_umano.png" alt="Mappa Anatomica" style="width:100%; height:auto; display:block;">
+                            ${markersHtml}
+                        </div>
+                        <div style="flex:1; font-size:8.5pt;">
+                            <p style="margin:0 0 4px 0;"><strong>Condizioni generali cute:</strong> <em>${clin.chkGen || 'Regolari'}</em></p>
+                            <p style="margin:3px 0 0 0;"><strong>Presidi antidecubito & prevenzione:</strong> <em>${clin.chkPiaghe || 'Materasso ad aria alternata in uso'}</em></p>
+                        </div>
+                    </div>
+                    <table style="width:100%; border-collapse:collapse; font-size:8pt; margin-top:6px;">
+                        <thead>
+                            <tr style="background:#f1f5f9;">
+                                <th style="border:1px solid #000; padding:4px; width:35px; text-align:center;">N°</th>
+                                <th style="border:1px solid #000; padding:4px;">Sede</th>
+                                <th style="border:1px solid #000; padding:4px;">Stadiazione</th>
+                                <th style="border:1px solid #000; padding:4px; width:70px;">Dimensioni</th>
+                                <th style="border:1px solid #000; padding:4px;">Fondo</th>
+                                <th style="border:1px solid #000; padding:4px;">Medicazione</th>
+                            </tr>
+                        </thead>
+                        <tbody>${righeLesioniHtml}</tbody>
+                    </table>
+                </div>
+                <div style="border:1px solid #94a3b8; padding:12px; margin-bottom:12px; border-radius:4px; page-break-inside:avoid;">
+                    <h3 style="margin:0 0 8px 0; font-size:10.5pt; color:#e11d48;">GALLERIA FOTOGRAFICA COMPLETA DELLE LESIONI</h3>
+                    <div>${fotoHtml}</div>
+                </div>
+                <div style="margin-top:25px; display:flex; justify-content:space-between; font-size:8.5pt; page-break-inside:avoid;">
+                    <div>Operatore: <strong>${window.activeOperator}</strong></div>
+                    <div style="text-align:center;">Firma Infermiere / Medico:<br><br>________________________________________</div>
+                </div>
+            `;
+            setTimeout(() => { window.print(); }, 400);
+        };
+
+        onSnapshot(collection(db, "ospiti"), snap => {
+            window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.loadGuestSelector();
+        });
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => {
+            window.dbClinica = {};
+            snap.forEach(d => { window.dbClinica[d.id] = d.data(); });
+            if(window.globalSelectedPatient) window.handlePatientSelect(window.globalSelectedPatient);
+        });
+        onSnapshot(collection(db, "contenzioni"), snap => {
+            window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            window.renderGlobalPatientBanner();
+        });
+
+        window.onload = () => {
+            window.popolaTendinePatologie();
+            document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
+            document.body.setAttribute('data-qualifica', window.activeOperatorQualifica);
+            if(window.globalSelectedPatient) window.renderGlobalPatientBanner();
+            
+            // Inizializza il Privacy Shield
+            window.resetSicurezzaPrivacy();
+        };
+    </script>
+</body>
+</html>

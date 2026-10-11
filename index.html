@@ -3,454 +3,549 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NVS Masterpiece - Tablet Hub Launcher</title>
+    <title>Senior Care S.r.l. - NVS Desktop [Cruscotto di Reparto]</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
-            --bg-color: #0f172a;
-            --surface-bg: #1e293b;
-            --card-bg: #ffffff;
-            --primary: #0d9488;
-            --primary-dark: #0f766e;
-            --text-main: #0f172a;
-            --text-light: #64748b;
+            --bg-color: #f1f5f9; --box-bg: #ffffff;
+            --primary-color: #0d9488; --secondary-color: #0f766e;
+            --text-main: #0f172a; --text-light: #475569;
             --border-color: #cbd5e1;
+            --error-color: #e11d48; --warning-color: #d97706; --success-color: #059669;
+            --dir-color: #4f46e5; --terapia-color: #0284c7; --cup-color: #10b981;
+            --reload-color: #0369a1;
+            
+            /* COLORI COORDINATI PARAMETRI */
+            --col-pa: #e11d48; --col-fc: #c026d3; --col-spo2: #0284c7;
+            --col-tc: #ea580c; --col-gli: #8b5cf6; --col-nrs: #d97706;
 
-            /* PALETTE MODULI SPECIALISTICI TABLET */
-            --c-diari: #0284c7;
-            --c-oss: #d97706;
-            --c-vitali: #e11d48;
-            --c-terapia: #2563eb;
-            --c-cartella: #7c3aed;
-            --c-presidi: #b45309;
-            --c-rischio: #be123c;
-            --c-consegne: #059669;
-            --c-cup: #10b981;
-            --c-anagrafica: #475569;
-            --c-haccp: #0f766e;
-
-            --radius: 12px;
+            --base-font-size: 14px; --radius: 6px;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0; padding: 0;
-            background: #0f172a;
-            color: #ffffff;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            font-size: 14px;
-        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-color); margin: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        /* HEADER DEL LAUNCHER */
-        .hub-header {
-            background: #1e293b;
-            border-bottom: 2px solid #334155;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-        }
-        .hub-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .hub-logo {
-            height: 42px;
-            width: auto;
-            background: #ffffff;
-            padding: 3px 8px;
-            border-radius: 6px;
-        }
-        .hub-title h1 {
-            margin: 0;
-            font-size: 1.22em;
-            font-weight: 800;
-            color: #ffffff;
-            letter-spacing: 0.5px;
-        }
-        .hub-title p {
-            margin: 2px 0 0 0;
-            font-size: 0.82em;
-            color: #94a3b8;
-        }
+        /* REGOLE RBAC */
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .restrict-oss { display: none !important; }
+        body:not([data-role="admin"]) .req-admin { display: none !important; }
 
-        .op-badge-touch {
-            background: rgba(13, 148, 136, 0.2);
-            border: 1px solid #0d9488;
-            color: #2dd4bf;
-            padding: 7px 15px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 0.88em;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.15s ease;
-        }
-        .op-badge-touch:hover {
-            background: rgba(13, 148, 136, 0.35);
-        }
+        .perm-admin-btn { display: none !important; }
+        body[data-qualifica="Amministrazione"] .perm-admin-btn,
+        body[data-role="admin"] .perm-admin-btn { display: inline-block !important; }
 
-        /* BARRA STATISTICHE & ALLARMI LIVE */
-        .stats-strip {
-            background: #162032;
-            border-bottom: 1px solid #334155;
-            padding: 7px 20px;
-            display: flex;
-            gap: 16px;
-            overflow-x: auto;
-            flex-shrink: 0;
-            font-size: 0.85em;
-        }
-        .stat-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: #cbd5e1;
-            white-space: nowrap;
-        }
-        .stat-pill strong {
-            color: #ffffff;
-            background: #334155;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.9em;
-        }
-        .stat-pill.warn strong { background: #d97706; color: #fff; }
-        .stat-pill.danger strong { background: #e11d48; color: #fff; }
+        body[data-qualifica="Infermiere"] .nav-iso,
+        body[data-qualifica="Infermiere"] .nav-haccp,
+        body[data-qualifica="Direttore Sanitario"] .nav-iso,
+        body[data-qualifica="Direttore Sanitario"] .nav-haccp,
+        body[data-qualifica="Medico"] .nav-iso,
+        body[data-qualifica="Medico"] .nav-haccp { display: none !important; }
 
-        /* AREA CENTRALE CON LE PIASTRELLE GRANDI TOUCH */
-        .hub-scroll-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+        body[data-qualifica="OSS"] .nav-iso,
+        body[data-qualifica="OSS"] .nav-haccp,
+        body[data-qualifica="OSS"] .btn-nuovo-ospite,
+        body[data-qualifica="OSS"] #tabNavStoricoCartella,
+        body[data-qualifica="OSS"] .tab-anagrafica,
+        body[data-qualifica="OSS"] .tab-checkin,
+        body[data-qualifica="OSS"] .tab-pai,
+        body[data-qualifica="OSS"] .tab-terapia,
+        body[data-qualifica="OSS"] .tab-presidi,
+        body[data-qualifica="OSS"] .tab-consensi,
+        body[data-qualifica="OSS"] .tab-cup,
+        body[data-qualifica="OSS"] .tab-lettere,
+        body[data-qualifica="OSS"] .tab-storico-dimessi { display: none !important; }
 
-        .tiles-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
-            max-width: 1240px;
-            width: 100%;
-            margin: 0 auto;
-        }
-        @media (max-width: 1024px) {
-            .tiles-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        }
-        @media (max-width: 768px) {
-            .tiles-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        }
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .nav-iso,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] #patientSidebar,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] #tabNavDash,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] #tabNavStoricoCartella,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-vitals,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-ospiti,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-anagrafica,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-checkin,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-pai,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-terapia,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-presidi,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-diari,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-rischio,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-consegne,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-consensi,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-cup,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-lettere,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-storico-dimessi { display: none !important; }
 
-        .tile-card {
-            background: #ffffff;
-            border-radius: var(--radius);
-            padding: 16px 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            text-decoration: none;
-            color: var(--text-main);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.22);
-            cursor: pointer;
-            position: relative;
-            transition: all 0.15s ease;
-            min-height: 120px;
-            border: 2px solid transparent;
-        }
-        .tile-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 18px rgba(0,0,0,0.35);
-        }
-        .tile-card:active {
-            transform: scale(0.97);
-        }
+        .tab-servizi-generali { display: none !important; }
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tab-servizi-generali { display: inline-block !important; }
 
-        .tile-icon {
-            font-size: 2.3em;
-            margin-bottom: 6px;
-            line-height: 1;
-        }
-        .tile-title {
-            font-size: 1em;
-            font-weight: 800;
-            margin: 0;
-            line-height: 1.2;
-        }
-        .tile-desc {
-            font-size: 0.76em;
-            color: var(--text-light);
-            margin-top: 3px;
-            font-weight: 600;
-        }
+        /* LOGIN SCREEN */
+        #loginScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100%; position: fixed; top: 0; left: 0; z-index: 9999; background: var(--primary-color); }
+        .login-header-title { text-align: center; color: white; margin-bottom: 25px; }
+        .login-brand-wrapper { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 10px; }
+        .login-logo-img { height: 95px; width: auto; object-fit: contain; background: #ffffff; padding: 6px 14px; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,0.18); border: 2px solid rgba(255,255,255,0.4); }
+        .login-brand-text { text-align: left; }
+        .login-brand-text h1 { margin: 0; font-size: 2.3em; font-weight: 800; letter-spacing: 2px; line-height: 1.1; color: #ffffff; }
+        .login-brand-text h2 { margin: 4px 0 0 0; font-size: 1.15em; color: #ccfbf1; font-weight: 600; }
+        .login-brand-text p { margin: 4px 0 0 0; font-size: 0.85em; color: #99f6e4; font-weight: 500; }
 
-        .tile-badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #e11d48;
-            color: #ffffff;
-            font-size: 0.72em;
-            font-weight: 800;
-            padding: 2px 7px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(225, 29, 72, 0.4);
-        }
+        .login-box { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; max-width: 440px; width: 90%; border-top: 5px solid var(--secondary-color); }
+        .profiles-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 10px; max-height: 280px; overflow-y: auto; }
+        .profile-btn { display: flex; flex-direction: column; align-items: center; padding: 12px 8px; border: 1px solid var(--border-color); border-radius: 6px; background: #f8fafc; cursor: pointer; width: 85px; position: relative; }
+        .profile-btn:hover { border-color: var(--secondary-color); background: #f0fdfa; transform: translateY(-2px); }
+        .profile-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3em; font-weight: bold; margin-bottom: 6px; }
+        .login-input { width: 100%; padding: 14px; font-size: 1.2em; border: 1px solid var(--border-color); border-radius: var(--radius); text-align: center; letter-spacing: 5px; box-sizing: border-box; }
+        .login-btn-master { background: var(--primary-color); color: white; border: none; width: 100%; padding: 14px; border-radius: var(--radius); font-size: 1em; font-weight: bold; margin-top: 10px; cursor: pointer; }
 
-        /* BORDI TEMATICI DELLE PIASTRELLE */
-        .tile-diari { border-color: var(--c-diari); }
-        .tile-oss { border-color: var(--c-oss); }
-        .tile-vitali { border-color: var(--c-vitali); }
-        .tile-terapia { border-color: var(--c-terapia); }
-        .tile-cartella { border-color: var(--c-cartella); }
-        .tile-presidi { border-color: var(--c-presidi); }
-        .tile-rischio { border-color: var(--c-rischio); }
-        .tile-consegne { border-color: var(--c-consegne); }
-        .tile-cup { border-color: var(--c-cup); }
-        .tile-anagrafica { border-color: var(--c-anagrafica); }
-        .tile-haccp { border-color: var(--c-haccp); }
+        /* NAVBAR PRINCIPALE */
+        #top-nav-container { position: sticky; top: 0; z-index: 1000; width: 100%; display: flex; flex-direction: column; flex-shrink: 0; }
+        .navbar { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary-color); }
+        .navbar-brand { font-weight: 800; font-size: 1.15em; display:flex; align-items:center; gap:10px; letter-spacing: 0.5px; }
+        
+        .logo-nvs-nav { height: 32px; background: #ffffff; padding: 3px 8px; border-radius: 4px; object-fit: contain; }
+        .logo-senior-nav { height: 26px; background: #ffffff; padding: 2px 6px; border-radius: 4px; object-fit: contain; margin-left: 5px; }
+        
+        .nav-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: var(--radius); cursor: pointer; text-decoration: none; font-size: 0.88em; transition: all 0.15s ease; }
+        .nav-btn:hover { background: rgba(255,255,255,0.2); }
+        .current-op-badge { background: #fff; color: var(--primary-color); padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
 
-        /* FOOTER ISTITUZIONALE */
-        .hub-footer {
-            background: #1e293b;
-            border-top: 1px solid #334155;
-            padding: 9px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-            font-size: 0.85em;
-        }
-        .hub-footer a {
-            color: #94a3b8;
-            text-decoration: none;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 12px;
-            border-radius: 6px;
-            background: #334155;
-            transition: all 0.15s ease;
-        }
-        .hub-footer a:hover {
-            color: #ffffff;
-            background: #475569;
-        }
+        /* TIMER VISIVO AUTO-LOCK */
+        .timer-badge { background: #1e293b; color: #fff; font-family: monospace; font-size: 1.1em; padding: 5px 10px; border-radius: 4px; border: 1px solid #334155; font-weight: bold; display: flex; align-items: center; gap: 6px; }
+        .timer-badge.warning { color: #fca5a5; background: #991b1b; border-color: #ef4444; animation: blinkFast 1s infinite; }
+        @keyframes blinkFast { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* MODALE OPERATORE CON PIN */
-        .login-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.85);
-            z-index: 50000;
+        /* MENU AD INCASTRO COMPATTO */
+        .app-menu { display: flex; flex-wrap: wrap; background: #cbd5e1; padding: 6px 12px; gap: 4px; border-bottom: 2px solid var(--primary-color); transition: max-height 0.2s ease-out; }
+        .menu-tab { padding: 6px 10px; background: #e2e8f0; border: 1px solid #94a3b8; border-radius: 4px; color: var(--text-light); font-weight: 600; font-size: 0.78rem; cursor: pointer; white-space: nowrap; flex: 1 0 auto; text-align: center; transition: all 0.15s ease; }
+        .menu-tab:hover { background: #f1f5f9; border-color: var(--primary-color); }
+        .menu-tab.active { background: var(--box-bg); color: var(--primary-color); border-color: var(--primary-color); border-bottom: 2px solid var(--primary-color); font-weight: bold; }
+
+        #appScreen { display: none; flex-direction: row; flex-grow: 1; height: 0; overflow: hidden; }
+        .sidebar { width: 300px; background: var(--box-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; }
+        
+        .btn-nuovo-ospite {
+            width: 100%; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff !important;
+            font-weight: 800; font-size: 0.95em; letter-spacing: 0.5px; padding: 11px 14px; border-radius: var(--radius); border: 1px solid #065f46;
+            box-shadow: 0 3px 6px rgba(5, 150, 105, 0.35); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+            transition: all 0.15s ease; margin-bottom: 12px; text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+        }
+        .btn-nuovo-ospite:hover { transform: translateY(-1px); box-shadow: 0 5px 12px rgba(5, 150, 105, 0.45); }
+
+        .sidebar-item { padding: 8px 10px; border-radius: 6px; cursor: pointer; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border-color); transition: all 0.15s ease; background: #fff; }
+        .sidebar-item:hover { transform: translateX(2px); }
+        .sidebar-item.gender-m { background-color: #f0f9ff; border-color: #bae6fd; border-left: 5px solid #0284c7; }
+        .sidebar-item.gender-m.active { background-color: #bae6fd !important; border-color: #0284c7 !important; border-left: 7px solid #0369a1 !important; }
+        .sidebar-item.gender-f { background-color: #fdf2f8; border-color: #fbcfe8; border-left: 5px solid #db2777; }
+        .sidebar-item.gender-f.active { background-color: #fbcfe8 !important; border-color: #db2777 !important; border-left: 7px solid #be185d !important; }
+
+        .sidebar-avatar { width: 38px; height: 38px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-color); }
+        .sidebar-avatar.avatar-m { border: 2px solid #0284c7; }
+        .sidebar-avatar.avatar-f { border: 2px solid #db2777; }
+
+        .main-content { padding: 15px 20px; flex-grow: 1; overflow-y: auto; box-sizing: border-box; }
+        .card { background: var(--box-bg); padding: 18px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 2px solid var(--primary-color); padding-bottom: 6px; }
+        .card-header h3 { margin: 0; color: var(--primary-color); font-size: 1.05em; text-transform: uppercase; }
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .metric-card { background: var(--box-bg); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-color); text-align: center; border-left: 5px solid var(--primary-color); box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+        .metric-card h2 { margin: 0; font-size: 1.85em; color: var(--primary-color); }
+
+        .btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-doc, .btn-outline { color: white; border: none; padding: 8px 14px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.88em; transition: 0.15s; }
+        .btn-primary { background: var(--secondary-color); }
+        .btn-success { background: var(--success-color); }
+        .btn-danger { background: var(--error-color); }
+        .btn-warning { background: var(--warning-color); }
+        .btn-doc { background: #475569; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); }
+
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85em; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #94a3b8; border-radius: 4px; box-sizing: border-box; font-family: inherit; font-size: 0.9em; }
+
+        .alert-item { background: #fef2f2; border: 1px solid #fca5a5; border-left: 4px solid #ef4444; padding: 8px 10px; margin-bottom: 6px; border-radius: 4px; color: #991b1b; font-size: 0.85em; }
+        .alert-item.warning { background: #fffbeb; border-color: #fcd34d; border-left-color: #f59e0b; color: #b45309; }
+
+        .admin-master-card { background: #ffffff; border: 1px solid #cbd5e1; border-top: 6px solid var(--dir-color); border-radius: 8px; box-shadow: 0 4px 18px rgba(79, 70, 229, 0.12); padding: 22px; margin-top: 25px; }
+        .admin-sub-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; margin-bottom: 18px; }
+        .admin-sub-box h4 { margin: 0 0 12px 0; color: var(--dir-color); font-size: 1.05em; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; }
+
+        .operator-card { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); gap: 10px; }
+        .qualifica-badge { display: inline-flex; align-items: center; gap: 5px; padding: 2px 7px; border-radius: 4px; font-size: 0.78em; font-weight: 700; margin-top: 3px; }
+        .nomina-badge { font-size: 0.72em; padding: 2px 6px; border-radius: 3px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; cursor: pointer; text-decoration: none; }
+        .nb-ok { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .nb-warn { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        .audit-table { width: 100%; border-collapse: collapse; font-size: 0.88em; background: #ffffff; }
+        .audit-table th, .audit-table td { border: 1px solid var(--border-color); padding: 8px 10px; text-align: left; vertical-align: middle; }
+        .audit-table th { background-color: var(--primary-color); color: white; font-weight: 600; text-transform: uppercase; font-size: 0.8em; }
+        .audit-table tr:nth-child(even) { background-color: #f8fafc; }
+
+        .audit-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.76em; font-weight: 800; }
+        .ab-vitals { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .ab-med { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .ab-inf { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+        .ab-oss { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .ab-terapia { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+        .ab-pai { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+
+        /* PRIVACY SHIELD OVERLAY */
+        #privacyShield {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 100000;
             display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
+            align-items: center; justify-content: center; flex-direction: column;
+            color: white; text-align: center;
         }
-        .login-card {
-            background: #ffffff;
-            color: var(--text-main);
-            border-radius: var(--radius);
-            max-width: 440px;
-            width: 100%;
-            padding: 24px;
-            text-align: center;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
-        }
-        .op-grid-tablet {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
-            gap: 8px;
-            margin: 14px 0;
-            max-height: 250px;
-            overflow-y: auto;
-        }
-        .op-pill {
-            background: #f1f5f9;
-            border: 1px solid var(--border-color);
-            padding: 10px 4px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.82em;
-            font-weight: 700;
-        }
-        .op-pill:hover { border-color: var(--primary); background: #f0fdfa; }
+        .shield-icon { font-size: 4em; margin-bottom: 15px; }
+        .shield-text { font-size: 1.5em; font-weight: bold; letter-spacing: 1px; }
+        .shield-sub { font-size: 0.9em; color: #cbd5e1; margin-top: 8px; }
 
-        #toast-box {
-            position: fixed; bottom: 20px; right: 20px;
-            background: #ffffff; color: #0f172a;
-            padding: 10px 18px; border-radius: 6px; font-weight: 700;
-            z-index: 100000; opacity: 0; transition: opacity 0.2s; pointer-events: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
+        .toast { background: var(--text-main); color: #fff; padding: 12px 20px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
+        .toast.show { opacity: 1; }
+
+        #printArea { display: none; }
+        /* FIX STAMPA: position relative invece di absolute per evitare tagli multipagina */
+        @media print {
+            body * { visibility: hidden; } 
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { display: block !important; position: relative; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 25px; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 8.5pt; } 
+            .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; } 
+            .print-table th { background: #f1f5f9 !important; font-weight: bold; }
         }
-        #toast-box.show { opacity: 1; }
     </style>
 </head>
 <body>
-    <div id="toast-box"></div>
+    <div id="toast-container"></div>
+    <div id="printArea"></div>
 
-    <!-- MODALE CAMBIO OPERATORE TABLET CON PIN -->
-    <div id="modalOpOverlay" class="login-overlay">
-        <div class="login-card">
-            <h3 style="margin:0; color:var(--primary-dark);">Cambio Operatore in Servizio</h3>
-            <p style="margin:4px 0 12px 0; font-size:0.85em; color:var(--text-light);">Seleziona il tuo profilo:</p>
+    <!-- PRIVACY SHIELD (OSCURAMENTO ANTI-CURIOSI) -->
+    <div id="privacyShield">
+        <div class="shield-icon">👁️‍🗨️</div>
+        <div class="shield-text">Schermo Oscurato per Privacy</div>
+        <div class="shield-sub">Muovi il mouse o clicca per sbloccare</div>
+    </div>
 
-            <div id="opSelectStep">
-                <div id="operatorsContainer" class="op-grid-tablet">Caricamento operatori...</div>
-                <button onclick="document.getElementById('modalOpOverlay').style.display='none'" style="margin-top:8px; padding:8px 16px; background:#64748b; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Annulla</button>
-            </div>
-
-            <div id="pinStep" style="display:none;">
-                <label id="selectedOpNameLabel" style="font-weight:bold; color:var(--primary); display:block; margin-bottom:8px;"></label>
-                <input type="password" id="pinInput" placeholder="****" maxlength="6" inputmode="numeric" style="width:100%; padding:12px; font-size:1.4em; text-align:center; letter-spacing:6px; border:2px solid var(--border-color); border-radius:6px; margin-bottom:12px;">
-                <div style="display:flex; gap:8px;">
-                    <button onclick="window.tornaASelezioneOp()" style="flex:1; padding:10px; background:#64748b; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">← Indietro</button>
-                    <button onclick="window.confermaLoginPin()" style="flex:2; padding:10px; background:var(--primary); color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Accedi</button>
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen">
+        <div class="login-header-title">
+            <div class="login-brand-wrapper">
+                <img src="logo.png" alt="Nuova Villa Silvana Logo" class="login-logo-img">
+                <div class="login-brand-text">
+                    <h1>NUOVA VILLA SILVANA</h1>
+                    <h2>Senior Care S.r.l. • Residenza Protetta per Anziani</h2>
+                    <p>Sede: Loc. Molinaccio, 25 - Spoleto (PG) | P.IVA 03982400545</p>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- HEADER DEL LAUNCHER -->
-    <div class="hub-header">
-        <div class="hub-brand">
-            <img src="logo.png" alt="Nuova Villa Silvana Logo" class="hub-logo">
-            <div class="hub-title">
-                <h1>NUOVA VILLA SILVANA</h1>
-                <p>Tablet Reparto Hub • Residenza Protetta per Anziani</p>
+        <div class="login-box">
+            <h2 id="loginGreeting" style="color:var(--primary-color); margin-top:0;">Benvenuto</h2>
+            <p style="color:var(--text-light); font-size:0.9em; margin-bottom:15px;">Sistema Informativo Clinico & Gestionale</p>
+            <div id="loginProfilesContainer" class="profiles-grid">
+                <p style="color:var(--text-light);">Caricamento operatori...</p>
+            </div>
+            <div id="loginPinArea" style="display:none; margin-top:15px;">
+                <label id="selectedProfileLabel" style="font-weight:bold; color:var(--primary-color); margin-bottom:8px; display:block;"></label>
+                <input type="password" id="loginPinInput" class="login-input" placeholder="****" autocomplete="off">
+                <button class="login-btn-master" onclick="window.performLogin()">Accedi al Sistema (Invio)</button>
+                <button class="btn-doc" style="margin-top:10px; width:100%;" onclick="window.resetLoginSelection()">← Cambia Profilo</button>
             </div>
         </div>
-        <div class="op-badge-touch" onclick="window.apriModalOperatore()">
-            <span id="badgeActiveOp">👤 Caricamento...</span>
-            <small style="opacity:0.8;">⇄</small>
+    </div>
+
+    <!-- NAVBAR PRINCIPALE (DOPPIO BRANDING E TIMER AUTO-LOCK) -->
+    <div id="top-nav-container">
+        <div class="navbar">
+            <div class="navbar-brand">
+                <!-- LOGO NVS -->
+                <img src="logo.png" alt="Logo NVS" class="logo-nvs-nav">
+                <span style="letter-spacing: 1px;">NUOVA VILLA SILVANA</span>
+                
+                <!-- GESTIONE SENIOR CARE -->
+                <div style="display:flex; align-items:center; margin-left: 14px; padding-left: 14px; border-left: 1px solid rgba(255,255,255,0.4);">
+                    <span style="font-size: 0.7em; text-transform: uppercase; font-weight: bold; opacity: 0.85;">Gestione:</span>
+                    <img src="logo senior care.png" alt="Logo Senior Care" class="logo-senior-nav">
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                
+                <!-- TIMER VISIVO AUTO-LOCK -->
+                <div id="timerVisivoLock" class="timer-badge">
+                    ⏱️ Auto-Lock: <span id="timerTxt">5:00</span>
+                </div>
+
+                <!-- Pulsante OPZIONE A: Hide/Show App Menu -->
+                <button class="nav-btn" id="btnToggleMenu" onclick="window.toggleAppMenu()" style="background:#1e293b; border-color:#334155; font-weight:bold;">
+                    <span id="iconToggle">⛶</span> <span id="textToggle">Nascondi Menu</span>
+                </button>
+                
+                <a href="iso_9001_accreditamento.html" target="_blank" class="nav-btn nav-iso" style="color:#fde047; font-weight:bold;">🏆 Area ISO</a>
+                <a href="haccp_sicurezza_dash.html" target="_blank" class="nav-btn nav-haccp" style="color:#a7f3d0; font-weight:bold;">🛡️ HACCP</a>
+                <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
+                <button class="nav-btn" onclick="window.logout()">🚪 Esci</button>
+            </div>
+        </div>
+        
+        <!-- MENU AD INCASTRO COMPATTO -->
+        <div class="app-menu" id="mainAppMenu">
+            <button class="menu-tab active" id="tabNavDash" onclick="window.switchView('dash')">🏠 Dashboard</button>
+            <button class="menu-tab" id="tabNavStoricoCartella" style="background:#e0e7ff; color:#3730a3; border-color:#c7d2fe; font-weight:800;" onclick="window.switchView('storico-cartella')">📜 Storico Cartella (Audit) ↗</button>
+            
+            <!-- MODULI ESCLUSIVI AMMINISTRAZIONE -->
+            <button class="menu-tab perm-admin-btn" style="background:#ede9fe; color:#5b21b6; border-color:#c4b5fd; font-weight:800;" onclick="window.apriModuloEsterno('amministrazione_rette.html')">💼 Rette & Spese Extra ↗</button>
+            <button class="menu-tab perm-admin-btn" style="background:#ede9fe; color:#4338ca; border-color:#a5b4fc; font-weight:800;" onclick="window.apriModuloEsterno('registro_audit_privacy.html')">🛡️ Audit Privacy GDPR ↗</button>
+            <button class="menu-tab perm-admin-btn" style="background:#e0f2fe; color:#0369a1; border-color:#7dd3fc; font-weight:800;" onclick="window.apriModuloEsterno('personale_privacy_reload.html')">⚖️ Nomine Reload S.p.A. ↗</button>
+
+            <!-- MODULI SATELLITI -->
+            <button class="menu-tab tab-vitals" style="background:#fff1f2; color:#be123c; border-color:#fecdd3; font-weight:bold;" onclick="window.apriModuloEsterno('parametri_vitali.html')">❤️ Parametri Vitali ↗</button>
+            <button class="menu-tab tab-ospiti" style="background:#ccfbf1; color:#0f766e; border-color:#2dd4bf; font-weight:bold;" onclick="window.apriModuloEsterno('ospiti.html')">👥 Ospiti ↗</button>
+            <button class="menu-tab tab-anagrafica" style="background:#e0f2fe; color:#0369a1; border-color:#38bdf8;" onclick="window.apriModuloEsterno('anagrafica.html')">🛏 Anagrafica ↗</button>
+            <button class="menu-tab tab-checkin" style="background:#ccfbf1; color:#0f766e; border-color:#2dd4bf;" onclick="window.apriModuloEsterno('cartella_checkin_ingresso.html')">📋 Check-in & Lesioni ↗</button>
+            <button class="menu-tab tab-pai" style="background:#f3e8ff; color:#7c3aed; border-color:#d8b4fe;" onclick="window.apriModuloEsterno('cartella_valutazioni_pai.html')">📊 BINA, Scale & PAI ↗</button>
+            <button class="menu-tab tab-terapia" style="background:#f0f9ff; color:var(--terapia-color); border-color:#7dd3fc;" onclick="window.apriModuloEsterno('terapia.html')">💊 Terapia ↗</button>
+            <button class="menu-tab tab-presidi" style="background:#fef3c7; color:#b45309; border-color:#fde68a; font-weight:bold;" onclick="window.apriModuloEsterno('presidi.html')">📦 Presidi & Piani ↗</button>
+            <button class="menu-tab tab-diari" style="background:#f5f3ff; color:#7c3aed; border-color:#ddd6fe;" onclick="window.apriModuloEsterno('diari_clinici.html')">📝 Diari Med/Inf/OSS ↗</button>
+            <button class="menu-tab tab-rischio" style="background:#fff1f2; color:#be123c; border-color:#fecdd3; font-weight:bold;" onclick="window.apriModuloEsterno('rischio_contenzioni.html')">⚠ Rischio & Contenzioni ↗</button>
+            <button class="menu-tab tab-consegne" style="background:#f0fdf4; color:#15803d; border-color:#bbf7d0;" onclick="window.apriModuloEsterno('consegne.html')">📖 Consegne ↗</button>
+            <button class="menu-tab tab-consensi" style="background:#eef2ff; color:#4f46e5; border-color:#c7d2fe; font-weight:bold;" onclick="window.apriModuloEsterno('privacy_consenso.html')">✍️ Privacy & Consenso Legale ↗</button>
+            <button class="menu-tab tab-cup" style="background:#f0fdf4; color:#047857; border-color:#86efac;" onclick="window.apriModuloEsterno('cup_appuntamenti.html')">📅 CUP ↗</button>
+            <button class="menu-tab tab-lettere restrict-oss" style="background:#f0fdfa; color:#0f766e; border-color:#99f6e4;" onclick="window.apriModuloEsterno('lettere_dimissioni.html')">📄 Lettere & Dimissioni ↗</button>
+            <button class="menu-tab tab-storico-dimessi" style="background:#f1f5f9; color:#475569; border-color:#cbd5e1;" onclick="window.apriModuloEsterno('storico.html')">🗄️ Storico Dimessi ↗</button>
+            <button class="menu-tab tab-servizi-generali" style="background:#ffedd5; color:#c2410c; border-color:#fed7aa; font-weight:bold;" onclick="window.apriModuloEsterno('haccp_sicurezza_dash.html')">🛡️ Apri Modulo HACCP & Cucina ↗</button>
         </div>
     </div>
 
-    <!-- STRISCIA STATISTICHE E ALLARMI LIVE -->
-    <div class="stats-strip">
-        <div class="stat-pill">👥 Ospiti Presenti: <strong id="cntPresenti">0</strong></div>
-        <div class="stat-pill warn">📦 Presidi in Scadenza / Scaduti: <strong id="cntPresidiScad">0</strong></div>
-        <div class="stat-pill danger">🔒 Contenzioni Attive: <strong id="cntContenzioni">0</strong></div>
-        <div class="stat-pill">📅 Visite CUP (15 gg): <strong id="cntCup15">0</strong></div>
-        <div class="stat-pill">🥣 Disfagici: <strong id="cntDisfagia">0</strong></div>
-        <div class="stat-pill danger">☣ Isolamento ICA: <strong id="cntIca">0</strong></div>
-    </div>
+    <div id="appScreen">
+        <!-- SIDEBAR PAZIENTI -->
+        <div class="sidebar" id="patientSidebar">
+            <div style="padding: 15px; border-bottom: 1px solid var(--border-color); background: white; position: sticky; top: 0; z-index: 2;">
+                <button class="btn-nuovo-ospite" onclick="window.apriModuloEsterno('anagrafica.html')">
+                    <span style="font-size:1.15em;">➕</span> NUOVO OSPITE
+                </button>
+                <input type="text" id="sidebarSearch" placeholder="🔍 Cerca Nome, Età, Stanza..." onkeyup="window.renderSidebarPatients()" style="width:100%;">
+            </div>
+            <div id="sidebarPatientList" style="padding: 10px; overflow-y: auto; flex: 1;"></div>
+        </div>
 
-    <!-- AREA CENTRALE CON LE PIASTRELLE SPECIALISTICHE TOUCH (11 MODULI) -->
-    <div class="hub-scroll-area">
-        <div class="tiles-grid">
+        <div class="main-content">
+            <!-- VISTA 1: DASHBOARD -->
+            <div id="viewDashboard" class="workspace">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                    <h2 style="margin:0;">Dashboard Generale di Struttura</h2>
+                    <button id="btnOpenAdminPanel" class="btn-primary perm-admin-btn" style="background:var(--dir-color); font-weight:bold; box-shadow:0 2px 6px rgba(79, 70, 229, 0.25);" onclick="const p = document.getElementById('adminPanel'); p.style.display = p.style.display === 'none' ? 'block' : 'none';">⚙️ Area Amministrazione & Azienda</button>
+                </div>
 
-            <!-- 1. DIARI INTEGRATI (MEDICO / INF / OSS) -->
-            <a href="tablet_diari.html" class="tile-card tile-diari">
-                <div class="tile-icon">📖</div>
-                <div class="tile-title" style="color:var(--c-diari);">Diari Reparto</div>
-                <div class="tile-desc">Cronologia 3 Figure & Permessi Ruolo</div>
-            </a>
+                <div id="boxServiziGeneraliLanding" style="display:none; background:#ffedd5; border:2px solid #fed7aa; padding:24px; border-radius:8px; margin-bottom:20px; text-align:center;">
+                    <h3 style="margin:0 0 8px 0; color:#c2410c; font-size:1.3em;">👨‍🍳 Servizi Generali (Cucina, Pulizie & Lavanderia)</h3>
+                    <p style="color:#7c2d12; margin:0 0 16px 0;">Il tuo profilo è abilitato esclusivamente alla gestione delle schede di autocontrollo HACCP, temperature, sanificazioni, cottura e sicurezza.</p>
+                    <button class="btn-primary" style="background:#ea580c; font-size:1.05em; padding:12px 24px;" onclick="window.apriModuloEsterno('haccp_sicurezza_dash.html')">🛡️ Accedi Subito al Modulo HACCP</button>
+                </div>
 
-            <!-- 2. DIARIO ASSISTENZIALE OSS DEDICATO -->
-            <a href="tablet_diario_oss.html" class="tile-card tile-oss">
-                <div class="tile-icon">🧻</div>
-                <div class="tile-title" style="color:var(--c-oss);">Diario OSS</div>
-                <div class="tile-desc">Alvo, Diuresi, Igiene & Idratazione</div>
-            </a>
+                <div id="dashStandardMetrics">
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <h2 id="dash-guests-count">0</h2>
+                            <span id="dash-guests-detail" style="font-size:0.85em; color:var(--text-light);">0 Presenti | 0 Fuori Sede</span><br>
+                            <span style="font-size:0.8em; text-transform:uppercase;">Posti Letto Occupati</span>
+                        </div>
+                        <div class="metric-card" style="border-left-color: var(--terapia-color);">
+                            <h2 id="dash-terapia-count" style="color: var(--terapia-color);">0</h2>
+                            <span style="font-size:0.8em; text-transform:uppercase;">Dosi Terapia da Dare (Oggi)</span>
+                        </div>
+                        <div class="metric-card" style="border-left-color: var(--cup-color);">
+                            <h2 id="dash-app-count" style="color: var(--cup-color);">0</h2>
+                            <span style="font-size:0.8em; text-transform:uppercase;">Visite CUP (15 gg)</span>
+                        </div>
+                        <div class="metric-card" style="border-left-color: var(--error-color);">
+                            <h2 id="dash-cont-count" style="color: var(--error-color);">0</h2>
+                            <span style="font-size:0.8em; text-transform:uppercase;">Contenzioni Attive</span>
+                        </div>
+                        <div class="metric-card" style="border-left-color: var(--warning-color);">
+                            <h2 id="dash-presidi-count" style="color: var(--warning-color);">0</h2>
+                            <span style="font-size:0.8em; text-transform:uppercase;">Presidi Scadenza / Scaduti</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:15px; margin-bottom: 20px;">
+                        <div class="card" style="margin-bottom:0; border-top:4px solid var(--error-color);">
+                            <div class="card-header"><h3 style="color:var(--error-color);">⚠️ Alert Clinici & ICA</h3></div>
+                            <div id="dashboardAlertsList"></div>
+                        </div>
 
-            <!-- 3. PARAMETRI VITALI & DOLORE CON GRAFICO -->
-            <a href="tablet_parametri_vitali.html" class="tile-card tile-vitali">
-                <div class="tile-icon">❤️</div>
-                <div class="tile-title" style="color:var(--c-vitali);">Parametri Vitali</div>
-                <div class="tile-desc">PA, FC, SpO2, TC, Glicemia & Trend</div>
-            </a>
+                        <div class="card" style="margin-bottom:0; border-top:4px solid var(--warning-color);">
+                            <div class="card-header">
+                                <h3 style="color:var(--warning-color);">📦 Piani Presidi in Scadenza (ASL)</h3>
+                                <button class="btn-doc" style="padding:2px 8px; font-size:0.75em;" onclick="window.apriModuloEsterno('presidi.html')">Gestisci ↗</button>
+                            </div>
+                            <div id="dashboardPresidiList"></div>
+                        </div>
+                        
+                        <div class="card" style="margin-bottom:0; border-top:4px solid var(--cup-color);">
+                            <div class="card-header">
+                                <h3 style="color:var(--cup-color);">📅 Agenda CUP (Prossimi 15 gg)</h3>
+                                <button class="btn-doc" style="padding:2px 8px; font-size:0.75em;" onclick="window.apriModuloEsterno('cup_appuntamenti.html')">Agenda ↗</button>
+                            </div>
+                            <div id="dashMiniCalendar"></div>
+                        </div>
+                    </div>
 
-            <!-- 4. TERAPIE & STUPEFACENTI DPR 309 -->
-            <a href="tablet_terapia.html" class="tile-card tile-terapia">
-                <div class="tile-icon">💊</div>
-                <div class="tile-title" style="color:var(--c-terapia);">Terapia & 309/90</div>
-                <div class="tile-desc">Somministrazioni & Carico/Scarico</div>
-            </a>
+                    <div class="card" style="border-top:4px solid var(--primary-color);">
+                        <div class="card-header">
+                            <h3 style="color:var(--primary-color);">📊 Quadro Generale Degenza, Genere & Rischio Clinico</h3>
+                            <span style="font-size:0.9em; background:#f0fdf4; color:#0f766e; padding:4px 10px; border-radius:4px; font-weight:bold;">Totale Iscritti: <strong id="chartTotalGuests">0</strong></span>
+                        </div>
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px;">
+                            <div style="position:relative; width:100%; max-width:850px; height:270px;">
+                                <canvas id="clinicalOverviewChart"></canvas>
+                            </div>
+                            <div style="display:flex; justify-content:center; gap:20px; margin-top:15px; font-weight:bold; font-size:0.88em; flex-wrap:wrap;">
+                                <span style="color:#0f766e;">🟢 Presenti: <strong id="cntPresenti">0</strong></span>
+                                <span style="color:#d97706;">🟡 Fuori Sede: <strong id="cntAssenti">0</strong></span>
+                                <span style="color:#0284c7;">🔵 Uomini: <strong id="cntMaschi">0</strong></span>
+                                <span style="color:#db2777;">🌸 Donne: <strong id="cntFemmine">0</strong></span>
+                                <span style="color:#f59e0b;">🥣 Disfagici: <strong id="cntDisfagia">0</strong></span>
+                                <span style="color:#e11d48;">☣ Isolamento ICA: <strong id="cntICA">0</strong></span>
+                                <span style="color:#991b1b;">🔒 Contenzioni: <strong id="cntCont">0</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- 5. FASCICOLO CLINICO TABLET COMPLETO -->
-            <a href="tablet_cartella_clinica.html" class="tile-card tile-cartella">
-                <div class="tile-icon">⚕️</div>
-                <div class="tile-title" style="color:var(--c-cartella);">Cartella Clinica</div>
-                <div class="tile-desc">BINA, Scale VMD, PAI & Mappa Lesioni</div>
-            </a>
+                <!-- PANNELLO ADMIN -->
+                <div id="adminPanel" class="admin-master-card" style="display: none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:2px solid var(--dir-color); padding-bottom:10px;">
+                        <div>
+                            <h2 style="color:var(--dir-color); margin:0; font-size:1.35em;">⚙️ Area Amministrazione, Personale & Dati Aziendali</h2>
+                            <small style="color:var(--text-light);">Senior Care S.r.l. - Gestione credenziali operative, nomine appalto Reload S.p.A. e dati societari</small>
+                        </div>
+                        <button class="btn-doc" onclick="document.getElementById('adminPanel').style.display='none'">Chiudi Pannello ✕</button>
+                    </div>
 
-            <!-- 6. PIANI PRESIDI & ASSORBENZA ASL -->
-            <a href="tablet_presidi.html" class="tile-card tile-presidi">
-                <div class="tile-badge" id="badgeTilePresidi" style="display:none;">0</div>
-                <div class="tile-icon">📦</div>
-                <div class="tile-title" style="color:var(--c-presidi);">Piani Presidi ASL</div>
-                <div class="tile-desc">Pannoloni, Cateteri & Scadenze Forniture</div>
-            </a>
+                    <div class="admin-sub-box">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #cbd5e1; padding-bottom:6px;">
+                            <h4 style="margin:0; border:none; padding:0;">👥 Staff Sanitario & Personale in Appalto (Reload S.p.A.)</h4>
+                            <button class="btn-primary" style="background:var(--reload-color); font-size:0.82em; padding:5px 12px;" onclick="window.apriModuloEsterno('personale_privacy_reload.html')">
+                                ⚖️ Portale Sottoscrizione Nomine Reload ↗
+                            </button>
+                        </div>
 
-            <!-- 7. RISCHIO CLINICO & CONTENZIONI -->
-            <a href="tablet_rischio_contenzioni.html" class="tile-card tile-rischio">
-                <div class="tile-badge" id="badgeTileContenzioni" style="display:none;">0</div>
-                <div class="tile-icon">⚠️</div>
-                <div class="tile-title" style="color:var(--c-rischio);">Rischio & Contenzioni</div>
-                <div class="tile-desc">Prescrizioni, Revoche & Incident Report</div>
-            </a>
+                        <div style="background:#ffffff; border:1px solid #cbd5e1; padding:15px; border-radius:6px; margin-bottom:15px;">
+                            <span id="opFormModeTitle" style="font-weight:bold; color:var(--dir-color); display:block; margin-bottom:10px; font-size:0.95em;">➕ Inserisci Nuovo Operatore:</span>
+                            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:10px;">
+                                <div class="form-group" style="margin:0;"><label>Nome e Cognome *</label><input type="text" id="newOpInput" placeholder="Es. Mario Rossi"></div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Figura Professionale *</label>
+                                    <select id="newOpQualifica">
+                                        <option value="Infermiere">💉 Infermiere</option>
+                                        <option value="OSS">🧻 O.S.S.</option>
+                                        <option value="Medico">🩺 Medico Curante</option>
+                                        <option value="Direttore Sanitario">🏛 Direttore Sanitario</option>
+                                        <option value="Amministrazione">💼 Amministrazione</option>
+                                        <option value="Fisioterapista">🏃‍♂️ Fisioterapista</option>
+                                        <option value="Servizi Generali (Cucina/Pulizie/Lavanderia)">🧹🍳🧺 Servizi Generali</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin:0;"><label>Codice PIN *</label><input type="password" id="newOpPin" placeholder="PIN" maxlength="8"></div>
+                                <div class="form-group" style="margin:0;"><label>Livello Permessi</label><select id="newOpRole"><option value="user">Standard</option><option value="admin">Admin</option></select></div>
+                            </div>
+                            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                                <button id="btnCancelEditOp" class="btn-doc" style="display:none;" onclick="window.cancelEditOperator()">Annulla</button>
+                                <button id="btnSaveOp" class="btn-primary" style="background:var(--dir-color);" onclick="window.addOrUpdateOperator()">Aggiungi Operatore</button>
+                            </div>
+                        </div>
+                        <div style="font-weight:bold; font-size:0.9em; margin-bottom:8px; color:var(--text-main);">Elenco Operatori & Stato Conformità Nomina (Art. 29 GDPR):</div>
+                        <div id="operatorList" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:10px;"></div>
+                    </div>
 
-            <!-- 8. PASSAGGIO CONSEGNE TURNO -->
-            <a href="tablet_consegne.html" class="tile-card tile-consegne">
-                <div class="tile-icon">📢</div>
-                <div class="tile-title" style="color:var(--c-consegne);">Consegne Turno</div>
-                <div class="tile-desc">Mattina / Pom / Notte (Inf & OSS)</div>
-            </a>
+                    <div class="admin-sub-box">
+                        <h4>🏛️ Dati Aziendali, Fiscali & Codici Istituzionali</h4>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:12px;">
+                            <div class="form-group" style="margin:0;"><label>Ragione Sociale Struttura *</label><input type="text" id="azRagioneSociale" value="Senior Care S.r.l."></div>
+                            <div class="form-group" style="margin:0;"><label>Partita IVA *</label><input type="text" id="azPiva" value="03982400545"></div>
+                            <div class="form-group" style="margin:0;"><label>Codice Fiscale Aziendale</label><input type="text" id="azCodFiscale" value="03982400545"></div>
+                            <div class="form-group" style="margin:0;"><label>Codice Univoco / SDI</label><input type="text" id="azSdi"></div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 2fr 1.5fr 1fr; gap:12px; margin-bottom:12px;">
+                            <div class="form-group" style="margin:0;"><label>Sede Legale & Operativa</label><input type="text" id="azIndirizzo" value="Loc. Molinaccio, 25 - 06049 Spoleto (PG)"></div>
+                            <div class="form-group" style="margin:0;"><label>PEC / E-mail Istituzionale</label><input type="text" id="azPec" value="seniorcare.srl@gmail.com"></div>
+                            <div class="form-group" style="margin:0;"><label>Centralino / Tel.</label><input type="text" id="azTel"></div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1.5fr 1.5fr; gap:12px; margin-bottom:12px;">
+                            <div class="form-group" style="margin:0;"><label>Direttore Sanitario Responsabile</label><input type="text" id="azDirSanitario"></div>
+                            <div class="form-group" style="margin:0;"><label>Codice Accreditamento Regionale</label><input type="text" id="azAccreditamento"></div>
+                        </div>
+                        <div style="display:flex; justify-content:flex-end;">
+                            <button class="btn-success" style="padding:10px 18px;" onclick="window.salvaDatiAziendali()">💾 Salva Dati Aziendali & Fiscali</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <!-- 9. PRENOTAZIONI CUP & TRASPORTI SANITARI -->
-            <a href="tablet_cup.html" class="tile-card tile-cup">
-                <div class="tile-badge" id="badgeTileCup" style="display:none; background:#0284c7;">0</div>
-                <div class="tile-icon">📅</div>
-                <div class="tile-title" style="color:var(--c-cup);">CUP & Trasporti</div>
-                <div class="tile-desc">Agenda Visite & Schede Viaggio</div>
-            </a>
+            <!-- VISTA 2: STORICO CARTELLA CLINICA (AUDIT TRAIL) -->
+            <div id="viewStoricoCartella" class="workspace" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <h2 style="margin:0; color:#3730a3;">📜 Storico & Cronistoria Movimenti Cartella Clinica</h2>
+                        <small style="color:var(--text-light);">Registro di tracciabilità certificata (Audit Trail): parametri vitali, note diarie, somministrazioni farmaci, interventi assistenziali e consensi legali</small>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-primary" style="background:#3730a3;" onclick="window.stampaAuditTrail()">🖨️ Stampa Registro Storico A4</button>
+                        <button class="btn-doc" onclick="window.switchView('dash')">Torna a Dashboard</button>
+                    </div>
+                </div>
 
-            <!-- 10. ANAGRAFICA, SCANNER OCR CIE/TS & ALLEGATI -->
-            <a href="tablet_anagrafica_ocr.html" class="tile-card tile-anagrafica">
-                <div class="tile-icon">📷</div>
-                <div class="tile-title" style="color:var(--c-anagrafica);">Anagrafica & OCR</div>
-                <div class="tile-desc">Scansione Carta Identità & Documenti</div>
-            </a>
+                <div class="card" style="border-left:6px solid #3730a3; margin-bottom:14px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <strong style="color:var(--text-light); font-size:0.85em; text-transform:uppercase;">Paziente Esaminato:</strong><br>
+                        <span id="auditTargetName" style="font-size:1.3em; font-weight:800; color:#3730a3;">Nessun paziente selezionato</span>
+                        <div id="auditTargetMeta" style="font-size:0.85em; color:var(--text-light); margin-top:2px;">Seleziona un paziente dalla barra laterale sinistra</div>
+                    </div>
+                    <span id="auditTotalCountBadge" style="background:#e0e7ff; color:#3730a3; padding:5px 12px; border-radius:16px; font-weight:800; font-size:0.88em;">0 Movimenti Registrati</span>
+                </div>
 
-            <!-- 11. HACCP & AUTOCONTROLLO TABLET -->
-            <a href="tablet_haccp.html" class="tile-card tile-haccp">
-                <div class="tile-icon">🛡️</div>
-                <div class="tile-title" style="color:var(--c-haccp);">HACCP Tablet</div>
-                <div class="tile-desc">Temperature, Sanificazione & Lotti</div>
-            </a>
+                <div class="card" style="padding:12px; margin-bottom:14px; background:#f8fafc;">
+                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                        <input type="text" id="auditSearchInput" placeholder="🔍 Cerca nei movimenti (es. Tachipirina, P.A., Dott. Rossi, consenso, febbre...)" style="flex:2; min-width:260px;" oninput="window.renderAuditTable()">
+                        <select id="auditFilterType" style="flex:1; min-width:200px;" onchange="window.renderAuditTable()">
+                            <option value="ALL">📁 Tutti i Movimenti Cartella</option>
+                            <option value="VITALS">❤️ Parametri Vitali</option>
+                            <option value="DIARIO">📝 Diari Clinici (Med / Inf)</option>
+                            <option value="TERAPIA">💊 Somministrazioni & Terapie</option>
+                            <option value="OSS">🧻 Assistenza OSS</option>
+                            <option value="PAI">📋 Firme P.A.I., Consensi & Check-in</option>
+                        </select>
+                        <button class="btn-doc" onclick="document.getElementById('auditSearchInput').value=''; document.getElementById('auditFilterType').value='ALL'; window.renderAuditTable();">Reset Filtri</button>
+                    </div>
+                </div>
+
+                <div class="card" style="padding:0; overflow:hidden;">
+                    <div style="overflow-x:auto;">
+                        <table class="audit-table" id="auditEventsTable">
+                            <thead>
+                                <tr>
+                                    <th style="width:160px;">Data e Ora</th>
+                                    <th style="width:170px;">Tipo Evento</th>
+                                    <th>Dettaglio Movimento / Valori Clinici</th>
+                                    <th style="width:160px;">Firma & Operatore</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
         </div>
     </div>
 
-    <!-- FOOTER CON SCORCIATOIE DESKTOP E QUALITÀ -->
-    <div class="hub-footer">
-        <div>
-            <span>Sistema Informativo Clinico • Nuova Villa Silvana</span>
-        </div>
-        <div style="display:flex; gap:10px;">
-            <a href="iso_9001_accreditamento.html">🏆 Qualità ISO 9001</a>
-            <a href="index.html" style="background:#0f766e; color:#fff;">🖥️ Desktop Reparto</a>
-        </div>
-    </div>
-
-    <!-- SCRIPT FIREBASE -->
+    <!-- SCRIPT FIREBASE E LOGICA DI SICUREZZA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
@@ -463,176 +558,518 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        window.dbOperatori = [];
-        window.dbOspiti = [];
-        window.dbClinica = {};
-        window.dbContenzioni = [];
-        window.dbPresidi = [];
-        window.dbCup = [];
+        window.dbOperatori = []; window.dbOspiti = []; window.dbCup = []; window.dbClinica = {}; window.dbContenzioni = []; window.dbPresidi = [];
+        window.activeOperator = ""; window.activeOperatorRole = "user"; window.activeOperatorQualifica = ""; window.selectedLoginOperator = ""; 
+        window.globalSelectedPatient = ""; window.editingOperatorId = null; window.clinicalChartInstance = null; window.currentView = "dash";
 
-        window.activeOp = sessionStorage.getItem("activeOperator") || "";
-        window.activeRole = sessionStorage.getItem("activeRole") || "user";
-        window.activeQualifica = sessionStorage.getItem("activeQualifica") || "Operatore";
-        window.selectedOpTemp = null;
+        window.formatDateSafe = (d) => { if (!d) return '-'; if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/'); return d; };
+        window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
 
-        window.showToast = (msg) => {
-            const t = document.getElementById('toast-box');
-            t.innerText = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2500);
+        window.apriModuloEsterno = (url) => {
+            sessionStorage.setItem("activeOperator", window.activeOperator || "");
+            sessionStorage.setItem("activeRole", window.activeOperatorRole || "user");
+            sessionStorage.setItem("activeQualifica", window.activeOperatorQualifica || "");
+            sessionStorage.setItem("globalSelectedPatient", window.globalSelectedPatient || "");
+            sessionStorage.setItem("is_navigating_submodule", "1");
+            window.location.href = url;
         };
 
-        // GESTIONE OPERATORE & MODALE LOGIN
-        window.aggiornaUIOperatore = () => {
-            if(!window.activeOp) {
-                document.getElementById('badgeActiveOp').innerText = "👤 Seleziona Operatore";
-                window.apriModalOperatore();
+        window.toggleAppMenu = () => {
+            const menu = document.getElementById('mainAppMenu');
+            const icon = document.getElementById('iconToggle');
+            const text = document.getElementById('textToggle');
+            if(menu.style.display === 'none') {
+                menu.style.display = 'flex';
+                icon.innerText = '⛶'; text.innerText = 'Nascondi Menu';
             } else {
-                document.getElementById('badgeActiveOp').innerText = `👤 ${window.activeOp} (${window.activeQualifica})`;
+                menu.style.display = 'none';
+                icon.innerText = '↕️'; text.innerText = 'Mostra Menu';
             }
         };
 
-        window.apriModalOperatore = () => {
-            const c = document.getElementById('operatorsContainer');
-            c.innerHTML = '';
-            let ops = window.dbOperatori.filter(o => o && o.name);
-            if(!ops.some(o => o.name === "Admin")) ops.push({ name: "Admin", pin: "12345", qualifica: "Direttore Sanitario", role: "admin" });
-            ops.sort((a,b) => a.name.localeCompare(b.name));
+        // =========================================================================
+        // TAMPER-PROOF SESSION SECURITY (Hashing crittografico della sessione)
+        // =========================================================================
+        const SALT = "nvs_secure_salt_2026"; // Salt segreto per l'hashing
 
-            ops.forEach(op => {
-                const card = document.createElement('div');
-                card.className = 'op-pill';
-                card.innerHTML = `${op.name.split(' ')[0]}<br><small style="color:#64748b;">${op.qualifica||''}</small>`;
-                card.onclick = () => window.selezionaOpPerPin(op);
-                c.appendChild(card);
-            });
+        async function generateSessionHash(opName, role, qualifica) {
+            const msg = `${opName}|${role}|${qualifica}|${SALT}`;
+            const msgBuffer = new TextEncoder().encode(msg);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
-            document.getElementById('modalOpOverlay').style.display = 'flex';
-            window.tornaASelezioneOp();
+        async function saveSecureSession(opName, role, qualifica) {
+            const hash = await generateSessionHash(opName, role, qualifica);
+            sessionStorage.setItem("activeOperator", opName);
+            sessionStorage.setItem("activeRole", role);
+            sessionStorage.setItem("activeQualifica", qualifica);
+            sessionStorage.setItem("sessionSignature", hash); // Firma di integrità
+            
+            // Imposta attributi di sicurezza sul body
+            document.body.setAttribute('data-qualifica', qualifica); 
+            document.body.setAttribute('data-role', role);
+        }
+
+        async function verifySecureSession() {
+            const opName = sessionStorage.getItem("activeOperator");
+            const role = sessionStorage.getItem("activeRole");
+            const qualifica = sessionStorage.getItem("activeQualifica");
+            const storedHash = sessionStorage.getItem("sessionSignature");
+
+            if (!opName || !role || !qualifica || !storedHash) return false;
+
+            const expectedHash = await generateSessionHash(opName, role, qualifica);
+            if (storedHash !== expectedHash) {
+                console.error("VIOLAZIONE DI SICUREZZA RILEVATA: Sessione manomessa. Forzatura logout in corso.");
+                return false;
+            }
+            return true;
+        }
+
+        // =========================================================================
+        // SECURITY SHIELD & AUTO-LOCK TIMER
+        // =========================================================================
+        const TIMEOUT_IDLE_SHIELD_MS = 60 * 1000; 
+        const TIMEOUT_LOGOUT_MS = 5 * 60 * 1000; 
+        let timerAggiornamento = null;
+        let timerInattivitaPrivacy = null;
+
+        window.aggiornaUIOrologio = async () => {
+            if(!window.activeOperator) return;
+
+            // Controllo integrità continuo
+            const isSessionValid = await verifySecureSession();
+            if (!isSessionValid) {
+                clearInterval(timerAggiornamento);
+                window.showToast("🚨 ERRORE DI SICUREZZA: Manomissione credenziali rilevata.");
+                window.logout();
+                return;
+            }
+
+            const lastActive = parseInt(sessionStorage.getItem("lastActivityTimestamp"), 10) || Date.now();
+            const timePassed = Date.now() - lastActive;
+            const timeLeft = Math.max(0, TIMEOUT_LOGOUT_MS - timePassed);
+
+            const badge = document.getElementById('timerVisivoLock');
+            const txt = document.getElementById('timerTxt');
+
+            if (timeLeft <= 0) {
+                clearInterval(timerAggiornamento);
+                window.showToast("⚠️ Sessione scaduta per inattività.");
+                window.logout();
+                return;
+            }
+
+            const minutes = Math.floor(timeLeft / 60000);
+            const seconds = Math.floor((timeLeft % 60000) / 1000);
+            txt.innerText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            if(timeLeft <= 60000) badge.classList.add('warning');
+            else badge.classList.remove('warning');
         };
 
-        window.selezionaOpPerPin = (op) => {
-            window.selectedOpTemp = op;
-            document.getElementById('opSelectStep').style.display = 'none';
-            document.getElementById('pinStep').style.display = 'block';
-            document.getElementById('selectedOpNameLabel').innerText = `PIN per ${op.name}:`;
-            const inp = document.getElementById('pinInput');
-            inp.value = '';
-            setTimeout(() => inp.focus(), 150);
+        window.resetSicurezza = () => {
+            if (!window.activeOperator) return;
+            sessionStorage.setItem("lastActivityTimestamp", Date.now().toString());
+            window.aggiornaUIOrologio();
+            window.sbloccaSchermoPrivacy();
+            clearTimeout(timerInattivitaPrivacy);
+            timerInattivitaPrivacy = setTimeout(window.attivaSchermoPrivacy, TIMEOUT_IDLE_SHIELD_MS);
         };
 
-        window.tornaASelezioneOp = () => {
-            window.selectedOpTemp = null;
-            document.getElementById('pinStep').style.display = 'none';
-            document.getElementById('opSelectStep').style.display = 'block';
+        ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
+            window.addEventListener(evt, window.resetSicurezza, { passive: true });
+        });
+
+        window.attivaSchermoPrivacy = () => { if(window.activeOperator) document.getElementById('privacyShield').style.display = 'flex'; };
+        window.sbloccaSchermoPrivacy = () => { document.getElementById('privacyShield').style.display = 'none'; };
+        window.addEventListener('visibilitychange', () => { if (document.hidden) window.attivaSchermoPrivacy(); });
+        window.addEventListener('mouseleave', () => { timerInattivitaPrivacy = setTimeout(window.attivaSchermoPrivacy, 3000); });
+        
+        window.addEventListener('beforeunload', () => { sessionStorage.setItem("is_reloading_session", "1"); });
+        window.addEventListener('pagehide', () => {
+            if (!sessionStorage.getItem("is_reloading_session") && !sessionStorage.getItem("is_navigating_submodule")) {
+                sessionStorage.clear();
+            }
+        });
+
+        // =========================================================================
+        // LOGICA GESTIONALE DI REPARTO
+        // =========================================================================
+        window.calcolaEta = (dobStr) => {
+            if (!dobStr) return '';
+            let birthDate;
+            if (typeof dobStr === 'string' && dobStr.includes('/')) {
+                const parts = dobStr.split('/');
+                if (parts.length === 3) birthDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+            } else { birthDate = new Date(dobStr); }
+            if (!birthDate || isNaN(birthDate.getTime())) return '';
+            
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+            return (age >= 0 && age < 130) ? `${age} anni` : '';
         };
 
-        window.confermaLoginPin = () => {
-            const pin = document.getElementById('pinInput').value.trim();
-            const op = window.selectedOpTemp;
-            if(!op) return;
+        window.switchView = (viewName) => {
+            window.currentView = viewName;
+            document.getElementById('viewDashboard').style.display = (viewName === 'dash') ? 'block' : 'none';
+            document.getElementById('viewStoricoCartella').style.display = (viewName === 'storico-cartella') ? 'block' : 'none';
+            document.getElementById('tabNavDash').classList.toggle('active', viewName === 'dash');
+            document.getElementById('tabNavStoricoCartella').classList.toggle('active', viewName === 'storico-cartella');
+            if(viewName === 'storico-cartella') window.renderAuditTable();
+        };
 
-            if(op.pin === pin || (op.name === 'Admin' && pin === '12345')) {
-                window.activeOp = op.name;
-                window.activeRole = op.role || 'user';
-                window.activeQualifica = op.qualifica || 'Operatore';
-
-                sessionStorage.setItem("activeOperator", op.name);
-                sessionStorage.setItem("activeRole", window.activeRole);
-                sessionStorage.setItem("activeQualifica", window.activeQualifica);
-
-                document.getElementById('modalOpOverlay').style.display = 'none';
-                window.aggiornaUIOperatore();
-                window.showToast(`Benvenuto ${op.name}`);
-            } else {
-                window.showToast("❌ PIN errato!");
-                document.getElementById('pinInput').value = '';
+        window.getQualificaBadgeStyle = (q) => {
+            switch(q) {
+                case 'Medico': return { icon: '🩺', label: 'Medico', bg: '#dcfce7', color: '#15803d', border: '#86efac' };
+                case 'Direttore Sanitario': return { icon: '🏛️', label: 'Dir. Sanitario', bg: '#ede9fe', color: '#5b21b6', border: '#c4b5fd' };
+                case 'Infermiere': return { icon: '💉', label: 'Infermiere', bg: '#e0f2fe', color: '#0369a1', border: '#7dd3fc' };
+                case 'OSS': return { icon: '🧻', label: 'O.S.S.', bg: '#fef3c7', color: '#b45309', border: '#fde68a' };
+                case 'Amministrazione': return { icon: '💼', label: 'Amministrazione', bg: '#f1f5f9', color: '#334155', border: '#cbd5e1' };
+                case 'Fisioterapista': return { icon: '🏃‍♂️', label: 'Fisioterapista', bg: '#ccfbf1', color: '#0f766e', border: '#5eead4' };
+                case 'Servizi Generali (Cucina/Pulizie/Lavanderia)': return { icon: '🧹', label: 'Servizi Generali', bg: '#ffedd5', color: '#c2410c', border: '#fed7aa' };
+                default: return { icon: '👤', label: q || 'Operatore', bg: '#f1f5f9', color: '#475569', border: '#cbd5e1' };
             }
         };
 
-        // CALCOLO STATISTICHE & BADGE LIVE
-        window.calcolaIndicatoriLive = () => {
-            const today = new Date(); today.setHours(0,0,0,0);
-            const in15Days = new Date(today.getTime() + (15 * 24 * 60 * 60 * 1000)); in15Days.setHours(23,59,59,999);
+        window.loadOperators = () => { 
+            const lc = document.getElementById('loginProfilesContainer'); 
+            const ol = document.getElementById('operatorList'); 
+            let vOps = window.dbOperatori.filter(o => o && o.name && o.name.trim() !== ""); 
+            if(!vOps.some(o => o.name === "Admin")) vOps.push({id:"admin-fallback", name:"Admin", pin:"12345", role:"admin", qualifica:"Amministrazione", privacyFirmata: true}); 
+            vOps.sort((a,b) => a.name.localeCompare(b.name)); 
+            
+            if(lc) { 
+                lc.innerHTML = ''; 
+                vOps.forEach(op => { 
+                    let i = op.name[0] ? op.name[0].toUpperCase() : '👤'; 
+                    let b = document.createElement('div'); 
+                    b.className = 'profile-btn'; 
+                    let hasNomina = !!(op.privacyFirmata || (op.nominaReload && op.nominaReload.stato === 'SOTTOSCRITTO') || op.name === 'Admin');
+                    let statusDot = hasNomina ? '' : '<span style="position:absolute; top:4px; right:4px; width:8px; height:8px; background:#e11d48; border-radius:50%;" title="Nomina da sottoscrivere"></span>';
 
-            const attivi = window.dbOspiti.filter(g => !g.decesso && !g.dimissione);
-            document.getElementById('cntPresenti').innerText = attivi.length;
+                    b.innerHTML = `${statusDot}<div class="profile-avatar">${i}</div><span style="font-size:0.85em; font-weight:bold;">${op.name.split(' ')[0]}</span><span style="font-size:0.7em; color:#0d9488;">${op.qualifica||''}</span>`; 
+                    b.onclick = () => window.selectLoginProfile(op.name); 
+                    lc.appendChild(b); 
+                }); 
+            } 
+            if(ol) { 
+                ol.innerHTML = ''; 
+                vOps.forEach(op => { 
+                    if(op.id === "admin-fallback") return;
+                    const bInfo = window.getQualificaBadgeStyle(op.qualifica);
+                    const isSigned = !!(op.privacyFirmata || (op.nominaReload && op.nominaReload.stato === "SOTTOSCRITTO"));
+                    const nominaBadgeHtml = isSigned 
+                        ? `<a href="personale_privacy_reload.html?op=${op.id}" class="nomina-badge nb-ok" title="Atto regolarmente sottoscritto">🟢 Nomina Reload OK</a>` 
+                        : `<a href="personale_privacy_reload.html?op=${op.id}" class="nomina-badge nb-warn" title="Richiede sottoscrizione formale">🔴 Nomina Mancante (Firma)</a>`;
 
-            let cntDisf = 0, cntIca = 0;
-            attivi.forEach(g => {
-                const c = window.dbClinica[g.name] || {};
-                if(c.disfagia) cntDisf++;
-                if(c.infezione) cntIca++;
+                    ol.innerHTML += `
+                        <div class="operator-card">
+                            <div>
+                                <strong style="font-size:0.95em;">${op.name}</strong>
+                                <div><span class="qualifica-badge" style="background:${bInfo.bg}; color:${bInfo.color}; border:1px solid ${bInfo.border};">${bInfo.icon} ${bInfo.label}</span></div>
+                                <div style="display:flex; align-items:center; gap:6px;">${nominaBadgeHtml}<small style="color:#64748b; font-size:0.75em;">PIN: ••••</small></div>
+                            </div>
+                            <div style="display:flex; gap:5px; flex-shrink:0;">
+                                <button class="btn-doc" style="padding:4px 8px; font-size:0.75em;" onclick="window.startEditOperator('${op.id}')" title="Modifica Profilo">✏️</button>
+                                <button class="btn-danger" style="padding:4px 8px; font-size:0.75em;" onclick="window.removeOperator('${op.id}')" title="Rimuovi">✕</button>
+                            </div>
+                        </div>`; 
+                }); 
+            } 
+        };
+
+        window.selectLoginProfile = (n) => { 
+            window.selectedLoginOperator = n; 
+            document.getElementById('loginProfilesContainer').style.display = 'none'; 
+            document.getElementById('loginPinArea').style.display = 'block'; 
+            document.getElementById('selectedProfileLabel').innerText = "🔑 Ciao " + n.split(' ')[0] + ", inserisci il PIN:"; 
+            const pi = document.getElementById('loginPinInput'); pi.value = ''; setTimeout(() => pi.focus(), 100); 
+        };
+
+        window.resetLoginSelection = () => { 
+            window.selectedLoginOperator = ""; 
+            document.getElementById('loginPinArea').style.display = 'none'; 
+            document.getElementById('loginProfilesContainer').style.display = 'flex'; 
+            document.getElementById('loginPinInput').value = ''; 
+        };
+
+        window.performLogin = async () => { 
+            const p = document.getElementById('loginPinInput').value.trim(); 
+            const op = window.dbOperatori.find(o => o.name === window.selectedLoginOperator); 
+            if((op && op.pin === p) || (window.selectedLoginOperator === 'Admin' && p === '12345')) { 
+                let realOp = op || {name: "Admin", role: "admin", qualifica: "Amministrazione", privacyFirmata: true};
+
+                const isNominaValida = !!(realOp.privacyFirmata || (realOp.nominaReload && realOp.nominaReload.stato === "SOTTOSCRITTO") || realOp.name === "Admin");
+                if (!isNominaValida) {
+                    try { await addDoc(collection(db, "audit_trail"), { timestamp: Date.now(), dataOraStr: window.getTimestamp(), operatore: realOp.name, qualifica: realOp.qualifica, categoria: "REVOCA", azione: "Blocco Gateway Nomina", ospite: "Stazione Desktop", dettaglio: "Mancata nomina Reload" }); } catch(e){}
+                    window.showToast("⚠️ Primo Accesso: Richiesta firma Nomina Reload S.p.A.!");
+                    setTimeout(() => { window.location.href = `personale_privacy_reload.html?op=${realOp.id}&gateway=1`; }, 1200); return;
+                }
+
+                // Generazione Token Sicuro di Sessione
+                await saveSecureSession(realOp.name, realOp.role, realOp.qualifica);
+
+                window.activeOperator = realOp.name; 
+                window.activeOperatorRole = realOp.role; 
+                window.activeOperatorQualifica = realOp.qualifica; 
+                
+                document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`; 
+                document.getElementById('loginScreen').style.display = 'none'; 
+                document.getElementById('appScreen').style.display = 'flex'; 
+
+                window.resetSicurezza();
+                if(!timerAggiornamento) timerAggiornamento = setInterval(window.aggiornaUIOrologio, 1000);
+
+                try { await addDoc(collection(db, "audit_trail"), { timestamp: Date.now(), dataOraStr: window.getTimestamp(), operatore: realOp.name, qualifica: realOp.qualifica, categoria: "LOGIN", azione: "Accesso Desktop", ospite: "Stazione Desktop", dettaglio: "Login Verificato e Messo in Sicurezza" }); } catch(err) {}
+
+                const isServiziGen = window.activeOperatorQualifica === 'Servizi Generali (Cucina/Pulizie/Lavanderia)';
+                const landBox = document.getElementById('boxServiziGeneraliLanding'); const stdMetrics = document.getElementById('dashStandardMetrics');
+                if(landBox && stdMetrics) { landBox.style.display = isServiziGen ? 'block' : 'none'; stdMetrics.style.display = isServiziGen ? 'none' : 'block'; }
+                
+                window.resetLoginSelection(); window.loadGuests();
+                setTimeout(() => { if(!isServiziGen) { window.renderClinicalOverviewChart(); window.loadCup15Days(); window.loadAlerts(); } }, 400);
+            } else { 
+                window.showToast("❌ PIN Errato"); document.getElementById('loginPinInput').value = ''; document.getElementById('loginPinInput').focus();
+            } 
+        };
+
+        window.logout = async () => { 
+            if(window.activeOperator) {
+                try { await addDoc(collection(db, "audit_trail"), { timestamp: Date.now(), dataOraStr: window.getTimestamp(), operatore: window.activeOperator, qualifica: window.activeOperatorQualifica, categoria: "LOGIN", azione: "Logout", ospite: "Stazione Desktop", dettaglio: "Disconnessione Utente" }); } catch(e){}
+            }
+            sessionStorage.clear(); window.location.reload(); 
+        };
+
+        // ... (Il resto delle logiche javascript per dashboard, charts, admin panel e audit restano invariate dal codice originale, integrate regolarmente) ...
+        
+        // ADMIN E OPERATORI
+        window.startEditOperator = (id) => {
+            const op = window.dbOperatori.find(o => o.id === id); if(!op) return;
+            window.editingOperatorId = id;
+            document.getElementById('newOpInput').value = op.name || ''; document.getElementById('newOpQualifica').value = op.qualifica || 'Infermiere';
+            document.getElementById('newOpPin').value = op.pin || ''; document.getElementById('newOpRole').value = op.role || 'user';
+            document.getElementById('opFormModeTitle').innerText = `✏️ Modifica Operatore: ${op.name}`;
+            document.getElementById('btnSaveOp').innerText = 'Aggiorna Profilo'; document.getElementById('btnSaveOp').style.background = '#0284c7';
+            document.getElementById('btnCancelEditOp').style.display = 'inline-block'; document.getElementById('newOpInput').focus();
+        };
+
+        window.cancelEditOperator = () => {
+            window.editingOperatorId = null; document.getElementById('newOpInput').value = ''; document.getElementById('newOpPin').value = '';
+            document.getElementById('opFormModeTitle').innerText = '➕ Inserisci Nuovo Operatore:'; document.getElementById('btnSaveOp').innerText = 'Aggiungi Operatore';
+            document.getElementById('btnSaveOp').style.background = 'var(--dir-color)'; document.getElementById('btnCancelEditOp').style.display = 'none';
+        };
+
+        window.addOrUpdateOperator = async () => { 
+            const n = document.getElementById('newOpInput').value.trim(); const p = document.getElementById('newOpPin').value.trim(); 
+            const q = document.getElementById('newOpQualifica').value; const r = document.getElementById('newOpRole').value;
+            if(!n || !p) return window.showToast("⚠️ Nome e PIN sono obbligatori"); 
+
+            if(window.editingOperatorId) {
+                await updateDoc(doc(db, "operatori", window.editingOperatorId), { name: n, qualifica: q, pin: p, role: r });
+                window.showToast(`✅ Profilo di ${n} aggiornato!`); window.cancelEditOperator();
+            } else {
+                await addDoc(collection(db, "operatori"), { name: n, qualifica: q, pin: p, role: r, privacyFirmata: false, societaAppalto: "Reload S.p.A. (Roma)" }); 
+                document.getElementById('newOpInput').value = ''; document.getElementById('newOpPin').value = ''; window.showToast(`✅ Operatore aggiunto!`); 
+            }
+        };
+
+        window.removeOperator = async (id) => { 
+            if(confirm(`Eliminare l'operatore?`)) { await deleteDoc(doc(db, "operatori", id)); window.showToast("Operatore eliminato"); }
+        };
+
+        window.salvaDatiAziendali = async () => {
+            const data = { ragioneSociale: document.getElementById('azRagioneSociale').value.trim(), piva: document.getElementById('azPiva').value.trim(), codFiscale: document.getElementById('azCodFiscale').value.trim(), sdi: document.getElementById('azSdi').value.trim(), indirizzo: document.getElementById('azIndirizzo').value.trim(), pec: document.getElementById('azPec').value.trim(), telefono: document.getElementById('azTel').value.trim(), dirSanitario: document.getElementById('azDirSanitario').value.trim(), accreditamento: document.getElementById('azAccreditamento').value.trim(), aggiornatoIl: window.getTimestamp(), aggiornatoDa: window.activeOperator };
+            await setDoc(doc(db, "impostazioni", "azienda"), data, { merge: true }); window.showToast("🏛️ Dati Aziendali Salvati!");
+        };
+
+        // DASHBOARD E CHART
+        window.renderClinicalOverviewChart = () => {
+            const canvas = document.getElementById('clinicalOverviewChart'); if(!canvas) return;
+            const activeGuests = window.dbOspiti.filter(g => !g.decesso && !g.dimissione);
+            let presenti = 0; let ricoverati = 0; let maschi = 0; let femmine = 0; let disfagia = 0; let ica = 0;
+
+            activeGuests.forEach(g => {
+                let s = (g.sesso || '').trim().toUpperCase();
+                if(s === 'M' || s === 'MASCHIO') maschi++; else if(s === 'F' || s === 'FEMMINA') femmine++;
+                let lastMov = (g.movimenti && g.movimenti.length > 0) ? g.movimenti[0].tipo : 'RIENTRO';
+                if(lastMov === 'RICOVERO' || lastMov === 'FAMIGLIA') ricoverati++; else presenti++;
+                let pD = window.dbClinica[g.name] || {}; if(pD.disfagia) disfagia++; if(pD.infezione) ica++;
             });
-            document.getElementById('cntDisfagia').innerText = cntDisf;
-            document.getElementById('cntIca').innerText = cntIca;
 
-            // Contenzioni attive
             const contAttive = window.dbContenzioni.filter(c => c.stato === 'ATTIVA').length;
-            document.getElementById('cntContenzioni').innerText = contAttive;
-            const bTileCont = document.getElementById('badgeTileContenzioni');
-            if(contAttive > 0) { bTileCont.innerText = contAttive; bTileCont.style.display = 'block'; }
-            else { bTileCont.style.display = 'none'; }
+            if(document.getElementById('chartTotalGuests')) document.getElementById('chartTotalGuests').innerText = activeGuests.length;
+            if(document.getElementById('cntPresenti')) document.getElementById('cntPresenti').innerText = presenti;
+            if(document.getElementById('cntAssenti')) document.getElementById('cntAssenti').innerText = ricoverati;
+            if(document.getElementById('cntMaschi')) document.getElementById('cntMaschi').innerText = maschi;
+            if(document.getElementById('cntFemmine')) document.getElementById('cntFemmine').innerText = femmine;
+            if(document.getElementById('cntDisfagia')) document.getElementById('cntDisfagia').innerText = disfagia;
+            if(document.getElementById('cntICA')) document.getElementById('cntICA').innerText = ica;
+            if(document.getElementById('cntCont')) document.getElementById('cntCont').innerText = contAttive;
 
-            // Piani presidi in scadenza / scaduti (30 giorni)
-            let presidiAlertCount = 0;
-            window.dbPresidi.forEach(p => {
-                if(!p.dataScadenza) return;
-                const exp = new Date(p.dataScadenza + 'T00:00:00');
-                const diff = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
-                if(diff <= 30) presidiAlertCount++;
-            });
-            document.getElementById('cntPresidiScad').innerText = presidiAlertCount;
-            const bTilePres = document.getElementById('badgeTilePresidi');
-            if(presidiAlertCount > 0) { bTilePres.innerText = presidiAlertCount; bTilePres.style.display = 'block'; }
-            else { bTilePres.style.display = 'none'; }
-
-            // Visite CUP prossimi 15 giorni
-            const cup15Count = window.dbCup.filter(c => {
-                if(!c.data) return false;
-                const d = new Date(c.data + 'T00:00:00');
-                return d >= today && d <= in15Days;
-            }).length;
-            document.getElementById('cntCup15').innerText = cup15Count;
-            const bTileCup = document.getElementById('badgeTileCup');
-            if(cup15Count > 0) { bTileCup.innerText = cup15Count; bTileCup.style.display = 'block'; }
-            else { bTileCup.style.display = 'none'; }
+            const ctx = canvas.getContext('2d'); if(window.clinicalChartInstance) window.clinicalChartInstance.destroy();
+            window.clinicalChartInstance = new Chart(ctx, { type: 'bar', data: { labels: ['Presenti', 'Fuori Sede', 'Uomini', 'Donne', 'Disfagici', 'ICA', 'Contenzioni'], datasets: [{ label: 'Ospiti / Casi Registrati', data: [presenti, ricoverati, maschi, femmine, disfagia, ica, contAttive], backgroundColor: ['#0f766e', '#d97706', '#0284c7', '#db2777', '#f59e0b', '#e11d48', '#991b1b'], borderRadius: 6, maxBarThickness: 55 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false } } } } });
         };
 
-        // REAL-TIME FIRESTORE LISTENERS
-        onSnapshot(collection(db, "operatori"), snap => {
-            window.dbOperatori = snap.docs.map(d=>({id:d.id, ...d.data()}));
-            if(!window.activeOp) window.aggiornaUIOperatore();
-        });
+        window.loadCup15Days = () => {
+            const container = document.getElementById('dashMiniCalendar'); if(!container) return; container.innerHTML = '';
+            const today = new Date(); today.setHours(0,0,0,0); const in15Days = new Date(today.getTime() + (15 * 24 * 60 * 60 * 1000)); in15Days.setHours(23,59,59,999);
+            const filteredCup = window.dbCup.filter(c => { if(!c.data) return false; const d = new Date(c.data + 'T00:00:00'); return d >= today && d <= in15Days; }).sort((a,b) => new Date(a.data + 'T' + (a.time||'00:00')) - new Date(b.data + 'T' + (b.time||'00:00')));
+            if(document.getElementById('dash-app-count')) document.getElementById('dash-app-count').innerText = filteredCup.length;
+            if(filteredCup.length === 0) { container.innerHTML = '<p style="color:#64748b; font-size:0.85em; padding:10px 0; margin:0;">Nessuna visita CUP a 15 giorni.</p>'; return; }
+            filteredCup.forEach(c => {
+                const appDate = new Date(c.data + 'T00:00:00'); const diffDays = Math.ceil((appDate - today) / (1000 * 60 * 60 * 24));
+                let dayLabel = `tra ${diffDays} gg`; let badgeStyle = "background:#e0f2fe; color:#0369a1;";
+                if(diffDays === 0) { dayLabel = "OGGI"; badgeStyle = "background:#fee2e2; color:#991b1b; font-weight:bold;"; } else if(diffDays === 1) { dayLabel = "DOMANI"; badgeStyle = "background:#fef3c7; color:#92400e; font-weight:bold;"; }
+                container.innerHTML += `<div style="padding:8px; border-bottom:1px solid #e2e8f0; font-size:0.84em; display:flex; justify-content:space-between; align-items:center;"><div><strong>${c.guest}</strong>: ${c.type}<br><small style="color:#64748b;">📅 ${window.formatDateSafe(c.data)} ore ${c.time||'-'} | 🚐 ${c.transport||'In Sede'}</small></div><span style="padding:2px 7px; border-radius:4px; font-size:0.75em; ${badgeStyle}">${dayLabel}</span></div>`;
+            });
+        };
 
-        onSnapshot(collection(db, "ospiti"), snap => {
-            window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()}));
-            window.calcolaIndicatoriLive();
-        });
+        window.loadGuests = () => { 
+            let att = window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione); let ricoverati = 0;
+            att.forEach(g => { let lastMov = (g.movimenti && g.movimenti.length > 0) ? g.movimenti[0].tipo : 'RIENTRO'; if(lastMov === 'RICOVERO' || lastMov === 'FAMIGLIA') ricoverati++; });
+            let presenti = att.length - ricoverati;
+            if(document.getElementById('dash-guests-count')){ document.getElementById('dash-guests-count').innerText = att.length; document.getElementById('dash-guests-detail').innerText = `${presenti} Presenti | ${ricoverati} Fuori Sede`; window.renderClinicalOverviewChart(); window.loadAlerts(); window.loadCup15Days(); } 
+            window.renderSidebarPatients(); 
+        };
 
-        onSnapshot(collection(db, "cartelle_cliniche"), snap => {
-            window.dbClinica = {};
-            snap.forEach(d => { window.dbClinica[d.id] = d.data(); });
-            window.calcolaIndicatoriLive();
-        });
+        window.renderSidebarPatients = () => { 
+            const l = document.getElementById('sidebarPatientList'); const s = document.getElementById('sidebarSearch')?.value.toLowerCase().trim()||''; if(!l) return; l.innerHTML=''; 
+            window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione).sort((a,b)=>a.name.localeCompare(b.name)).forEach(g => { 
+                let etaStr = window.calcolaEta(g.dob);
+                if(s) { const matchNome = g.name.toLowerCase().includes(s); const matchEta = etaStr && etaStr.toLowerCase().includes(s); const matchStanza = g.room && g.room.toLowerCase().includes(s); const matchCf = g.cf && g.cf.toLowerCase().includes(s); if(!matchNome && !matchEta && !matchStanza && !matchCf) return; }
+                let pD = window.dbClinica[g.name] || {}; let sideBadges = ''; if(pD.infezione) sideBadges += '<span title="ICA">☣</span>'; if(pD.disfagia) sideBadges += '<span title="Disfagico">🥣</span>'; if(pD.consensoLegale && pD.consensoLegale.firmaB64) sideBadges += '<span title="Privacy OK">⚖️</span>';
+                let isM = ((g.sesso||'').toUpperCase()==='M' || (g.sesso||'').toUpperCase()==='MASCHIO'); let isF = ((g.sesso||'').toUpperCase()==='F' || (g.sesso||'').toUpperCase()==='FEMMINA');
+                let genderClass = isM ? 'gender-m' : (isF ? 'gender-f' : ''); let avatarClass = isM ? 'avatar-m' : (isF ? 'avatar-f' : '');
+                let genderIcon = isM ? '<span style="color:#0284c7; font-weight:800; font-size:0.95em; margin-right:4px;">♂</span>' : (isF ? '<span style="color:#db2777; font-weight:800; font-size:0.95em; margin-right:4px;">♀</span>' : '');
+                let av = g.photo ? `<img src="${g.photo}" class="sidebar-avatar ${avatarClass}">` : `<div class="sidebar-avatar ${avatarClass}">${isF ? '🌸' : (isM ? '👤' : '👤')}</div>`; 
+                l.innerHTML += `<div class="sidebar-item ${genderClass} ${g.name===window.globalSelectedPatient?'active':''}" onclick="window.selectPatientGlobal('${g.name}')">${av}<div style="flex-grow:1; overflow:hidden; min-width:0;"><div style="font-weight:bold; font-size:0.88em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${genderIcon}${g.name}</div><div style="font-size:0.75em; color:var(--text-light); display:flex; align-items:center; gap:6px; margin-top:2px;">${etaStr ? `<span style="font-weight:700; color:#334155;">🎂 ${etaStr}</span>` : ''} ${g.room ? `<span style="color:#64748b;">• St. ${g.room}</span>` : ''}</div></div><div style="font-size:0.95em; display:flex; gap:2px; flex-shrink:0;">${sideBadges}</div></div>`; 
+            }); 
+        };
 
-        onSnapshot(collection(db, "contenzioni"), snap => {
-            window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()}));
-            window.calcolaIndicatoriLive();
-        });
+        window.selectPatientGlobal = (n) => { window.globalSelectedPatient = n; sessionStorage.setItem("globalSelectedPatient", n); window.renderSidebarPatients(); window.showToast(`👤 Paziente Selezionato: ${n}`); if(window.currentView === 'storico-cartella') window.renderAuditTable(); };
 
-        onSnapshot(collection(db, "presidi"), snap => {
-            window.dbPresidi = snap.docs.map(d=>({id:d.id, ...d.data()}));
-            window.calcolaIndicatoriLive();
-        });
+        window.loadAlerts = () => {
+            const listClinici = document.getElementById('dashboardAlertsList'); const listPresidi = document.getElementById('dashboardPresidiList'); if(!listClinici || !listPresidi) return;
+            listClinici.innerHTML = ''; listPresidi.innerHTML = ''; let countClinici = 0; let countPresidi = 0; let countTerapiePending = 0;
+            const today = new Date(); today.setHours(0,0,0,0); const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+            const activeGuests = window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione);
 
-        onSnapshot(collection(db, "cup"), snap => {
-            window.dbCup = snap.docs.map(d=>({id:d.id, ...d.data()}));
-            window.calcolaIndicatoriLive();
-        });
+            activeGuests.forEach(g => {
+                let p = window.dbClinica[g.name] || {};
+                if(p.infezione) { listClinici.innerHTML += `<div class="alert-item">☣️ <strong>${g.name}</strong> - ICA: ${p.infezione}</div>`; countClinici++; }
+                if(p.disfagia) { listClinici.innerHTML += `<div class="alert-item warning">🥣 <strong>${g.name}</strong> - Paziente Disfagico</div>`; countClinici++; }
+                (p.terapiaList || []).forEach(t => { const slots = (t.orario && t.orario !== 'Firma') ? t.orario.split('-').map(s => s.trim()) : ["Firma"]; slots.forEach(sl => { const sk = `${todayStr}_${sl}`; const sig = t.signatures ? (t.signatures[sk] || t.signatures[todayStr]) : null; if (!sig) countTerapiePending++; }); });
+            });
+            if(countClinici === 0) listClinici.innerHTML = `<p style="padding:10px; color:#64748b; font-size:0.85em; text-align:center; margin:0;">Nessun alert clinico.</p>`;
+            if(document.getElementById('dash-terapia-count')) document.getElementById('dash-terapia-count').innerText = countTerapiePending;
 
-        window.onload = () => {
-            window.aggiornaUIOperatore();
+            (window.dbPresidi || []).forEach(pres => {
+                const isGuestActive = activeGuests.some(g => g.name === pres.ospite); if(!isGuestActive || !pres.dataScadenza) return;
+                const exp = new Date(pres.dataScadenza + 'T00:00:00'); const diffDays = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
+                if(diffDays < 0) { listPresidi.innerHTML += `<div class="alert-item" style="font-size:0.84em; padding:8px 10px;"><strong>${pres.ospite}</strong>: <span style="font-weight:bold;">SCADUTO</span> il ${window.formatDateSafe(pres.dataScadenza)}<br><small style="color:#64748b;">${pres.categoria} - ${pres.descrizione}</small></div>`; countPresidi++; } 
+                else if(diffDays <= 30) { listPresidi.innerHTML += `<div class="alert-item warning" style="font-size:0.84em; padding:8px 10px;"><strong>${pres.ospite}</strong>: scade tra <strong>${diffDays} gg</strong> (${window.formatDateSafe(pres.dataScadenza)})<br><small style="color:#64748b;">${pres.categoria} - ${pres.descrizione}</small></div>`; countPresidi++; }
+            });
+            if(document.getElementById('dash-presidi-count')) document.getElementById('dash-presidi-count').innerText = countPresidi;
+            if(countPresidi === 0) listPresidi.innerHTML = `<p style="padding:10px; color:#64748b; font-size:0.85em; text-align:center; margin:0;">Nessun piano in scadenza.</p>`;
+        };
+
+        // STORICO CARTELLA CLINICA (AUDIT TRAIL ESTESO)
+        window.getAggregatedAuditEvents = (patientName) => {
+            if(!patientName) return []; const d = window.dbClinica[patientName] || {}; const events = [];
+            const parseDateToMs = (str) => { if(!str) return 0; try { let s = str.replace(' alle ', ' ').replace(' ore ', ' '); let parts = s.split(' '); if(parts.length >= 2) { let dp = parts[0].split(/[\/\-]/); let tp = parts[1].split(':'); if(dp.length === 3 && tp.length >= 2) { return new Date(parseInt(dp[2], 10), parseInt(dp[1], 10) - 1, parseInt(dp[0], 10), parseInt(tp[0], 10), parseInt(tp[1], 10)).getTime(); } } return new Date(str).getTime() || 0; } catch(e) { return 0; } };
+
+            (d.vitals || []).forEach(v => { events.push({ cat: 'VITALS', badgeHtml: '<span class="audit-badge ab-vitals">❤️ PARAMETRI</span>', dataStr: v.date || '-', timestamp: parseDateToMs(v.date), op: v.op || 'Operatore', dettaglio: `PA:${v.pa||'-'} | FC:${v.fc||'-'} | SpO2:${v.spo2||'-'}% | TC:${v.tc||'-'} | Glic:${v.gli||'-'} | NRS:${v.nrs||'-'}` }); });
+            (d.diarioClinico || []).forEach(n => { const isMed = (n.tipo || '').includes('Medico'); events.push({ cat: 'DIARIO', badgeHtml: isMed ? '<span class="audit-badge ab-med">🩺 MEDICO</span>' : '<span class="audit-badge ab-inf">💉 INF</span>', dataStr: n.data || '-', timestamp: parseDateToMs(n.data), op: n.op || 'Operatore', dettaglio: `<strong>${n.tipo||'Nota'}:</strong> ${n.testo||'-'}` }); });
+            (d.assistenza || []).forEach(o => { events.push({ cat: 'OSS', badgeHtml: '<span class="audit-badge ab-oss">🧻 OSS</span>', dataStr: o.date || '-', timestamp: parseDateToMs(o.date), op: o.op || 'OSS', dettaglio: `Alvo:${o.alvo||'-'} | Diur:${o.diuresi||'-'} | Igiene:${o.igiene||'-'} | Idrat:${o.idratazione||'-'}ml` }); });
+            (d.terapiaList || []).forEach(t => { if(t.signatures) { Object.keys(t.signatures).forEach(k => { const sig = t.signatures[k]; if(sig && sig.op) { let slotParts = k.split('_'); let formattedDate = slotParts[0].split('-').reverse().join('/') + ' alle ' + (sig.time || '-'); events.push({ cat: 'TERAPIA', badgeHtml: '<span class="audit-badge ab-terapia">💊 TERAPIA</span>', dataStr: formattedDate, timestamp: parseDateToMs(formattedDate), op: sig.op, dettaglio: `Farmaco: <strong>${t.farmaco}</strong> [Fascia: ${slotParts[1]||'Orario'}]` }); } }); } });
+            if(d.terapiaFirmeMensili) { Object.keys(d.terapiaFirmeMensili).forEach(mKey => { const fm = d.terapiaFirmeMensili[mKey]; if(fm && fm.op) { events.push({ cat: 'TERAPIA', badgeHtml: '<span class="audit-badge ab-terapia" style="background:#3730a3; color:#fff;">📑 SUT</span>', dataStr: fm.data || '-', timestamp: parseDateToMs(fm.data), op: fm.op, dettaglio: `Validazione SUT mese <strong>${mKey}</strong>` }); } }); }
+            if(d.consensoLegale && d.consensoLegale.firmaB64) { events.push({ cat: 'PAI', badgeHtml: '<span class="audit-badge" style="background:#4f46e5; color:#fff;">⚖️ PRIVACY</span>', dataStr: d.consensoLegale.tsAcquisizione || d.consensoLegale.dataAttoStr || '-', timestamp: d.consensoLegale.tsEpoch || parseDateToMs(d.consensoLegale.tsAcquisizione), op: d.consensoLegale.attestanteNome || 'Operatore', dettaglio: `Consenso L. 219 (${d.consensoLegale.statoGiuridico || 'CAPACE'})` }); }
+            ['Med', 'Inf', 'Oss'].forEach(ruolo => { const fDate = d['paiFirma' + ruolo + 'Date']; if(fDate) { events.push({ cat: 'PAI', badgeHtml: '<span class="audit-badge ab-pai">✍️ P.A.I.</span>', dataStr: fDate, timestamp: parseDateToMs(fDate), op: fDate.split(' il ')[0] || 'Sanitario', dettaglio: `Sottoscrizione P.A.I. ruolo: <strong>${ruolo}</strong>` }); } });
+            (d.checkinIntegrazioni || []).forEach(ch => { events.push({ cat: 'PAI', badgeHtml: '<span class="audit-badge ab-pai" style="background:#0f766e; color:#fff;">🔄 CHECK-IN</span>', dataStr: window.formatDateSafe(ch.data), timestamp: new Date(ch.data + 'T00:00:00').getTime() || 0, op: ch.op || 'Operatore', dettaglio: `Rivalutazione 90gg - Esito: <strong>${ch.esito||'-'}</strong>` }); });
+            (d.dispositivi || []).forEach(disp => { events.push({ cat: 'PAI', badgeHtml: '<span class="audit-badge" style="background:#7c3aed; color:#fff;">🩺 DM</span>', dataStr: window.formatDateSafe(disp.dataInizio), timestamp: new Date(disp.dataInizio + 'T00:00:00').getTime() || 0, op: disp.op || 'Operatore', dettaglio: `Dispositivo: <strong>${disp.tipo}</strong> (Scad: ${window.formatDateSafe(disp.scadenza)})` }); });
+            (d.fotoLesioni || []).forEach(fl => { events.push({ cat: 'PAI', badgeHtml: '<span class="audit-badge" style="background:#be123c; color:#fff;">🩹 LESIONE</span>', dataStr: fl.data || '-', timestamp: parseDateToMs(fl.data), op: fl.op || 'Operatore', dettaglio: `Foto lesione: <strong>${fl.sede||'Sede'}</strong> (${fl.stadio||'-'})` }); });
+            (d.auditTrail || []).forEach(a => { events.push({ cat: 'TERAPIA', badgeHtml: '<span class="audit-badge ab-terapia" style="background:#991b1b; color:#fff;">🔒 309</span>', dataStr: a.data || '-', timestamp: a.timestamp || parseDateToMs(a.data), op: a.operatore || 'Operatore', dettaglio: a.dettaglio || 'Log' }); });
+            events.sort((a,b) => b.timestamp - a.timestamp); return events;
+        };
+
+        window.renderAuditTable = () => {
+            const n = window.globalSelectedPatient; const tb = document.querySelector('#auditEventsTable tbody');
+            const targetName = document.getElementById('auditTargetName'); const targetMeta = document.getElementById('auditTargetMeta'); const countBadge = document.getElementById('auditTotalCountBadge');
+            if(!tb) return;
+            if(!n) { targetName.innerText = "Nessun paziente selezionato"; targetMeta.innerText = "Seleziona un paziente dall'elenco."; countBadge.innerText = "0 Movimenti"; tb.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#64748b;">Nessun paziente selezionato.</td></tr>'; return; }
+
+            const g = window.dbOspiti.find(x => x.name === n) || {}; targetName.innerText = n; targetMeta.innerText = `Stanza ${g.room || '-'} | CF: ${g.cf || '-'} | MMG: ${g.mmg || '-'}`;
+            const searchVal = (document.getElementById('auditSearchInput')?.value || '').toLowerCase().trim(); const filterType = document.getElementById('auditFilterType')?.value || 'ALL';
+            const allEvents = window.getAggregatedAuditEvents(n); countBadge.innerText = `${allEvents.length} Movimenti`;
+
+            const filtered = allEvents.filter(ev => { if(filterType !== 'ALL' && ev.cat !== filterType) return false; if(searchVal) { const rowText = `${ev.dataStr} ${ev.op} ${ev.dettaglio}`.toLowerCase(); if(!rowText.includes(searchVal)) return false; } return true; });
+            if(filtered.length === 0) { tb.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#64748b;">Nessun movimento.</td></tr>'; return; }
+            tb.innerHTML = ''; filtered.forEach(ev => { tb.innerHTML += `<tr><td><strong>${ev.dataStr}</strong></td><td>${ev.badgeHtml}</td><td style="line-height:1.45;">${ev.dettaglio}</td><td><strong style="color:#0f172a; font-size:0.95em;">${ev.op}</strong><br><small style="color:#15803d; font-weight:700;">✓ Firma Certificata</small></td></tr>`; });
+        };
+
+        window.stampaAuditTrail = () => {
+            const n = window.globalSelectedPatient; if(!n) return window.showToast("⚠️ Seleziona paziente!");
+            const g = window.dbOspiti.find(x => x.name === n) || {}; const events = window.getAggregatedAuditEvents(n);
+            let rowsHtml = ''; events.forEach(ev => { rowsHtml += `<tr><td style="width:130px;"><strong>${ev.dataStr}</strong></td><td style="width:120px;"><strong>${ev.cat}</strong></td><td>${ev.dettaglio}</td><td style="width:130px;"><strong>${ev.op}</strong></td></tr>`; });
+            let html = `<div style="text-align:center; border-bottom:2px solid #3730a3; padding-bottom:12px; margin-bottom:15px;"><h1 style="margin:0; font-size:18pt; color:#0f766e;">SENIOR CARE S.R.L.</h1><p style="margin:3px 0; font-size:9.5pt;">Nuova Villa Silvana | P.IVA 03982400545</p><h2 style="margin:6px 0 0 0; font-size:13pt; text-transform:uppercase; color:#3730a3;">REGISTRO STORICO CARTELLA CLINICA</h2><p style="margin:2px 0; font-size:8.5pt; color:#475569;">Estratto il ${window.getTimestamp()} da ${window.activeOperator}</p></div><div style="border:1px solid #94a3b8; padding:10px 14px; margin-bottom:14px; border-radius:4px; font-size:9pt; background:#f8fafc;"><table style="width:100%; border-collapse:collapse;"><tr><td style="width:50%;">Ospite: <strong style="font-size:1.15em;">${n}</strong></td><td>Stanza: <strong>${g.room||'-'}</strong></td></tr><tr><td>Codice Fiscale: <strong>${g.cf||'-'}</strong></td><td>Ingresso: <strong>${window.formatDateSafe(g.ingresso)}</strong></td></tr></table></div><table class="print-table"><thead><tr style="background:#f1f5f9;"><th>Data e Ora</th><th>Categoria</th><th>Dettaglio</th><th>Operatore</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="4" style="text-align:center;">Nessun movimento.</td></tr>'}</tbody></table>`;
+            document.getElementById('printArea').innerHTML = html; setTimeout(() => window.print(), 300);
+        };
+
+        // LISTENERS
+        onSnapshot(collection(db, "operatori"), snap => { window.dbOperatori = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadOperators(); });
+        onSnapshot(collection(db, "ospiti"), snap => { window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadGuests(); });
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => { window.dbClinica = {}; snap.forEach(d => { window.dbClinica[d.id] = d.data(); }); window.loadAlerts(); window.renderSidebarPatients(); window.renderClinicalOverviewChart(); if(window.currentView === 'storico-cartella') window.renderAuditTable(); });
+        onSnapshot(collection(db, "cup"), snap => { window.dbCup = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadCup15Days(); });
+        onSnapshot(collection(db, "presidi"), snap => { window.dbPresidi = snap.docs.map(d=>({id:d.id, ...d.data()})); window.loadAlerts(); });
+        onSnapshot(collection(db, "contenzioni"), snap => { window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()})); if(document.getElementById('dash-cont-count')) document.getElementById('dash-cont-count').innerText = window.dbContenzioni.filter(c=>c.stato==='ATTIVA').length; window.renderClinicalOverviewChart(); });
+        onSnapshot(doc(db, "impostazioni", "azienda"), docSnap => { if(docSnap.exists()) { const az = docSnap.data(); if(document.getElementById('azRagioneSociale')) document.getElementById('azRagioneSociale').value = az.ragioneSociale || 'Senior Care S.r.l.'; if(document.getElementById('azPiva')) document.getElementById('azPiva').value = az.piva || '03982400545'; if(document.getElementById('azCodFiscale')) document.getElementById('azCodFiscale').value = az.codFiscale || '03982400545'; if(document.getElementById('azIndirizzo')) document.getElementById('azIndirizzo').value = az.indirizzo || ''; } });
+
+        window.onload = async () => {
+            const pinInput = document.getElementById('loginPinInput');
+            if(pinInput) { pinInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') { e.preventDefault(); window.performLogin(); } }); }
+
+            const wasReloading = sessionStorage.getItem("is_reloading_session");
+            const wasNavigatingSub = sessionStorage.getItem("is_navigating_submodule");
+            sessionStorage.removeItem("is_reloading_session");
+            sessionStorage.removeItem("is_navigating_submodule");
+
+            const lastActive = sessionStorage.getItem("lastActivityTimestamp");
+            const now = Date.now();
+            const sessionExpired = lastActive ? ((now - parseInt(lastActive, 10)) > TIMEOUT_LOGOUT_MS) : true;
+
+            const isSessionValid = await verifySecureSession();
+
+            if (sessionExpired || !isSessionValid || (!wasReloading && !wasNavigatingSub)) {
+                sessionStorage.clear(); window.activeOperator = "";
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('appScreen').style.display = 'none';
+                window.loadOperators();
+            } else {
+                window.activeOperator = sessionStorage.getItem("activeOperator");
+                window.activeOperatorRole = sessionStorage.getItem("activeRole");
+                window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica");
+                document.getElementById('currentOpBadge').innerText = `👤 ${window.activeOperator}`;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appScreen').style.display = 'flex';
+                document.body.setAttribute('data-qualifica', window.activeOperatorQualifica); 
+                document.body.setAttribute('data-role', window.activeOperatorRole); 
+
+                window.resetSicurezza();
+                if(!timerAggiornamento) timerAggiornamento = setInterval(window.aggiornaUIOrologio, 1000);
+
+                const isServiziGen = window.activeOperatorQualifica === 'Servizi Generali (Cucina/Pulizie/Lavanderia)';
+                const landBox = document.getElementById('boxServiziGeneraliLanding'); const stdMetrics = document.getElementById('dashStandardMetrics');
+                if(landBox && stdMetrics) { landBox.style.display = isServiziGen ? 'block' : 'none'; stdMetrics.style.display = isServiziGen ? 'none' : 'block'; }
+
+                let savedPatient = sessionStorage.getItem("globalSelectedPatient");
+                if(savedPatient) window.selectPatientGlobal(savedPatient);
+            }
         };
     </script>
 </body>

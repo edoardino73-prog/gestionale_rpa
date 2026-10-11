@@ -88,15 +88,31 @@
         .data-table th { background-color: var(--cup-dark); color: white; font-weight: normal; text-transform: uppercase; font-size: 0.82em; }
         .data-table tr:nth-child(even) { background-color: #f8fafc; }
 
+        /* PRIVACY SHIELD OVERLAY */
+        #privacyShield {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 100000;
+            display: none;
+            align-items: center; justify-content: center; flex-direction: column;
+            color: white; text-align: center;
+        }
+        .shield-icon { font-size: 4em; margin-bottom: 15px; }
+        .shield-text { font-size: 1.5em; font-weight: bold; letter-spacing: 1px; }
+        .shield-sub { font-size: 0.9em; color: #cbd5e1; margin-top: 8px; }
+
         #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
         .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
         .toast.show { opacity: 1; }
 
         #printArea { display: none; }
+        /* CORREZIONE BUG DI STAMPA PDF */
         @media print {
             body * { visibility: hidden; } 
             #printArea, #printArea * { visibility: visible; }
-            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 25px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+            #printArea { display: block !important; position: relative; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 25px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
             .print-header { text-align: center; border-bottom: 2px solid #10b981; padding-bottom: 15px; margin-bottom: 20px; }
             .print-header h1 { margin: 0; color: #047857; font-size: 18pt; text-transform: uppercase; }
             .print-header h2 { margin: 5px 0 0 0; font-size: 12pt; color: #334155; }
@@ -113,6 +129,13 @@
     <div id="toast-container"></div>
     <div id="printArea"></div>
 
+    <!-- PRIVACY SHIELD (OSCURAMENTO ANTI-CURIOSI) -->
+    <div id="privacyShield" onclick="window.sbloccaSchermoPrivacy()">
+        <div class="shield-icon">👁️‍🗨️</div>
+        <div class="shield-text">Schermo Oscurato per Privacy</div>
+        <div class="shield-sub">Tocca lo schermo o muovi il mouse per sbloccare</div>
+    </div>
+
     <!-- NAVBAR SATELLITE -->
     <div class="navbar">
         <div class="navbar-brand">
@@ -120,9 +143,7 @@
         </div>
         <div style="display:flex; gap:10px; align-items:center;">
             <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
-            <button class="nav-btn" onclick="window.navigaA('cartella_clinica.html')">⚕️ Fascicolo Clinico ↗</button>
-            <button class="nav-btn" onclick="window.navigaA('terapia.html')">💊 Terapia ↗</button>
-            <button class="nav-btn" onclick="window.navigaA('anagrafica.html')">🛏️ Anagrafica ↗</button>
+            <!-- RIMOSSI TUTTI I PULSANTI SATELLITE: LASCIO SOLO RITORNO HOME -->
             <button class="nav-btn" onclick="window.navigaA('index.html')">🏠 Torna al Reparto (Home)</button>
         </div>
     </div>
@@ -269,7 +290,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // IMPORTATO SETDOC PER SCRIVERE L'AUDIT INTERNO
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
@@ -306,6 +328,38 @@
         window.formatDateSafe = (d) => { if (!d) return '-'; if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/'); return d; };
         window.checkOssRestriction = () => { if(window.activeOperatorQualifica==='OSS' && window.activeOperatorRole!=='admin') { window.showToast("🚫 Azione non consentita al profilo OSS"); return true; } return false; };
         window.navigaA = (url) => { window.location.href = url; };
+
+        // ==========================================
+        // SICUREZZA & PRIVACY SHIELD (Anti-Curiosi)
+        // ==========================================
+        const TIMEOUT_IDLE_SHIELD_MS = 60 * 1000; // 1 minuto
+        let timerInattivitaPrivacy = null;
+
+        window.attivaSchermoPrivacy = () => {
+            if(window.activeOperator) document.getElementById('privacyShield').style.display = 'flex';
+        };
+
+        window.sbloccaSchermoPrivacy = () => {
+            document.getElementById('privacyShield').style.display = 'none';
+            window.resetSicurezzaPrivacy();
+        };
+
+        window.resetSicurezzaPrivacy = () => {
+            clearTimeout(timerInattivitaPrivacy);
+            timerInattivitaPrivacy = setTimeout(window.attivaSchermoPrivacy, TIMEOUT_IDLE_SHIELD_MS);
+        };
+
+        ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
+            window.addEventListener(evt, window.resetSicurezzaPrivacy, { passive: true });
+        });
+
+        window.addEventListener('visibilitychange', () => {
+            if (document.hidden) window.attivaSchermoPrivacy();
+        });
+        
+        window.addEventListener('mouseleave', () => {
+            timerInattivitaPrivacy = setTimeout(window.attivaSchermoPrivacy, 3000); 
+        });
 
         // BANNER OSPITE ATTIVO IN ALTO
         window.renderGlobalPatientBanner = () => {
@@ -365,7 +419,7 @@
             window.showToast(`👤 Paziente Attivo: ${n}`);
         };
 
-        // GESTIONE REGISTRAZIONE CUP
+        // GESTIONE REGISTRAZIONE CUP (CON AUDIT TRAIL)
         window.addAppointment = async () => {
             if(window.checkOssRestriction()) return;
             const g = document.getElementById('appGuestSelect').value;
@@ -400,13 +454,31 @@
                 ts: window.getTimestamp()
             });
 
+            // LOGICA AUDIT TRAIL
+            const auditEntry = {
+                data: window.getTimestamp(),
+                timestamp: Date.now(),
+                ospite: g,
+                operatore: window.activeOperator,
+                qualifica: window.activeOperatorQualifica,
+                azione: "PRENOTAZIONE_CUP",
+                dettaglio: `Prenotata visita "${ty}" presso "${lu || 'Non specificato'}" il ${d} alle ${tm}. Trasporto: ${tr}.`
+            };
+            
+            await addDoc(collection(db, "audit_trail"), auditEntry);
+            
+            let pD = window.dbClinica[g] || {};
+            if(!pD.auditTrail) pD.auditTrail = [];
+            pD.auditTrail.unshift(auditEntry);
+            await setDoc(doc(db, "cartelle_cliniche", g), pD, { merge: true });
+
             document.getElementById('appType').value = '';
             document.getElementById('appLuogo').value = '';
             document.getElementById('appNRE').value = '';
             document.getElementById('appPrep').value = '';
             document.getElementById('appNote').value = '';
             document.getElementById('appDigiuno').checked = false;
-            window.showToast("✅ Appuntamento CUP Registrato con Successo!");
+            window.showToast("✅ Appuntamento CUP Registrato e Tracciato con Successo!");
         };
 
         window.loadAppointments = (onlySelected = false) => {
@@ -488,11 +560,34 @@
             setTimeout(() => window.print(), 300);
         };
 
+        // ELIMINAZIONE CUP (CON AUDIT TRAIL)
         window.deleteAppointment = async (id) => { 
             if(window.checkOssRestriction()) return;
+            const appuntamento = window.dbCup.find(x => x.id === id);
+            
             if(confirm("Sei sicuro di voler eliminare definitivamente questo appuntamento CUP?")) {
                 await deleteDoc(doc(db, "cup", id)); 
-                window.showToast("Appuntamento CUP rimosso");
+                
+                if(appuntamento) {
+                    const auditEntry = {
+                        data: window.getTimestamp(),
+                        timestamp: Date.now(),
+                        ospite: appuntamento.guest,
+                        operatore: window.activeOperator,
+                        qualifica: window.activeOperatorQualifica,
+                        azione: "ANNULLAMENTO_CUP",
+                        dettaglio: `Annullata prenotazione CUP: "${appuntamento.type}" prevista il ${window.formatDateSafe(appuntamento.data)}.`
+                    };
+                    
+                    await addDoc(collection(db, "audit_trail"), auditEntry);
+                    
+                    let pD = window.dbClinica[appuntamento.guest] || {};
+                    if(!pD.auditTrail) pD.auditTrail = [];
+                    pD.auditTrail.unshift(auditEntry);
+                    await setDoc(doc(db, "cartelle_cliniche", appuntamento.guest), pD, { merge: true });
+                }
+
+                window.showToast("Appuntamento CUP rimosso e annullamento tracciato.");
             }
         };
 
@@ -524,6 +619,9 @@
                 window.globalSelectedPatient = savedPatient;
                 window.renderGlobalPatientBanner();
             }
+            
+            // Inizializza il Privacy Shield
+            window.resetSicurezzaPrivacy();
         };
     </script>
 </body>

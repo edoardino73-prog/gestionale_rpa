@@ -88,15 +88,31 @@
         .data-table th { background-color: var(--primary-color); color: white; font-weight: normal; text-transform: uppercase; font-size: 0.82em; }
         .data-table tr:nth-child(even) { background-color: #f8fafc; }
 
+        /* PRIVACY SHIELD OVERLAY */
+        #privacyShield {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 100000;
+            display: none;
+            align-items: center; justify-content: center; flex-direction: column;
+            color: white; text-align: center;
+        }
+        .shield-icon { font-size: 4em; margin-bottom: 15px; }
+        .shield-text { font-size: 1.5em; font-weight: bold; letter-spacing: 1px; }
+        .shield-sub { font-size: 0.9em; color: #cbd5e1; margin-top: 8px; }
+
         #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
         .toast { background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
         .toast.show { opacity: 1; }
 
         #printArea { display: none; }
+        /* CORREZIONE BUG DI STAMPA PDF */
         @media print {
             body * { visibility: hidden; } 
             #printArea, #printArea * { visibility: visible; }
-            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 25px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+            #printArea { display: block !important; position: relative; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 25px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
             .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 9pt; }
             .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; }
             .print-table th { background: #f1f5f9 !important; font-weight: bold; }
@@ -107,6 +123,13 @@
     <div id="toast-container"></div>
     <div id="printArea"></div>
 
+    <!-- PRIVACY SHIELD (OSCURAMENTO ANTI-CURIOSI) -->
+    <div id="privacyShield" onclick="window.sbloccaSchermoPrivacy()">
+        <div class="shield-icon">👁️‍🗨️</div>
+        <div class="shield-text">Schermo Oscurato per Privacy</div>
+        <div class="shield-sub">Tocca lo schermo o muovi il mouse per sbloccare</div>
+    </div>
+
     <!-- NAVBAR SATELLITE -->
     <div class="navbar">
         <div class="navbar-brand">
@@ -114,9 +137,7 @@
         </div>
         <div style="display:flex; gap:10px; align-items:center;">
             <span class="current-op-badge" id="currentOpBadge">👤 Op</span>
-            <button class="nav-btn" onclick="window.navigaA('cartella_clinica.html')">⚕️ Fascicolo Clinico ↗</button>
-            <button class="nav-btn" onclick="window.navigaA('terapia.html')">💊 Terapia ↗</button>
-            <button class="nav-btn" onclick="window.navigaA('diari_clinici.html')">📝 Diari ↗</button>
+            <!-- RIMOSSI TUTTI I PULSANTI SATELLITE: LASCIO SOLO RITORNO HOME -->
             <button class="nav-btn" onclick="window.navigaA('index.html')">🏠 Torna al Reparto (Home)</button>
         </div>
     </div>
@@ -219,7 +240,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
-        import { getFirestore, collection, onSnapshot, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // IMPORTATO ADDDOC PER L'AUDIT TRAIL
+        import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
@@ -248,6 +270,38 @@
         window.formatDateSafe = (d) => { if (!d) return '-'; if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/'); return d; };
         window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
         window.navigaA = (url) => { window.location.href = url; };
+
+        // ==========================================
+        // SICUREZZA & PRIVACY SHIELD (Anti-Curiosi)
+        // ==========================================
+        const TIMEOUT_IDLE_SHIELD_MS = 60 * 1000; // 1 minuto
+        let timerInattivitaPrivacy = null;
+
+        window.attivaSchermoPrivacy = () => {
+            if(window.activeOperator) document.getElementById('privacyShield').style.display = 'flex';
+        };
+
+        window.sbloccaSchermoPrivacy = () => {
+            document.getElementById('privacyShield').style.display = 'none';
+            window.resetSicurezzaPrivacy();
+        };
+
+        window.resetSicurezzaPrivacy = () => {
+            clearTimeout(timerInattivitaPrivacy);
+            timerInattivitaPrivacy = setTimeout(window.attivaSchermoPrivacy, TIMEOUT_IDLE_SHIELD_MS);
+        };
+
+        ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
+            window.addEventListener(evt, window.resetSicurezzaPrivacy, { passive: true });
+        });
+
+        window.addEventListener('visibilitychange', () => {
+            if (document.hidden) window.attivaSchermoPrivacy();
+        });
+        
+        window.addEventListener('mouseleave', () => {
+            timerInattivitaPrivacy = setTimeout(window.attivaSchermoPrivacy, 3000); 
+        });
 
         window.renderGlobalPatientBanner = () => {
             const n = window.globalSelectedPatient;
@@ -303,6 +357,7 @@
             window.showToast(`👤 Paziente Attivo: ${n}`);
         };
 
+        // SALVATAGGIO PARAMETRI CON AUDIT TRAIL
         window.addRapVitals = async () => {
             const n = window.globalSelectedPatient;
             if(!n) return window.showToast("⚠️ Seleziona prima un paziente dal menu!");
@@ -310,21 +365,44 @@
             let d = window.dbClinica[n] || {};
             if(!d.vitals) d.vitals = [];
 
+            const paV = document.getElementById('rap-vitPA').value.trim();
+            const fcV = document.getElementById('rap-vitFC').value.trim();
+            const spo2V = document.getElementById('rap-vitSPO2').value.trim();
+            const tcV = document.getElementById('rap-vitTC').value.trim();
+            const gliV = document.getElementById('rap-vitGLI').value.trim();
+            const nrsV = document.getElementById('rap-vitNRS').value.trim();
+
             d.vitals.unshift({
                 date: window.getTimestamp(),
                 op: window.activeOperator,
-                pa: document.getElementById('rap-vitPA').value.trim(),
-                fc: document.getElementById('rap-vitFC').value.trim(),
-                spo2: document.getElementById('rap-vitSPO2').value.trim(),
-                tc: document.getElementById('rap-vitTC').value.trim(),
-                gli: document.getElementById('rap-vitGLI').value.trim(),
-                nrs: document.getElementById('rap-vitNRS').value.trim()
+                pa: paV,
+                fc: fcV,
+                spo2: spo2V,
+                tc: tcV,
+                gli: gliV,
+                nrs: nrsV
             });
+
+            // REGISTRAZIONE NELLO STORICO CARTELLA (AUDIT TRAIL)
+            const auditEntry = {
+                data: window.getTimestamp(),
+                timestamp: Date.now(),
+                ospite: n,
+                operatore: window.activeOperator,
+                qualifica: window.activeOperatorQualifica,
+                azione: "RILEVAZIONE_PARAMETRI_VITALI",
+                dettaglio: `Registrati parametri vitali. PA: ${paV||'-'} | FC: ${fcV||'-'} bpm | SpO2: ${spo2V ? spo2V+'%' : '-'} | TC: ${tcV ? tcV+'°C' : '-'} | Glicemia: ${gliV||'-'} | NRS: ${nrsV||'-'}`
+            };
+
+            await addDoc(collection(db, "audit_trail"), auditEntry);
+
+            if(!d.auditTrail) d.auditTrail = [];
+            d.auditTrail.unshift(auditEntry);
 
             await setDoc(doc(db, "cartelle_cliniche", n), d, { merge: true });
             window.renderVitals();
             ['rap-vitPA','rap-vitFC','rap-vitSPO2','rap-vitTC','rap-vitGLI','rap-vitNRS'].forEach(id => document.getElementById(id).value = '');
-            window.showToast("✅ Parametri Vitali Registrati!");
+            window.showToast("✅ Parametri Vitali Registrati e tracciati!");
         };
 
         window.renderVitals = () => {
@@ -434,6 +512,9 @@
             let saved = sessionStorage.getItem("globalSelectedPatient");
             if(saved) window.globalSelectedPatient = saved;
             window.renderGlobalPatientBanner();
+            
+            // Inizializza il Privacy Shield
+            window.resetSicurezzaPrivacy();
         };
     </script>
 </body>
