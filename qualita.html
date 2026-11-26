@@ -57,12 +57,10 @@ input,select,textarea{width:100%;padding:9px;border:1px solid var(--line);border
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
 import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM",authDomain:"gestione-visite-b445b.firebaseapp.com",projectId:"gestione-visite-b445b",storageBucket:"gestione-visite-b445b.firebasestorage.app",messagingSenderId:"720937824810",appId:"1:720937824810:web:b04b60d1d66bb8f4040953"};
 const fb=initializeApp(firebaseConfig);
-try{initializeAppCheck(fb,{provider:new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'),isTokenAutoRefreshEnabled:true});}catch(e){}
 const db=getFirestore(fb);
 
 /* ---------- utilità ---------- */
@@ -82,7 +80,7 @@ const settings=Object.assign({paiGiorni:180,preavviso:30,reclamiGiorni:30},JSON.
 const COLS={ospiti:'ospiti',cartelle:'cartelle_cliniche',contenzioni:'contenzioni',rischio:'rischio',presidi:'presidi',operatori:'operatori',
  reclami:'iso_reclami',capa:'iso_capa',audit:'iso_audit',formazione:'iso_formazione',elettro:'iso_elettromedicali',procedure:'iso_procedure',fornitori:'iso_fornitori',sic:'sicurezza_8108'};
 const HEAVY={haccpT:'haccp_temperature',haccpSan:'haccp_sanificazioni',haccpPul:'haccp_pulizie',haccpPest:'haccp_pest'};
-let S={},demo=false,failed=[],user=null,tab='oggi',loadedAt=null;
+let S={},demo=false,failed=[],user=null,tab='oggi',loadedAt=null,lastErr='';
 
 async function getCol(name,heavy){
   if(heavy){try{return await getDocs(query(collection(db,name),orderBy('ts','desc'),limit(40)))}catch(e){return await getDocs(query(collection(db,name),limit(40)))}}
@@ -98,7 +96,7 @@ async function load(){
       const snap=await Promise.race([getCol(n,h),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),9000))]);
       if(k==='cartelle'){S2[k]={};snap.forEach(d=>{const x=d.data();delete x.fotoLesioni;delete x.dettagliLesioni;S2[k][d.id]=x})}
       else S2[k]=snap.docs.map(d=>clean({id:d.id,...d.data()}));
-    }catch(e){bad.push(n);S2[k]=k==='cartelle'?{}:[]}
+    }catch(e){bad.push(n);lastErr=(e&&(e.code||e.message))||String(e);S2[k]=k==='cartelle'?{}:[]}
   }));
   failed=bad;
   if(bad.length>=jobs.length-2){demo=true;S=demoData()}else{demo=false;S=S2}
@@ -108,7 +106,7 @@ async function load(){
 window.load=load;
 function paintStatus(){
   const b=$('#st');
-  if(demo){b.className='chip demo';b.textContent='⚠ Dati dimostrativi (Firebase non raggiungibile)'}
+  if(demo){b.className='chip demo';b.textContent='⚠ Dati dimostrativi – errore: '+(lastErr||'sconosciuto')}
   else{b.className='chip';b.textContent=(failed.length?'Dati reali – '+failed.length+' elenchi non letti':'Dati reali')+' · '+loadedAt.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}
   if(failed.length)b.title='Non letti: '+failed.join(', ');
 }
@@ -271,7 +269,8 @@ window.closeOv=()=>{$('#ov').style.display='none';document.body.style.overflow='
 function showApp(){$('#login').style.display='none';$('#app').style.display='block';$('#who').textContent=user?user.name:'Consultazione';load()}
 async function start(){
   $('#login').style.display='block';$('#login').innerHTML='<h2>Qualità e Accreditamento</h2><p class="sub">Sto collegando il gestionale…</p>';
-  let ops=[];try{const s=await Promise.race([getDocs(collection(db,'operatori')),new Promise((_,r)=>setTimeout(()=>r(1),9000))]);ops=s.docs.map(d=>d.data())}catch(e){}
+  let ops=[],err='';try{const s=await Promise.race([getDocs(collection(db,'operatori')),new Promise((_,r)=>setTimeout(()=>r(new Error('nessuna risposta in 9 secondi (rete o regole Firebase)')),9000))]);ops=s.docs.map(d=>d.data())}catch(e){err=(e&&(e.code||e.message))||String(e)}
+  if(!ops.length&&err){lastErr=err;$('#login').innerHTML=`<h2>Non riesco a leggere il Firebase</h2><p class="sub">Errore: <b>${esc(err)}</b></p><p><button class="p" onclick="location.reload()">Riprova</button> <button class="s" id="dm">Guarda la demo</button></p>`;$('#dm').onclick=()=>{demo=true;user={name:'Demo',qualifica:'Direzione'};$('#app').style.display='block';$('#login').style.display='none';$('#who').textContent='Demo';S=demoData();loadedAt=new Date();paintStatus();render()};return}
   if(!ops.length){demo=true;user={name:'Demo',qualifica:'Direzione'};$('#app').style.display='block';$('#login').style.display='none';$('#who').textContent='Demo';S=demoData();loadedAt=new Date();paintStatus();render();return}
   $('#login').innerHTML=`<h2>Accesso</h2><p class="sub">Scegli il tuo nome e inserisci il PIN.</p><label>Operatore</label><select id="lo">${ops.map((o,i)=>`<option value="${i}">${esc(o.name)} – ${esc(o.qualifica||'')}</option>`).join('')}</select><label>PIN</label><input id="lp" type="password" inputmode="numeric"><p><button class="p" id="lb">Entra</button></p><p id="le" style="color:var(--bad)"></p>`;
   const go_=()=>{const o=ops[+$('#lo').value];if(String(o.pin)===$('#lp').value){user=o;showApp()}else $('#le').textContent='PIN non corretto'};
