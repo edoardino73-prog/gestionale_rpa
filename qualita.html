@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Qualità e Accreditamento – Nuova Villa Silvana</title>
+<style>
+:root{--ink:#1c2733;--mut:#5d6b7a;--bg:#f2f5f8;--card:#fff;--line:#dbe2ea;--brand:#1f5f8b;--ok:#1e8e4e;--okb:#e3f5ea;--warn:#b8860b;--warnb:#fff4d6;--bad:#c0392b;--badb:#fde8e6}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);font-size:16px}
+header{background:var(--brand);color:#fff;padding:12px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+header h1{font-size:18px;margin:0}header small{opacity:.85;display:block;font-weight:400}
+.chip{background:rgba(255,255,255,.18);border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;border:0;color:#fff}
+.chip.demo{background:#f5b83d;color:#3b2b00;font-weight:600}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 14px;font-size:15px;cursor:pointer;white-space:nowrap;color:var(--ink)}
+nav button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+main{max-width:1180px;margin:0 auto;padding:16px}
+h2{margin:6px 0 4px;font-size:21px}p.sub{color:var(--mut);margin:0 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.tile{background:var(--card);border-radius:14px;padding:14px 16px;border-left:8px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.06);cursor:pointer}
+.tile.ok{border-color:var(--ok)}.tile.warn{border-color:#e0a800}.tile.bad{border-color:var(--bad)}
+.tile h3{margin:0 0 2px;font-size:16px}.tile .v{font-size:26px;font-weight:700;margin:4px 0}.tile .n{color:var(--mut);font-size:13.5px}.tile .c{font-size:11.5px;color:var(--mut);margin-top:6px}
+.todo{background:var(--card);border-radius:14px;padding:6px 16px;margin:16px 0}
+.todo .it{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}.todo .it:last-child{border:0}
+.dot{width:12px;height:12px;border-radius:50%;margin-top:6px;flex:none}.dot.bad{background:var(--bad)}.dot.warn{background:#e0a800}.dot.ok{background:var(--ok)}
+.card{background:var(--card);border-radius:14px;padding:14px 16px;margin:12px 0;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}th{background:#f6f8fb;font-weight:600}
+.b{display:inline-block;padding:2px 9px;border-radius:12px;font-size:12.5px;font-weight:600}.b.ok{background:var(--okb);color:var(--ok)}.b.warn{background:var(--warnb);color:var(--warn)}.b.bad{background:var(--badb);color:var(--bad)}
+button.p{background:var(--brand);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-size:15px;cursor:pointer}button.s{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;font-size:14px}
+input,select,textarea{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff}label{font-size:13px;color:var(--mut);display:block;margin:8px 0 3px}
+.f2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.print-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.pc{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px}.pc b{font-size:12px;color:var(--brand)}.pc h4{margin:0;font-size:16px}.pc p{margin:0;color:var(--mut);font-size:13.5px;flex:1}
+.note{background:var(--warnb);border-radius:10px;padding:10px 14px;font-size:14px;margin:10px 0}
+#login{max-width:380px;margin:60px auto;background:#fff;border-radius:16px;padding:22px}
+#ov{display:none;position:fixed;inset:0;background:rgba(20,30,40,.6);z-index:20;overflow:auto;padding:16px}
+#ov .bar{max-width:210mm;margin:0 auto 10px;display:flex;gap:8px;justify-content:flex-end}
+.sheet{background:#fff;max-width:210mm;margin:0 auto;padding:14mm;font-size:12.5px;color:#000;min-height:260mm}
+.sheet h1{font-size:18px;margin:0 0 2px}.sheet .hd{display:flex;justify-content:space-between;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:10px}
+.sheet table{font-size:11.5px}.sheet th,.sheet td{border:1px solid #888;padding:4px 6px}.sheet th{background:#eee}
+.sheet .sign{display:flex;gap:30px;margin-top:30px}.sheet .sign div{flex:1;border-top:1px solid #000;padding-top:4px;font-size:11px}
+.sheet .ft{margin-top:16px;font-size:10.5px;color:#333;border-top:1px solid #999;padding-top:5px}
+.sheet .line{border-bottom:1px solid #777;height:22px}
+@media print{@page{size:A4;margin:12mm}body{background:#fff}header,nav,main,#login,#ov .bar{display:none!important}#ov{display:block!important;position:static;background:none;padding:0;overflow:visible}.sheet{padding:0;max-width:none;min-height:0}}
+</style>
+</head>
+<body>
+<div id="login" style="display:none"></div>
+<div id="app" style="display:none">
+<header><div><h1>Qualità e Accreditamento<small>Nuova Villa Silvana – Residenza Protetta R3 – 20 posti</small></h1></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span id="who" class="chip"></span><button class="chip" id="st"></button><button class="chip" onclick="load()">↻ Aggiorna</button></div></header>
+<nav id="nav"></nav>
+<main id="main"></main>
+</div>
+<div id="ov"><div class="bar"><button class="s" onclick="closeOv()">Chiudi</button><button class="p" onclick="window.print()">🖨 Stampa</button></div><div class="sheet" id="sheet"></div></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM",authDomain:"gestione-visite-b445b.firebaseapp.com",projectId:"gestione-visite-b445b",storageBucket:"gestione-visite-b445b.firebasestorage.app",messagingSenderId:"720937824810",appId:"1:720937824810:web:b04b60d1d66bb8f4040953"};
+const fb=initializeApp(firebaseConfig);
+try{initializeAppCheck(fb,{provider:new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'),isTokenAutoRefreshEnabled:true});}catch(e){}
+const db=getFirestore(fb);
+
+/* ---------- utilità ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+function pd(x){if(x==null||x==='')return null;if(typeof x==='number')return new Date(x);if(x.toDate)return x.toDate();const s=String(x);let m=s.match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return new Date(+m[1],m[2]-1,+m[3]);m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m)return new Date(+m[3],m[2]-1,+m[1]);return null}
+const fmt=d=>d?d.toLocaleDateString('it-IT'):'–';
+const dd=d=>Math.round((d-TODAY)/864e5);
+const ago=d=>-dd(d);
+const iso=d=>{const x=new Date(TODAY);x.setDate(x.getDate()+d);return x.toISOString().slice(0,10)};
+const num=x=>Array.isArray(x)?x.length:0;
+const badge=(l,t)=>`<span class="b ${l}">${esc(t)}</span>`;
+const settings=Object.assign({paiGiorni:180,preavviso:30,reclamiGiorni:30},JSON.parse(localStorage.getItem('qa_set')||'{}'));
+
+/* ---------- dati ---------- */
+const COLS={ospiti:'ospiti',cartelle:'cartelle_cliniche',contenzioni:'contenzioni',rischio:'rischio',presidi:'presidi',operatori:'operatori',
+ reclami:'iso_reclami',capa:'iso_capa',audit:'iso_audit',formazione:'iso_formazione',elettro:'iso_elettromedicali',procedure:'iso_procedure',fornitori:'iso_fornitori',sic:'sicurezza_8108'};
+const HEAVY={haccpT:'haccp_temperature',haccpSan:'haccp_sanificazioni',haccpPul:'haccp_pulizie',haccpPest:'haccp_pest'};
+let S={},demo=false,failed=[],user=null,tab='oggi',loadedAt=null;
+
+async function getCol(name,heavy){
+  if(heavy){try{return await getDocs(query(collection(db,name),orderBy('ts','desc'),limit(40)))}catch(e){return await getDocs(query(collection(db,name),limit(40)))}}
+  return await getDocs(collection(db,name));
+}
+const clean=o=>{delete o.firma;delete o.imgBase64;if(Array.isArray(o.fotoLesioni))o.fotoLesioni=o.fotoLesioni.length;return o};
+async function load(){
+  $('#st').textContent='Carico i dati…';
+  const S2={},bad=[];
+  const jobs=[...Object.entries(COLS).map(([k,n])=>[k,n,false]),...Object.entries(HEAVY).map(([k,n])=>[k,n,true])];
+  await Promise.all(jobs.map(async([k,n,h])=>{
+    try{
+      const snap=await Promise.race([getCol(n,h),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),9000))]);
+      if(k==='cartelle'){S2[k]={};snap.forEach(d=>{const x=d.data();delete x.fotoLesioni;delete x.dettagliLesioni;S2[k][d.id]=x})}
+      else S2[k]=snap.docs.map(d=>clean({id:d.id,...d.data()}));
+    }catch(e){bad.push(n);S2[k]=k==='cartelle'?{}:[]}
+  }));
+  failed=bad;
+  if(bad.length>=jobs.length-2){demo=true;S=demoData()}else{demo=false;S=S2}
+  loadedAt=new Date();
+  paintStatus();render();
+}
+window.load=load;
+function paintStatus(){
+  const b=$('#st');
+  if(demo){b.className='chip demo';b.textContent='⚠ Dati dimostrativi (Firebase non raggiungibile)'}
+  else{b.className='chip';b.textContent=(failed.length?'Dati reali – '+failed.length+' elenchi non letti':'Dati reali')+' · '+loadedAt.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}
+  if(failed.length)b.title='Non letti: '+failed.join(', ');
+}
+
+/* ---------- calcolo semaforo ---------- */
+const presenti=()=>(S.ospiti||[]).filter(o=>!(o.dimesso||o.dataDimissione||/DIMESS/i.test(o.stato||'')));
+const onome=o=>o.name||[o.cognome,o.nome].filter(Boolean).join(' ')||o.id;
+function paiInfo(o){
+  const c=(S.cartelle||{})[o.name||o.id]||{};
+  const h=c.paiStorico||[];const d=h.length?pd(h[0].dataStesura):null;
+  const age=d?ago(d):null;
+  let l='ok';if(age==null||age>settings.paiGiorni)l='bad';else if(age>settings.paiGiorni-settings.preavviso)l='warn';
+  return{d,age,l,n:h.length};
+}
+function scad(list,field){ // elementi con scadenza
+  return list.map(x=>{const d=pd(x[field]);return{x,d,gg:d?dd(d):null}}).filter(r=>r.d).sort((a,b)=>a.gg-b.gg);
+}
+const lev=gg=>gg<0?'bad':gg<=settings.preavviso?'warn':'ok';
+const GRAVI=/sentinel|grave|decess|mort|frattura|ospedal/i;
+function tiles(){
+  const T=[],P=presenti();
+  // PAI
+  const pai=P.map(o=>({o,...paiInfo(o)}));const pb=pai.filter(r=>r.l==='bad').length,pw=pai.filter(r=>r.l==='warn').length;
+  T.push({id:'pai',tab:'ospiti',t:'Piani assistenziali (PAI)',crit:'2.x, 5.3 (da verificare)',v:pb+pw?pb+' da rifare':'Tutti aggiornati',lv:pb?'bad':pw?'warn':'ok',n:`${P.length} ospiti presenti · ${pw} in scadenza`,todo:pb?`${pb} ospiti senza PAI o con PAI oltre ${settings.paiGiorni} giorni`:pw?`${pw} PAI in scadenza entro ${settings.preavviso} giorni`:null});
+  // eventi
+  const ev=(S.rischio||[]).filter(r=>{const d=pd(r.data);return d&&ago(d)<=90});
+  const gr=ev.filter(r=>GRAVI.test((r.gravita||'')+' '+(r.tipo||'')));
+  T.push({id:'eventi',tab:'sicurezza',t:'Cadute ed eventi (90 giorni)',crit:'6.2, 6.3, 6.4',v:ev.length,lv:gr.length?'bad':'ok',n:gr.length?`${gr.length} gravi: serve scheda evento sentinella (Scheda A subito, Scheda B entro 60 giorni)`:'Nessun evento grave',todo:gr.length?`${gr.length} eventi gravi: verificare Scheda A e Scheda B`:null});
+  // contenzioni
+  const ca=(S.contenzioni||[]).filter(c=>c.stato==='ATTIVA'),cs=ca.filter(c=>!c.consenso);
+  T.push({id:'cont',tab:'sicurezza',t:'Contenzioni attive',crit:'6.2 (da verificare)',v:ca.length,lv:cs.length?'bad':'ok',n:cs.length?`${cs.length} senza consenso registrato`:'Tutte con consenso',todo:cs.length?`${cs.length} contenzioni attive senza consenso`:null});
+  // HACCP
+  const ht=(S.haccpT||[]).map(r=>({r,d:pd(r.ts||r.dataOra)})).filter(x=>x.d).sort((a,b)=>b.d-a.d);
+  const lastT=ht[0],ageT=lastT?ago(lastT.d):null;
+  const nc=ht.filter(x=>ago(x.d)<=30&&(x.r.conformeGlobale===false||(x.r.rilevazioni||[]).some(z=>z.conforme===false))).length;
+  T.push({id:'haccp',tab:'cucina',t:'Cucina e HACCP',crit:'3.x, 7.2 (da verificare)',v:lastT?(ageT===0?'Oggi':ageT+' gg fa'):'Nessuna',lv:nc?'bad':(ageT==null||ageT>2)?'warn':'ok',n:'Ultima registrazione temperature'+(nc?` · ${nc} non conformità in 30 gg`:''),todo:nc?`${nc} temperature non conformi negli ultimi 30 giorni`:(ageT==null||ageT>2)?'Temperature frigoriferi non registrate da più di 2 giorni':null});
+  // scadenze sicurezza e apparecchi
+  const sc=[...scad(S.sic||[],'dataScadenza').map(r=>({...r,nome:r.x.nome,area:'Sicurezza 81/08'})),...scad(S.elettro||[],'scadenza').map(r=>({...r,nome:(r.x.tipo||'')+' '+(r.x.matricola||''),area:'Apparecchio'})),...scad(S.presidi||[],'dataScadenza').map(r=>({...r,nome:r.x.descrizione,area:'Presidio'}))];
+  const sb=sc.filter(r=>r.gg<0).length,sw=sc.filter(r=>r.gg>=0&&r.gg<=settings.preavviso).length;
+  T.push({id:'scad',tab:'sicurezza',t:'Scadenze sicurezza e apparecchi',crit:'3.1, 3.2, 7.2',v:sb?sb+' scadute':sw?sw+' in arrivo':'Tutto in regola',lv:sb?'bad':sw?'warn':'ok',n:`${sc.length} scadenze controllate`,todo:sb?`${sb} scadenze superate (sicurezza/apparecchi/presidi)`:sw?`${sw} scadenze entro ${settings.preavviso} giorni`:null});
+  // formazione
+  const fo=scad(S.formazione||[],'scadenza'),fb=fo.filter(r=>r.gg<0).length,fw=fo.filter(r=>r.gg>=0&&r.gg<=settings.preavviso).length;
+  T.push({id:'form',tab:'personale',t:'Formazione del personale',crit:'4.1, 4.2',v:fb?fb+' scaduti':fw?fw+' in arrivo':fo.length?'Aggiornata':'Nessun dato',lv:fb?'bad':(fw||!fo.length)?'warn':'ok',n:`${fo.length} corsi registrati`,todo:fb?`${fb} corsi scaduti`:!fo.length?'Nessun corso registrato':fw?`${fw} corsi in scadenza`:null});
+  // segnalazioni
+  const ap=(S.reclami||[]).filter(r=>r.stato!=='CHIUSA'&&!(r.risposta&&String(r.risposta).trim()));
+  const ritardo=ap.filter(r=>{const d=pd(r.ts||r.data);return d&&ago(d)>settings.reclamiGiorni});
+  const ca2=(S.capa||[]).filter(c=>c.stato==='APERTA');
+  T.push({id:'segn',tab:'segnalazioni',t:'Segnalazioni e azioni',crit:'1.5, 1.6, 7.1, 7.3',v:ap.length+ca2.length?(ap.length+ca2.length)+' aperte':'Nessuna aperta',lv:ritardo.length?'bad':(ap.length||ca2.length)?'warn':'ok',n:`Risposta entro ${settings.reclamiGiorni} giorni`,todo:ritardo.length?`${ritardo.length} reclami senza risposta oltre ${settings.reclamiGiorni} giorni`:ap.length?`${ap.length} segnalazioni da chiudere`:ca2.length?`${ca2.length} azioni da verificare`:null});
+  // documenti e audit
+  const pr=scad(S.procedure||[],'data').sort((a,b)=>b.gg-a.gg)[0],au=scad(S.audit||[],'data').sort((a,b)=>b.gg-a.gg)[0];
+  const prOld=!pr||ago(pr.d)>365,auOld=!au||ago(au.d)>365;
+  T.push({id:'doc',tab:'documenti',t:'Documenti e audit',crit:'0.02, 0.03, 1.1, 5.5',v:prOld||auOld?'Da rivedere':'Aggiornati',lv:prOld||auOld?'warn':'ok',n:`Ultima procedura: ${pr?fmt(pr.d):'–'} · ultimo audit: ${au?fmt(au.d):'–'}`,todo:auOld?'Nessun audit interno negli ultimi 12 mesi':prOld?'Procedure non riviste da oltre 12 mesi':null});
+  return T;
+}
+
+/* ---------- viste ---------- */
+const TABS=[['oggi','🏠 Oggi'],['ospiti','👥 Ospiti e PAI'],['sicurezza','🛡 Sicurezza e scadenze'],['cucina','🍽 Cucina HACCP'],['personale','🎓 Personale'],['segnalazioni','📣 Segnalazioni e azioni'],['documenti','📄 Documenti e audit'],['stampe','🖨 Stampe (allegati)'],['regole','⚙ Regole']];
+function render(){
+  $('#nav').innerHTML=TABS.map(([k,l])=>`<button class="${k===tab?'on':''}" onclick="go('${k}')">${l}</button>`).join('');
+  $('#main').innerHTML=(V[tab]||V.oggi)();
+}
+window.go=k=>{tab=k;render();scrollTo(0,0)};
+const tbl=(h,rows,empty='Nessun dato')=>rows.length?`<table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`:`<p class="sub">${empty}</p>`;
+const lvTxt={ok:'In regola',warn:'Attenzione',bad:'Da sistemare'};
+const canWrite=()=>demo?false:user&&!/\boss\b/i.test(user.qualifica||'');
+
+const V={
+oggi(){
+  const T=tiles(),todo=T.filter(t=>t.todo).sort((a,b)=>(b.lv==='bad')-(a.lv==='bad'));
+  const n=presenti().length;
+  return `<h2>Oggi</h2><p class="sub">${n} ospiti presenti su 20 posti · ${new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
+  <div class="todo"><h3 style="margin:12px 0 4px">Cosa fare</h3>${todo.length?todo.map(t=>`<div class="it" onclick="go('${t.tab}')" style="cursor:pointer"><span class="dot ${t.lv}"></span><div><b>${esc(t.t)}</b><br>${esc(t.todo)}</div></div>`).join(''):'<div class="it"><span class="dot ok"></span><div>Niente da sistemare. Tutto in regola.</div></div>'}</div>
+  <div class="grid">${T.map(t=>`<div class="tile ${t.lv}" onclick="go('${t.tab}')"><h3>${esc(t.t)}</h3><div class="v">${esc(t.v)}</div><div class="n">${esc(t.n)}</div><div class="c">Criteri: ${esc(t.crit)}</div></div>`).join('')}</div>
+  <div class="note">I codici dei criteri sono indicativi: vanno confrontati con la matrice requisiti–documenti. Prima di presentarla alla Regione, far verificare la procedura da chi segue l'accreditamento o dall'OTAR.</div>`;
+},
+ospiti(){
+  const rows=presenti().map(o=>({o,...paiInfo(o)})).sort((a,b)=>(b.age??9999)-(a.age??9999)).map(r=>[`<b>${esc(onome(r.o))}</b>`,esc(r.o.room||'–'),fmt(pd(r.o.ingresso)),r.d?fmt(r.d):'–',r.age==null?'–':r.age+' gg',badge(r.l,r.l==='ok'?'Aggiornato':r.l==='warn'?'In scadenza':r.age==null?'Manca':'Scaduto')]);
+  return `<h2>Ospiti e PAI</h2><p class="sub">Il PAI va rivisto ogni ${settings.paiGiorni} giorni (valore provvisorio, modificabile in "Regole").</p><div class="card">${tbl(['Ospite','Stanza','Ingresso','Ultimo PAI','Trascorsi','Stato'],rows)}</div>`;
+},
+sicurezza(){
+  const ev=(S.rischio||[]).map(r=>({r,d:pd(r.data)})).sort((a,b)=>(b.d||0)-(a.d||0)).slice(0,30).map(({r,d})=>[fmt(d),esc(r.ospite),esc(r.tipo),esc(r.gravita||'–'),esc(r.azioni||'–')]);
+  const co=(S.contenzioni||[]).filter(c=>c.stato==='ATTIVA').map(c=>[esc(c.ospite),esc(c.tipo),fmt(pd(c.dataInizio)),esc(c.cadenza||'–'),c.consenso?badge('ok','Sì'):badge('bad','Manca')]);
+  const sc=[...scad(S.sic||[],'dataScadenza').map(r=>[ 'Sicurezza 81/08',esc(r.x.nome),esc(r.x.area||''),r]),...scad(S.elettro||[],'scadenza').map(r=>['Apparecchio',esc((r.x.tipo||'')+' '+(r.x.matricola||'')),esc(r.x.reparto||''),r]),...scad(S.presidi||[],'dataScadenza').map(r=>['Presidio',esc(r.x.descrizione||''),esc(r.x.ospite||''),r])].sort((a,b)=>a[3].gg-b[3].gg).map(([t,n,a,r])=>[t,n,a,fmt(r.d),badge(lev(r.gg),r.gg<0?'Scaduta da '+(-r.gg)+' gg':'tra '+r.gg+' gg')]);
+  return `<h2>Sicurezza e scadenze</h2><p class="sub">Eventi, contenzioni, scadenze di apparecchi, presidi e corsi sicurezza.</p>
+  <div class="card"><h3>Scadenzario</h3>${tbl(['Tipo','Cosa','Dove/Chi','Scadenza','Stato'],sc)}</div>
+  <div class="card"><h3>Contenzioni attive</h3>${tbl(['Ospite','Tipo','Dal','Controllo','Consenso'],co,'Nessuna contenzione attiva')}</div>
+  <div class="card"><h3>Ultimi eventi (cadute e quasi eventi)</h3>${tbl(['Data','Ospite','Tipo','Gravità','Azioni'],ev)}</div>`;
+},
+cucina(){
+  const row=(L,name)=>L.map(r=>({r,d:pd(r.ts||r.dataOra)})).filter(x=>x.d).sort((a,b)=>b.d-a.d).slice(0,6).map(({r,d})=>[name,fmt(d),esc(r.op||'–'),name==='Temperature'?((r.rilevazioni||[]).map(z=>`${esc(z.unita)}: ${z.valore}°${z.conforme===false?' ⚠':''}`).join(' · ')||'–'):esc(r.prodotto||r.note||'–')]);
+  const rows=[...row(S.haccpT||[],'Temperature'),...row(S.haccpSan||[],'Sanificazione'),...row(S.haccpPul||[],'Pulizie'),...row(S.haccpPest||[],'Controllo infestanti')];
+  return `<h2>Cucina e HACCP</h2><p class="sub">Ultime registrazioni lette dal tablet di cucina.</p><div class="card">${tbl(['Registro','Data','Operatore','Dettaglio'],rows)}</div>`;
+},
+personale(){
+  const fo=scad(S.formazione||[],'scadenza').map(r=>[esc(r.x.operatore),esc(r.x.corso),fmt(r.d),badge(lev(r.gg),r.gg<0?'Scaduto':'tra '+r.gg+' gg')]);
+  const op=(S.operatori||[]).map(o=>[esc(o.name),esc(o.qualifica||'–'),esc(o.societaAppalto||'–'),o.privacyFirmata?badge('ok','Firmata'):badge('warn','Da firmare')]);
+  return `<h2>Personale</h2><p class="sub">Il personale appartiene alla società affidataria: qui si controllano formazione e nomine.</p>
+  <div class="card"><h3>Formazione</h3>${tbl(['Operatore','Corso','Scadenza','Stato'],fo)}</div><div class="card"><h3>Operatori</h3>${tbl(['Nome','Qualifica','Società','Nomina privacy'],op)}</div>`;
+},
+segnalazioni(){
+  const form=canWrite()?`<div class="card"><h3>Nuova segnalazione</h3><div class="f2"><div><label>Tipo</label><select id="sg_t"><option>Reclamo</option><option>Suggerimento</option><option>Non conformità</option><option>Evento / caduta</option><option>Segnalazione del personale</option></select></div><div><label>Chi segnala (ruolo, senza nomi di ospiti)</label><input id="sg_s"></div><div><label>Area</label><input id="sg_a"></div></div><label>Cosa è successo</label><textarea id="sg_d" rows="3"></textarea><p><button class="p" onclick="addSegn()">Registra</button> <span class="sub">La risposta va data entro ${settings.reclamiGiorni} giorni.</span></p></div>`:`<div class="note">${demo?'Dati dimostrativi: la scrittura è disattivata.':'Il tuo profilo può solo consultare.'}</div>`;
+  const rec=[...(S.reclami||[])].sort((a,b)=>(pd(b.ts||b.data)||0)-(pd(a.ts||a.data)||0)).map(r=>{const d=pd(r.ts||r.data),chiuso=r.stato==='CHIUSA'||(r.risposta&&String(r.risposta).trim());const lv=chiuso?'ok':(d&&ago(d)>settings.reclamiGiorni?'bad':'warn');
+    return [fmt(d),esc(r.tipo||'Reclamo'),esc(r.area||'–'),esc(r.desc||''),chiuso?esc(r.risposta||'Chiuso'):(canWrite()?`<button class="s" onclick="rispondi('${r.id}')">Rispondi e chiudi</button>`:'–'),badge(lv,chiuso?'Chiuso':lv==='bad'?'Oltre termine':'Aperto')]});
+  const capa=[...(S.capa||[])].map(c=>[esc(c.data||'–'),esc(c.origine),esc(c.causa),esc(c.azione),c.stato==='APERTA'?(canWrite()?`<button class="s" onclick="chiudiCapa('${c.id}')">Verifica efficacia</button>`:badge('warn','Aperta')):badge('ok',c.stato==='CHIUSA'?'Verificata':'Attuata')]);
+  const addCapa=canWrite()?`<p><button class="s" onclick="addCapa()">+ Nuova azione correttiva</button></p>`:'';
+  return `<h2>Segnalazioni e azioni</h2><p class="sub">Una sola scheda per reclami, suggerimenti, non conformità ed eventi. Ogni azione parte da una segnalazione e si chiude solo dopo la verifica.</p>${form}<div class="card"><h3>Segnalazioni</h3>${tbl(['Data','Tipo','Area','Descrizione','Risposta','Stato'],rec)}</div><div class="card"><h3>Azioni correttive</h3>${addCapa}${tbl(['Data','Origine','Causa','Azione','Stato'],capa)}</div>`;
+},
+documenti(){
+  const pr=scad(S.procedure||[],'data').map(r=>[`<b>${esc(r.x.codice)}</b>`,esc(r.x.titolo),esc(r.x.rev||''),fmt(r.d),badge(ago(r.d)>365?'warn':'ok',ago(r.d)>365?'Da rivedere':'Aggiornata')]);
+  const au=scad(S.audit||[],'data').map(r=>[fmt(r.d),esc(r.x.area),esc(r.x.auditor),esc(r.x.esito)]);
+  const fo=(S.fornitori||[]).map(f=>[esc(f.fornitore),esc(f.servizio),esc(f.rating),esc(f.data||'')]);
+  return `<h2>Documenti e audit</h2><p class="sub">Elenco procedure, audit interni e fornitori. Le procedure si aggiornano dal gestionale ISO esistente.</p><div class="card"><h3>Procedure</h3>${tbl(['Codice','Titolo','Rev.','Data','Stato'],pr)}</div><div class="card"><h3>Audit interni</h3>${tbl(['Data','Area','Auditor','Esito'],au)}</div><div class="card"><h3>Fornitori e società affidataria</h3>${tbl(['Fornitore','Servizio','Valutazione','Data'],fo)}</div>`;
+},
+stampe(){
+  return `<h2>Stampe (allegati)</h2><p class="sub">Ogni allegato si compila da solo con i dati. Premi Apri, controlla, poi Stampa. Si stampa su carta A4 o in PDF.</p><div class="print-grid">${PRINTS.map(p=>`<div class="pc"><b>${p.code}</b><h4>${p.t}</h4><p>${p.d}</p><button class="p" onclick="openPrint('${p.code}')">Apri</button></div>`).join('')}</div>`;
+},
+regole(){
+  return `<h2>Regole</h2><p class="sub">Valori provvisori: decide la Direzione.</p><div class="card"><div class="f2"><div><label>Revisione PAI (giorni)</label><input id="r1" type="number" value="${settings.paiGiorni}"></div><div><label>Preavviso scadenze (giorni)</label><input id="r2" type="number" value="${settings.preavviso}"></div><div><label>Risposta ai reclami (giorni)</label><input id="r3" type="number" value="${settings.reclamiGiorni}"></div></div><p><button class="p" onclick="saveSet()">Salva</button></p></div>
+  <div class="note"><b>Decisioni aperte:</b> intervallo di revisione del PAI (qui 180 giorni, proposta provvisoria); termine risposta reclami (30 giorni, da confermare sulla Carta dei servizi); chi può scrivere nel gestionale; criteri 'da verificare' con la matrice.</div>`;
+}};
+window.saveSet=()=>{settings.paiGiorni=+$('#r1').value||180;settings.preavviso=+$('#r2').value||30;settings.reclamiGiorni=+$('#r3').value||30;localStorage.setItem('qa_set',JSON.stringify(settings));render()};
+
+/* ---------- scrittura (stesse raccolte del gestionale ISO) ---------- */
+const stamp=()=>{const n=new Date();return n.toLocaleDateString('it-IT')+' ore '+n.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})};
+window.addSegn=async()=>{const d=$('#sg_d').value.trim();if(!d)return alert('Scrivi cosa è successo.');
+  await addDoc(collection(db,'iso_reclami'),{tipo:$('#sg_t').value,segnalante:$('#sg_s').value||'–',area:$('#sg_a').value||'–',desc:d,risposta:'',stato:'APERTA',data:stamp(),ts:Date.now(),op:user.name});await load()};
+window.rispondi=async id=>{const r=prompt('Scrivi la risposta (verrà registrata e la segnalazione si chiude):');if(!r)return;
+  await updateDoc(doc(db,'iso_reclami',id),{risposta:r,stato:'CHIUSA',dataChiusura:stamp(),opChiusura:user.name});await load()};
+window.addCapa=async()=>{const o=prompt('Origine (es. reclamo, audit, evento):');if(!o)return;const c=prompt('Causa individuata:');if(!c)return;const a=prompt('Azione decisa:');if(!a)return;
+  await addDoc(collection(db,'iso_capa'),{origine:o,causa:c,azione:a,stato:'APERTA',data:stamp(),op:user.name,ts:Date.now()});await load()};
+window.chiudiCapa=async id=>{const v=prompt('Come hai verificato che l\'azione ha funzionato? (criterio misurabile)');if(!v)return;
+  await updateDoc(doc(db,'iso_capa',id),{stato:'CHIUSA',verifica:v,dataVerifica:stamp(),opVerifica:user.name});await load()};
+
+/* ---------- stampe ---------- */
+const STRUTTURA='Nuova Villa Silvana – Residenza Protetta R3 (20 posti) – gestore Senior Care S.r.l.';
+function sheet(code,title,body,o={}){
+  return `<div class="hd"><div><h1>${title}</h1><div>${STRUTTURA}</div></div><div style="text-align:right"><b>${code}</b><br>Stampato il ${fmt(new Date())}<br>${o.periodo||''}</div></div>${body}
+  <div class="sign"><div>Compilato da (nome e firma)</div><div>Verificato da (RQ / Direzione)</div><div>Data</div></div>
+  <div class="ft">${o.regione?'Prima di presentarla alla Regione, far verificare la procedura da chi segue l\'accreditamento o dall\'OTAR. ':''}Allegato generato dal gestionale qualità. Documento in bozza fino ad approvazione della Direzione.${demo?' <b>DATI DIMOSTRATIVI.</b>':''}</div>`;
+}
+const T=(h,rows)=>`<table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${h.length}">Nessun dato nel periodo</td></tr>`}</tbody></table>`;
+const sc12=()=>[...scad(S.sic||[],'dataScadenza').map(r=>['Sicurezza 81/08',esc(r.x.nome),esc(r.x.area||''),r]),...scad(S.elettro||[],'scadenza').map(r=>['Apparecchio',esc((r.x.tipo||'')+' '+(r.x.matricola||'')),esc(r.x.reparto||''),r]),...scad(S.presidi||[],'dataScadenza').map(r=>['Presidio',esc(r.x.descrizione||''),esc(r.x.ospite||''),r])].sort((a,b)=>a[3].gg-b[3].gg);
+const blank=n=>Array.from({length:n},()=>'<div class="line"></div>').join('');
+const PRINTS=[
+{code:'ST-01',t:'Registro eventi, cadute e quasi eventi',d:'Tutti gli eventi con data, gravità, azioni. Ultimi 12 mesi.',f:()=>sheet('ST-01','Registro eventi, cadute e quasi eventi',T(['Data','Ospite','Tipo','Luogo','Gravità','Azioni','Notifiche'],(S.rischio||[]).map(r=>({r,d:pd(r.data)})).filter(x=>x.d&&ago(x.d)<=365).sort((a,b)=>b.d-a.d).map(({r,d})=>[fmt(d),esc(r.ospite),esc(r.tipo),esc(r.luogo||''),esc(r.gravita||''),esc(r.azioni||''),esc(r.notifiche||'')])),{periodo:'Ultimi 12 mesi'})},
+{code:'ST-02',t:'Registro contenzioni',d:'Contenzioni attive e concluse con consenso e controlli.',f:()=>sheet('ST-02','Registro contenzioni',T(['Ospite','Tipo','Dal','Motivo','Controllo','Consenso','Stato'],(S.contenzioni||[]).map(c=>[esc(c.ospite),esc(c.tipo),fmt(pd(c.dataInizio)),esc(c.motivo||''),esc(c.cadenza||''),c.consenso?'Sì':'NO',esc(c.stato||'')])))},
+{code:'ST-03',t:'Ospiti presenti e stato dei PAI',d:'Elenco ospiti con data dell\'ultimo PAI e prossima revisione.',f:()=>sheet('ST-03','Ospiti presenti e stato dei PAI',T(['Ospite','Stanza','Ingresso','Ultimo PAI','Prossima revisione','Stato'],presenti().map(o=>({o,...paiInfo(o)})).map(r=>{const nx=r.d?new Date(r.d.getTime()+settings.paiGiorni*864e5):null;return[esc(onome(r.o)),esc(r.o.room||''),fmt(pd(r.o.ingresso)),fmt(r.d),fmt(nx),r.l==='ok'?'Aggiornato':r.l==='warn'?'In scadenza':'DA FARE']})),{periodo:'Revisione ogni '+settings.paiGiorni+' giorni (provvisorio)'})},
+{code:'ST-04',t:'Registro temperature HACCP',d:'Ultime registrazioni di temperatura, con eventuali non conformità.',f:()=>sheet('ST-04','Registro temperature HACCP',T(['Data','Operatore','Rilevazioni','Conforme'],(S.haccpT||[]).map(r=>({r,d:pd(r.ts||r.dataOra)})).filter(x=>x.d).sort((a,b)=>b.d-a.d).map(({r,d})=>[fmt(d),esc(r.op||''),(r.rilevazioni||[]).map(z=>esc(z.unita)+': '+z.valore+'°').join('; '),r.conformeGlobale===false||(r.rilevazioni||[]).some(z=>z.conforme===false)?'NO':'Sì'])),{periodo:'Ultime 40 registrazioni'})},
+{code:'ST-05',t:'Scadenzario sicurezza, apparecchi e presidi',d:'Tutte le scadenze in ordine, con quelle superate in cima.',f:()=>sheet('ST-05','Scadenzario sicurezza, apparecchi e presidi',T(['Tipo','Cosa','Dove/Chi','Scadenza','Stato'],sc12().map(([t,n,a,r])=>[t,n,a,fmt(r.d),r.gg<0?'SCADUTA da '+(-r.gg)+' gg':'tra '+r.gg+' gg'])))},
+{code:'ST-06',t:'Registro formazione del personale',d:'Corsi, operatori e scadenze.',f:()=>sheet('ST-06','Registro formazione del personale',T(['Operatore','Corso','Scadenza','Stato'],scad(S.formazione||[],'scadenza').map(r=>[esc(r.x.operatore),esc(r.x.corso),fmt(r.d),r.gg<0?'SCADUTO':'Valido'])))},
+{code:'ST-07',t:'Registro segnalazioni e azioni correttive',d:'Reclami, non conformità e azioni con esito e verifica.',f:()=>sheet('ST-07','Registro segnalazioni e azioni correttive','<h3>Segnalazioni</h3>'+T(['Data','Tipo','Area','Descrizione','Risposta','Stato'],(S.reclami||[]).map(r=>[esc(r.data||''),esc(r.tipo||'Reclamo'),esc(r.area||''),esc(r.desc||''),esc(r.risposta||''),r.stato==='CHIUSA'||r.risposta?'Chiuso':'APERTO']))+'<h3>Azioni correttive</h3>'+T(['Data','Origine','Causa','Azione','Verifica di efficacia','Stato'],(S.capa||[]).map(c=>[esc(c.data||''),esc(c.origine),esc(c.causa),esc(c.azione),esc(c.verifica||''),esc(c.stato||'Attuata')])))},
+{code:'ST-08',t:'Verbale di audit interno',d:'Modulo da compilare durante l\'audit, con le ultime aree verificate.',f:()=>sheet('ST-08','Verbale di audit interno','<p><b>Area verificata:</b> ____________________ &nbsp; <b>Data:</b> ____________ &nbsp; <b>Auditor:</b> ____________________</p><h3>Ultimi audit registrati</h3>'+T(['Data','Area','Auditor','Esito'],scad(S.audit||[],'data').reverse().slice(0,8).map(r=>[fmt(r.d),esc(r.x.area),esc(r.x.auditor),esc(r.x.esito)]))+'<h3>Evidenze</h3>'+blank(6)+'<h3>Non conformità e azioni decise</h3>'+blank(5)+'<p><b>Esito:</b> ☐ Conforme &nbsp; ☐ Conforme con osservazioni &nbsp; ☐ Non conforme</p>',{regione:true})},
+{code:'ST-09',t:'Riesame annuale della Direzione',d:'Indicatori già calcolati; la Direzione scrive le decisioni.',f:()=>{const Tl=tiles();return sheet('ST-09','Riesame annuale della Direzione','<h3>Indicatori</h3>'+T(['Area','Valore','Stato','Note'],Tl.map(t=>[esc(t.t),esc(t.v),lvTxt[t.lv],esc(t.n)]))+'<h3>Cosa ha funzionato</h3>'+blank(3)+'<h3>Cosa va migliorato</h3>'+blank(3)+'<h3>Obiettivi per il prossimo anno</h3>'+blank(4)+'<h3>Decisioni sulle risorse</h3>'+blank(3),{regione:true,periodo:'Anno '+new Date().getFullYear()})}},
+{code:'ST-10',t:'Scheda di sintesi per la Regione',d:'Una pagina: posti, stato dei requisiti, scadenze e segnalazioni.',f:()=>{const Tl=tiles(),P=presenti();return sheet('ST-10','Scheda di sintesi per la Regione',`<p><b>Posti autorizzati:</b> 20 &nbsp; <b>Ospiti presenti:</b> ${P.length} &nbsp; <b>Tipologia:</b> Residenza Protetta R3</p>`+T(['Area','Criteri di riferimento','Situazione','Stato'],Tl.map(t=>[esc(t.t),esc(t.crit),esc(t.v+' – '+t.n),lvTxt[t.lv]]))+'<p>I criteri indicati vanno confrontati con la matrice requisiti–documenti.</p>',{regione:true})}}
+];
+window.openPrint=c=>{$('#sheet').innerHTML=PRINTS.find(p=>p.code===c).f();$('#ov').style.display='block';document.body.style.overflow='hidden'};
+window.closeOv=()=>{$('#ov').style.display='none';document.body.style.overflow=''};
+
+/* ---------- accesso ---------- */
+function showApp(){$('#login').style.display='none';$('#app').style.display='block';$('#who').textContent=user?user.name:'Consultazione';load()}
+async function start(){
+  $('#login').style.display='block';$('#login').innerHTML='<h2>Qualità e Accreditamento</h2><p class="sub">Sto collegando il gestionale…</p>';
+  let ops=[];try{const s=await Promise.race([getDocs(collection(db,'operatori')),new Promise((_,r)=>setTimeout(()=>r(1),9000))]);ops=s.docs.map(d=>d.data())}catch(e){}
+  if(!ops.length){demo=true;user={name:'Demo',qualifica:'Direzione'};$('#app').style.display='block';$('#login').style.display='none';$('#who').textContent='Demo';S=demoData();loadedAt=new Date();paintStatus();render();return}
+  $('#login').innerHTML=`<h2>Accesso</h2><p class="sub">Scegli il tuo nome e inserisci il PIN.</p><label>Operatore</label><select id="lo">${ops.map((o,i)=>`<option value="${i}">${esc(o.name)} – ${esc(o.qualifica||'')}</option>`).join('')}</select><label>PIN</label><input id="lp" type="password" inputmode="numeric"><p><button class="p" id="lb">Entra</button></p><p id="le" style="color:var(--bad)"></p>`;
+  const go_=()=>{const o=ops[+$('#lo').value];if(String(o.pin)===$('#lp').value){user=o;showApp()}else $('#le').textContent='PIN non corretto'};
+  $('#lb').onclick=go_;$('#lp').onkeydown=e=>{if(e.key==='Enter')go_()};
+}
+
+/* ---------- dati dimostrativi (nessun nome reale) ---------- */
+function demoData(){
+  const o=(n,room,ing)=>({id:'OSP-'+n,name:'OSP-'+n,room,ingresso:iso(-ing)});
+  const pai=(n,gg)=>[ 'OSP-'+n,{paiStorico:[{dataStesura:iso(-gg)}]}];
+  return{ospiti:[o('01','101',900),o('02','102',400),o('03','103',200),o('04','104',60),o('05','105',30)],
+  cartelle:Object.fromEntries([pai('01',200),pai('02',160),pai('03',40),pai('04',10)]),
+  contenzioni:[{id:'c1',ospite:'OSP-02',tipo:'Spondine letto',dataInizio:iso(-90),cadenza:'Ogni 24 ore',consenso:true,stato:'ATTIVA',motivo:'Prescrizione medica'},{id:'c2',ospite:'OSP-01',tipo:'Cintura carrozzina',dataInizio:iso(-20),cadenza:'Ogni 24 ore',consenso:false,stato:'ATTIVA',motivo:'Prescrizione medica'}],
+  rischio:[{id:'r1',data:iso(-12),ospite:'OSP-03',tipo:'Caduta senza danno apparente',luogo:'Camera',gravita:'Lieve',azioni:'Rivalutato rischio'},{id:'r2',data:iso(-40),ospite:'OSP-01',tipo:'Quasi Evento (Near Miss)',luogo:'Bagno',gravita:'Nessun danno',azioni:'Ausilio nuovo'}],
+  presidi:[{id:'p1',ospite:'OSP-02',descrizione:'Materasso antidecubito',dataScadenza:iso(20)}],
+  operatori:[{name:'Operatore A',qualifica:'Infermiere',societaAppalto:'Società affidataria',privacyFirmata:true},{name:'Operatore B',qualifica:'OSS',societaAppalto:'Società affidataria',privacyFirmata:false}],
+  reclami:[{id:'q1',tipo:'Reclamo',area:'Ristorazione',desc:'Pasto freddo',data:fmt(new Date(Date.now()-40*864e5)),ts:Date.now()-40*864e5,risposta:'',stato:'APERTA'}],
+  capa:[{id:'a1',data:fmt(new Date()),origine:'Reclamo',causa:'Carrello non scaldato',azione:'Preriscaldare il carrello',stato:'APERTA'}],
+  audit:[{id:'u1',data:iso(-400),area:'Farmaci',auditor:'RQ',esito:'Conforme'}],
+  formazione:[{id:'f1',operatore:'Operatore A',corso:'Antincendio',scadenza:iso(-10)},{id:'f2',operatore:'Operatore B',corso:'Sicurezza 81/08',scadenza:iso(200)}],
+  elettro:[{id:'e1',matricola:'ELT-01',tipo:'Sollevatore',reparto:'Piano 1',scadenza:iso(15)}],
+  procedure:[{id:'pr1',codice:'P1',titolo:'Organizzazione, personale e fornitori',rev:'01',data:iso(-30)}],
+  fornitori:[{id:'fo1',fornitore:'Società affidataria',servizio:'Personale',rating:'Buono',data:fmt(new Date())}],
+  sic:[{id:'s1',nome:'Squadra emergenza',area:'Antincendio',dataScadenza:iso(100)}],
+  haccpT:[{id:'h1',ts:Date.now()-86400000,dataOra:fmt(new Date()),op:'Operatore B',conformeGlobale:true,rilevazioni:[{unita:'Frigo 1',valore:3,conforme:true},{unita:'Freezer',valore:-19,conforme:true}]}],
+  haccpSan:[],haccpPul:[],haccpPest:[]};
+}
+window.addEventListener('beforeprint',()=>{});
+start();
+</script>
+</body>
+</html>
