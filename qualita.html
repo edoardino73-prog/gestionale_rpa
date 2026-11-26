@@ -57,10 +57,12 @@ input,select,textarea{width:100%;padding:9px;border:1px solid var(--line);border
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
 import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM",authDomain:"gestione-visite-b445b.firebaseapp.com",projectId:"gestione-visite-b445b",storageBucket:"gestione-visite-b445b.firebasestorage.app",messagingSenderId:"720937824810",appId:"1:720937824810:web:b04b60d1d66bb8f4040953"};
 const fb=initializeApp(firebaseConfig);
+try{initializeAppCheck(fb,{provider:new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'),isTokenAutoRefreshEnabled:true});}catch(e){console.warn('AppCheck bypassato')}
 const db=getFirestore(fb);
 
 /* ---------- utilità ---------- */
