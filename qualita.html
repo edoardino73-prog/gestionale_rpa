@@ -49,7 +49,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid var(--line);border
 <div id="login" style="display:none"></div>
 <div id="app" style="display:none">
 <header><div><h1>Qualità e Accreditamento<small>Nuova Villa Silvana – Residenza Protetta R3 – 20 posti</small></h1></div>
-<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span id="who" class="chip"></span><button class="chip" id="st"></button><button class="chip" onclick="load()">↻ Aggiorna</button></div></header>
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span id="who" class="chip" onclick="esci()" title="Esci"></span><button class="chip" id="st"></button><button class="chip" onclick="load()">↻ Aggiorna</button></div></header>
 <nav id="nav"></nav>
 <main id="main"></main>
 </div>
@@ -58,12 +58,14 @@ input,select,textarea{width:100%;padding:9px;border:1px solid var(--line);border
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM",authDomain:"gestione-visite-b445b.firebaseapp.com",projectId:"gestione-visite-b445b",storageBucket:"gestione-visite-b445b.firebasestorage.app",messagingSenderId:"720937824810",appId:"1:720937824810:web:b04b60d1d66bb8f4040953"};
 const fb=initializeApp(firebaseConfig);
 try{initializeAppCheck(fb,{provider:new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'),isTokenAutoRefreshEnabled:true});}catch(e){console.warn('AppCheck bypassato')}
 const db=getFirestore(fb);
+const auth=getAuth(fb);
 
 /* ---------- utilità ---------- */
 const $=s=>document.querySelector(s);
@@ -269,7 +271,15 @@ window.closeOv=()=>{$('#ov').style.display='none';document.body.style.overflow='
 
 /* ---------- accesso ---------- */
 function showApp(){$('#login').style.display='none';$('#app').style.display='block';$('#who').textContent=user?user.name:'Consultazione';load()}
-function start(){user={name:'Direzione',qualifica:'Direzione'};showApp()}
+function showLogin(msg){
+  $('#app').style.display='none';$('#login').style.display='block';
+  $('#login').innerHTML=`<h2>Accesso</h2><p class="sub">Entra una sola volta con l'email e la password del tuo account Firebase. Il browser se le ricorda.</p><label>Email</label><input id="le_" type="email" autocomplete="username"><label>Password</label><input id="lp_" type="password" autocomplete="current-password"><p><button class="p" id="lb_">Entra</button> <button class="s" id="dm_">Guarda la demo</button></p><p id="lm_" style="color:var(--bad)">${esc(msg||'')}</p>`;
+  const go_=async()=>{try{$('#lm_').textContent='Accedo…';await signInWithEmailAndPassword(auth,$('#le_').value.trim(),$('#lp_').value)}catch(e){$('#lm_').textContent='Accesso non riuscito: '+(e.code||e.message)}};
+  $('#lb_').onclick=go_;$('#lp_').onkeydown=e=>{if(e.key==='Enter')go_()};
+  $('#dm_').onclick=()=>{demo=true;user={name:'Demo',qualifica:'Direzione'};$('#app').style.display='block';$('#login').style.display='none';$('#who').textContent='Demo';S=demoData();loadedAt=new Date();paintStatus();render()};
+}
+function start(){onAuthStateChanged(auth,u=>{if(u){user={name:u.email||'Direzione',qualifica:'Direzione'};showApp()}else showLogin()})}
+window.esci=()=>signOut(auth).then(()=>location.reload());
 
 /* ---------- dati dimostrativi (nessun nome reale) ---------- */
 function demoData(){
