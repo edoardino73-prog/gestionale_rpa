@@ -269,15 +269,7 @@ window.closeOv=()=>{$('#ov').style.display='none';document.body.style.overflow='
 
 /* ---------- accesso ---------- */
 function showApp(){$('#login').style.display='none';$('#app').style.display='block';$('#who').textContent=user?user.name:'Consultazione';load()}
-async function start(){
-  $('#login').style.display='block';$('#login').innerHTML='<h2>Qualità e Accreditamento</h2><p class="sub">Sto collegando il gestionale…</p>';
-  let ops=[],err='';try{const s=await Promise.race([getDocs(collection(db,'operatori')),new Promise((_,r)=>setTimeout(()=>r(new Error('nessuna risposta in 9 secondi (rete o regole Firebase)')),9000))]);ops=s.docs.map(d=>d.data())}catch(e){err=(e&&(e.code||e.message))||String(e)}
-  if(!ops.length&&err){lastErr=err;user={name:'Consultazione',qualifica:'OSS'};showApp();return}
-  if(!ops.length){demo=true;user={name:'Demo',qualifica:'Direzione'};$('#app').style.display='block';$('#login').style.display='none';$('#who').textContent='Demo';S=demoData();loadedAt=new Date();paintStatus();render();return}
-  $('#login').innerHTML=`<h2>Accesso</h2><p class="sub">Scegli il tuo nome e inserisci il PIN.</p><label>Operatore</label><select id="lo">${ops.map((o,i)=>`<option value="${i}">${esc(o.name)} – ${esc(o.qualifica||'')}</option>`).join('')}</select><label>PIN</label><input id="lp" type="password" inputmode="numeric"><p><button class="p" id="lb">Entra</button></p><p id="le" style="color:var(--bad)"></p>`;
-  const go_=()=>{const o=ops[+$('#lo').value];if(String(o.pin)===$('#lp').value){user=o;showApp()}else $('#le').textContent='PIN non corretto'};
-  $('#lb').onclick=go_;$('#lp').onkeydown=e=>{if(e.key==='Enter')go_()};
-}
+function start(){user={name:'Direzione',qualifica:'Direzione'};showApp()}
 
 /* ---------- dati dimostrativi (nessun nome reale) ---------- */
 function demoData(){
